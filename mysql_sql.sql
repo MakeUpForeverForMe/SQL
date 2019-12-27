@@ -10,10 +10,10 @@ set @year_date_e=@year_date_s
 SELECT
 cast(交换时间 AS date) AS 交换时间,
 CASE
-  WHEN 交换状态 = '流量交换开始' AND 交换量 = '换量正常' THEN '换量正常'
-  WHEN 交换状态 != '流量交换开始' AND 交换量 = '换量正常' THEN CONCAT('停止 : ',交换状态)
-  WHEN 交换状态 = '流量交换开始' AND 交换量 != '换量正常' THEN CONCAT('停止 : ',交换量)
-  WHEN 交换状态 != '流量交换开始' AND 交换量 != '换量正常' THEN CONCAT('停止 : 数量、状态均达阈值',交换状态,'、',交换量)
+WHEN 交换状态 = '流量交换开始' AND 交换量 = '换量正常' THEN '换量正常'
+WHEN 交换状态 != '流量交换开始' AND 交换量 = '换量正常' THEN CONCAT('停止 : ',交换状态)
+WHEN 交换状态 = '流量交换开始' AND 交换量 != '换量正常' THEN CONCAT('停止 : ',交换量)
+WHEN 交换状态 != '流量交换开始' AND 交换量 != '换量正常' THEN CONCAT('停止 : 数量、状态均达阈值',交换状态,'、',交换量)
 END AS '交换情况',
 广告位App,
 广告位名称,
@@ -38,27 +38,27 @@ FROM (
   advi.top_limit                      AS '广告位展示上限',
   advi.real_total                     AS '广告位交换数量',
   CASE exin.`status`
-    WHEN 1 THEN CONCAT('申请人 ',app_apply.app_name,' 已申请')
-    WHEN 2 THEN CONCAT('审核人 ',app_audit.app_name,' 审核中')
-    WHEN 3 THEN CONCAT('审核人 ',app_audit.app_name,' 审核不通过')
-    WHEN 4 THEN CONCAT('审核人 ',app_audit.app_name,' 审核通过')
-    WHEN 5 THEN CONCAT('申请人 ',app_apply.app_name,' 审核中')
-    WHEN 6 THEN CONCAT('申请人 ',app_apply.app_name,' 审核不通过')
-    WHEN 7 THEN '流量交换开始'
-    WHEN 8 THEN CONCAT('审核人 ',app_audit.app_name,' 暂停流量交换')
-    WHEN 9 THEN CONCAT('申请人 ',app_apply.app_name,' 暂停流量交换')
-    WHEN 10 THEN CONCAT('申请人 ',app_apply.app_name,' 停止流量交换')
-    WHEN 11 THEN CONCAT('审核人 ',app_audit.app_name,' 停止流量交换')
-    WHEN 12 THEN '系统停止'
-    WHEN 13 THEN CONCAT('申请人 ',app_apply.app_name,' 审核通过')
-    WHEN 14 THEN '待生效(生效变为7)'
-    WHEN 999 THEN '删除'
-    ELSE exin.`status` END            AS '交换状态',
+  WHEN 1 THEN CONCAT('申请人 ',app_apply.app_name,' 已申请')
+  WHEN 2 THEN CONCAT('审核人 ',app_audit.app_name,' 审核中')
+  WHEN 3 THEN CONCAT('审核人 ',app_audit.app_name,' 审核不通过')
+  WHEN 4 THEN CONCAT('审核人 ',app_audit.app_name,' 审核通过')
+  WHEN 5 THEN CONCAT('申请人 ',app_apply.app_name,' 审核中')
+  WHEN 6 THEN CONCAT('申请人 ',app_apply.app_name,' 审核不通过')
+  WHEN 7 THEN '流量交换开始'
+  WHEN 8 THEN CONCAT('审核人 ',app_audit.app_name,' 暂停流量交换')
+  WHEN 9 THEN CONCAT('申请人 ',app_apply.app_name,' 暂停流量交换')
+  WHEN 10 THEN CONCAT('申请人 ',app_apply.app_name,' 停止流量交换')
+  WHEN 11 THEN CONCAT('审核人 ',app_audit.app_name,' 停止流量交换')
+  WHEN 12 THEN '系统停止'
+  WHEN 13 THEN CONCAT('申请人 ',app_apply.app_name,' 审核通过')
+  WHEN 14 THEN '待生效(生效变为7)'
+  WHEN 999 THEN '删除'
+  ELSE exin.`status` END            AS '交换状态',
   CASE
-    WHEN advi.real_total < advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN '换量正常'
-    WHEN advi.real_total >= advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN CONCAT('广告位方 ',app_adv.app_name,' 交换量达上限')
-    WHEN advi.real_total < advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN CONCAT('获客计划方 ',app_plan.app_name,' 交换量达上限')
-    WHEN advi.real_total >= advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN '换量双方交换量均达上限'
+  WHEN advi.real_total < advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN '换量正常'
+  WHEN advi.real_total >= advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN CONCAT('广告位方 ',app_adv.app_name,' 交换量达上限')
+  WHEN advi.real_total < advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN CONCAT('获客计划方 ',app_plan.app_name,' 交换量达上限')
+  WHEN advi.real_total >= advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN '换量双方交换量均达上限'
   END                                             AS '交换量',
   -- IF(advi.real_total < advi.top_limit,'交换量未达上限','交换量已达上限') AS '广告位交换量',
   -- IF(acqp.sum_count < acqp.sum_budget,'交换量未达上限','交换量已达上限') AS '获客计划交换量',
@@ -188,17 +188,14 @@ or    (audit_adver_id = '2tMveHpPfG9bbpB4Q2gbRq' AND apply_plan_id = 421 AND app
 
 
 
+
+-- 明细查询
 -- 换量信息统计
 DROP VIEW IF EXISTS ADV_COUNT_TMP;
-
-CREATE VIEW ADV_COUNT_TMP AS SELECT
-cast(advs.report_date AS date)      AS report_date,
-app_adv.app_name                    AS adv_appname,
-advs.adv_id                         AS adv_id,
-advi.advertise_name                 AS adv_name,
-advi.top_limit                      AS adv_show_max,
-advi.real_total                     AS adv_show_count,
-CASE exin.`status`
+CREATE VIEW ADV_COUNT_TMP AS
+SELECT
+  cast(advs.report_date AS date)                AS  report_date,
+  CASE exin.`status`
   WHEN 1 THEN CONCAT('申请人 ',app_apply.app_name,' 已申请')
   WHEN 2 THEN CONCAT('审核人 ',app_audit.app_name,' 审核中')
   WHEN 3 THEN CONCAT('审核人 ',app_audit.app_name,' 审核不通过')
@@ -214,238 +211,186 @@ CASE exin.`status`
   WHEN 13 THEN CONCAT('申请人 ',app_apply.app_name,' 审核通过')
   WHEN 14 THEN '待生效(生效变为7)'
   WHEN 999 THEN '删除'
-  ELSE exin.`status` END                        AS ex_status,
-CASE
+  ELSE exin.`status` END                          AS  ex_status,
+  CASE
   WHEN advi.real_total < advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN '换量正常'
   WHEN advi.real_total >= advi.top_limit AND acqp.sum_count < acqp.sum_budget THEN CONCAT('广告位方 ',app_adv.app_name,' 交换量达上限')
   WHEN advi.real_total < advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN CONCAT('获客计划方 ',app_plan.app_name,' 交换量达上限')
   WHEN advi.real_total >= advi.top_limit AND acqp.sum_count >= acqp.sum_budget THEN '换量双方交换量均达上限'
-END                                             AS ex_num,
-app_plan.app_name                               AS plan_appname,
-advs.plan_id                                    AS plan_id,
-acqp.`name`                                     AS plan_name,
-acqp.sum_budget                                 AS plan_show_max,
-acqp.sum_count                                  AS plan_show_count,
-sum(advs.adv_iss_num)                           AS iss_num,
-sum(advs.adv_show_num)                          AS show_num,
-sum(advs.adv_cli_num)                           AS cli_num,
-sum(advs.adv_cli_num)/sum(advs.adv_show_num)    AS cli_show_rate
+  END                                             AS  ex_num,
+  app_adv.app_name                                AS  adv_appname,
+  advs.adv_app_id                                 AS  adv_app_id,
+  advi.advertise_name                             AS  adv_name,
+  advs.adv_id                                     AS  adv_id,
+  advi.top_limit                                  AS  adv_show_max,
+  advi.real_total                                 AS  adv_show_count,
+  app_plan.app_name                               AS  plan_appname,
+  advs.plan_app_id                                AS  plan_app_id,
+  acqp.`name`                                     AS  plan_name,
+  advs.plan_id                                    AS  plan_id,
+  advp.advertise_name                             AS  plan_adv_name,
+  advs.plan_adv_id                                AS  plan_adv_id,
+  acqp.sum_budget                                 AS  plan_show_max,
+  acqp.sum_count                                  AS  plan_show_count,
+  sum(advs.adv_iss_num)                           AS  iss_num,
+  sum(advs.adv_show_num)                          AS  show_num,
+  sum(advs.adv_cli_num)                           AS  cli_num,
+  sum(advs.adv_cli_num)/sum(advs.adv_show_num)    AS  cli_show_rate
 FROM ADVERTISING_SPACE        AS advs
-LEFT JOIN ADVERTISEMENT_INFO  AS advi     ON advs.adv_id = advi.advertise_id
-LEFT JOIN ACQUISITION_PLAN    AS acqp     ON advs.plan_id = acqp.acquisition_id
-LEFT JOIN APP_INFO            AS app_adv  ON advs.adv_app_id = app_adv.app_id
-LEFT JOIN APP_INFO            AS app_plan ON advs.plan_app_id = app_plan.app_id
-LEFT JOIN EXCHANGE_INFO exin
-ON (advs.adv_id = exin.audit_adver_id AND advs.plan_adv_id = exin.apply_adver_id AND advs.plan_id = exin.apply_plan_id)
-OR (advs.adv_id = exin.apply_adver_id AND advs.plan_adv_id = exin.audit_adver_id AND advs.plan_id = exin.audit_plan_id)
-LEFT JOIN APP_INFO AS app_apply ON exin.apply_app_id = app_apply.app_id
-LEFT JOIN APP_INFO AS app_audit ON exin.audit_app_id = app_audit.app_id
+  LEFT JOIN ADVERTISEMENT_INFO  AS advi     ON advs.adv_id = advi.advertise_id
+  LEFT JOIN ADVERTISEMENT_INFO  AS advp     ON advs.adv_id = advp.advertise_id
+  LEFT JOIN ACQUISITION_PLAN    AS acqp     ON advs.plan_id = acqp.acquisition_id
+  LEFT JOIN APP_INFO            AS app_adv  ON advs.adv_app_id = app_adv.app_id
+  LEFT JOIN APP_INFO            AS app_plan ON advs.plan_app_id = app_plan.app_id
+  LEFT JOIN EXCHANGE_INFO exin
+  ON (advs.adv_id = exin.audit_adver_id AND advs.plan_adv_id = exin.apply_adver_id AND advs.plan_id = exin.apply_plan_id)
+  OR (advs.adv_id = exin.apply_adver_id AND advs.plan_adv_id = exin.audit_adver_id AND advs.plan_id = exin.audit_plan_id)
+  LEFT JOIN APP_INFO AS app_apply ON exin.apply_app_id = app_apply.app_id
+  LEFT JOIN APP_INFO AS app_audit ON exin.audit_app_id = app_audit.app_id
 WHERE advi.advertise_name IS NOT NULL AND acqp.`name` IS NOT NULL AND app_adv.app_name IS NOT NULL AND app_plan.app_name IS NOT NULL
 AND advs.plan_id != 0
-GROUP BY advs.report_date,app_adv.app_name,advi.advertise_name,app_plan.app_name,acqp.`name`,advs.adv_iss_num,advs.adv_show_num,advs.adv_cli_num;
+GROUP BY advs.report_date,advs.adv_id,advs.plan_id,advs.plan_adv_id
+ORDER BY report_date DESC;
 
+
+
+-- 明细查询
+-- 换量信息统计
 DROP VIEW IF EXISTS EXCHANGE_INFO_COUNT;
-
-CREATE VIEW EXCHANGE_INFO_COUNT AS SELECT
-report_date       AS  report_date,
-CASE
+CREATE VIEW EXCHANGE_INFO_COUNT AS
+SELECT
+  report_date       AS  report_date,
+  CASE
   WHEN ex_status = '流量交换开始' AND ex_num = '换量正常' THEN '换量正常'
   WHEN ex_status != '流量交换开始' AND ex_num = '换量正常' THEN CONCAT('停止 : ',ex_status)
   WHEN ex_status = '流量交换开始' AND ex_num != '换量正常' THEN CONCAT('停止 : ',ex_num)
   WHEN ex_status != '流量交换开始' AND ex_num != '换量正常' THEN CONCAT('停止 : 数量达阈值 ',ex_num,'，状态 ',ex_status)
-END               AS  ex_status,
-adv_appname       AS  adv_appname,
-adv_name          AS  adv_name,
-plan_appname      AS  plan_appname,
-plan_name         AS  plan_name,
-iss_num           AS  iss_num,
-show_num          AS  show_num,
-cli_num           AS  cli_num,
-cli_show_rate     AS  cli_show_rate,
-adv_id            AS  adv_id,
-plan_id           AS  plan_id,
-adv_show_max      AS  adv_show_max,
-adv_show_count    AS  adv_show_count,
-plan_show_max     AS  plan_show_max,
-plan_show_count   AS  plan_show_count
+  END               AS  ex_status,
+  adv_appname       AS  adv_appname,
+  adv_app_id        AS  adv_app_id,
+  adv_name          AS  adv_name,
+  adv_id            AS  adv_id,
+  adv_show_max      AS  adv_show_max,
+  adv_show_count    AS  adv_show_count,
+  plan_appname      AS  plan_appname,
+  plan_app_id       AS  plan_app_id,
+  plan_name         AS  plan_name,
+  plan_id           AS  plan_id,
+  plan_adv_name     AS  plan_adv_name,
+  plan_adv_id       AS  plan_adv_id,
+  plan_show_max     AS  plan_show_max,
+  plan_show_count   AS  plan_show_count,
+  iss_num           AS  iss_num,
+  show_num          AS  show_num,
+  cli_num           AS  cli_num,
+  cli_show_rate     AS  cli_show_rate
 FROM ADV_COUNT_TMP;
-
-
-
-
-SELECT
-report_date       AS  '交换时间',
-ex_status         AS  '交换情况',
-adv_appname       AS  '广告位App',
-adv_name          AS  '广告位名称',
-plan_appname      AS  '获客计划App',
-plan_name         AS  '获客计划名称',
-iss_num           AS  '下发数',
-show_num          AS  '展示数',
-cli_num           AS  '点击数',
-cli_show_rate     AS  '点击率',
-adv_id            AS  '广告位编号',
-plan_id           AS  '获客计划编号',
-adv_show_max      AS  '广告位展示上限',
-adv_show_count    AS  '广告位交换数量',
-plan_show_max     AS  '获客展示上限',
-plan_show_count   AS  '获客交换数量'
-FROM EXCHANGE_INFO_COUNT
-WHERE 1 = 1
-[[ AND {{ report_date }} ]]
-[[ AND {{ adv_appname }} ]]
-[[ AND {{ plan_appname }} ]]
-ORDER BY report_date DESC
-
-SELECT
-report_date     AS  '交换时间',
-ex_status       AS  '交换情况',
-adv_appname     AS  '广告位App',
-adv_name        AS  '广告位名称',
-plan_appname    AS  '获客计划App',
-plan_name       AS  '获客计划名称',
-iss_num         AS  '下发数',
-show_num        AS  '展示数',
-cli_num         AS  '点击数',
-cli_show_rate   AS  '点击率'
-FROM EXCHANGE_INFO_COUNT
-WHERE 1 = 1
-[[ AND {{ report_date }} ]]
-[[ AND {{ adv_appname }} ]]
-[[ AND {{ plan_appname }} ]]
-ORDER BY report_date DESC
-
-
 
 
 -- 换量信息统计 -- 请求
 DROP VIEW IF EXISTS EXCHANGE_INFO_REQ;
-
 CREATE VIEW EXCHANGE_INFO_REQ AS
 SELECT
-cast(advs.report_date AS date)  AS  report_date,
-app_adv.app_name                AS  app_name,
-advs.adv_app_id                 AS  app_id,
-advi.advertise_name             AS  adv_name,
-advs.adv_id                     AS  adv_id,
-sum(advs.adv_req_num)           AS  req_num
-FROM ADVERTISING_SPACE          AS  advs
-LEFT JOIN ADVERTISEMENT_INFO    AS  advi     ON advs.adv_id = advi.advertise_id
-LEFT JOIN APP_INFO              AS  app_adv  ON advs.adv_app_id = app_adv.app_id
+  cast(advs.report_date AS date)  AS  report_date,
+  app_adv.app_name                AS  adv_appname,
+  advs.adv_app_id                 AS  adv_app_id,
+  advi.advertise_name             AS  adv_name,
+  advs.adv_id                     AS  adv_id,
+  advi.top_limit                  AS  adv_show_max,
+  advi.real_total                 AS  adv_show_count,
+  sum(advs.adv_req_num)           AS  req_num
+FROM ADVERTISING_SPACE        AS  advs
+LEFT JOIN ADVERTISEMENT_INFO  AS  advi     ON advs.adv_id = advi.advertise_id
+LEFT JOIN APP_INFO            AS  app_adv  ON advs.adv_app_id = app_adv.app_id
 GROUP BY advs.report_date,app_adv.app_name,advi.advertise_name;
 
 
+
+
+-- 明细查询
+DROP VIEW IF EXISTS DETAILS_SHOW;
+CREATE VIEW DETAILS_SHOW AS
 SELECT
-report_date   AS  '交换时间',
-app_name      AS  '广告位App',
-app_id        AS  '广告位AppId',
-adv_name      AS  '广告位名称',
-adv_id        AS  '广告位Id',
-req_num       AS  '请求数'
-FROM EXCHANGE_INFO_REQ
+  req.report_date       AS  report_date,
+  cnt.ex_status         AS  ex_status,
+  req.adv_appname       AS  adv_appname,
+  CONCAT(req.adv_appname,'-',if(cnt.plan_name IS NULL,'',cnt.plan_name),'(',if(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
+  req.adv_app_id        AS  adv_app_id,
+  req.adv_name          AS  adv_name,
+  req.adv_id            AS  adv_id,
+  req.adv_show_max      AS  adv_show_max,
+  req.adv_show_count    AS  adv_show_count,
+  req.req_num           AS  req_num,
+  cnt.plan_appname      AS  plan_appname,
+  cnt.plan_app_id       AS  plan_app_id,
+  cnt.plan_name         AS  plan_name,
+  cnt.plan_id           AS  plan_id,
+  cnt.plan_adv_name     AS  plan_adv_name,
+  cnt.plan_adv_id       AS  plan_adv_id,
+  cnt.plan_show_max     AS  plan_show_max,
+  cnt.plan_show_count   AS  plan_show_count,
+  cnt.iss_num           AS  iss_num,
+  cnt.show_num          AS  show_num,
+  cnt.cli_num           AS  cli_num,
+  cnt.cli_show_rate     AS  cli_show_rate
+FROM EXCHANGE_INFO_REQ        AS req
+LEFT JOIN EXCHANGE_INFO_COUNT AS cnt ON req.report_date = cnt.report_date AND req.adv_appname = cnt.adv_appname AND req.adv_name = cnt.adv_name
+ORDER BY report_date DESC
+;
+
+
+
+
+-- 明细查询（全）
+SELECT
+  report_date     AS  '交换时间',
+  ex_status       AS  '交换情况',
+  adv_appname     AS  '广告位App',
+  detail_name     AS  '广告位-获客计划(所属APP)',
+  adv_app_id      AS  '广告位AppId',
+  adv_name        AS  '广告位名称',
+  adv_id          AS  '广告位Id',
+  adv_show_max    AS  '广告位展示上限',
+  adv_show_count  AS  '广告位交换数量',
+  req_num         AS  '请求数',
+  plan_appname    AS  '获客计划App',
+  plan_app_id     AS  '获客计划AppId',
+  plan_name       AS  '获客计划名称',
+  plan_id         AS  '获客计划Id',
+  plan_adv_name   AS  '获客广告位名称',
+  plan_adv_id     AS  '获客广告位Id',
+  plan_show_max   AS  '获客展示上限',
+  plan_show_count AS  '获客交换数量',
+  iss_num         AS  '下发数',
+  show_num        AS  '展示数',
+  cli_num         AS  '点击数',
+  cli_show_rate   AS  '点击率'
+FROM DETAILS_SHOW
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
-[[ AND {{ app_name }} ]]
-ORDER BY report_date DESC
+[[ AND {{ adv_appname }} ]]
+[[ AND {{ plan_appname }} ]]
+ORDER BY report_date DESC;
 
+-- 明细查询
 SELECT
-report_date   AS  '交换时间',
-app_name      AS  '广告位App',
-adv_name      AS  '广告位名称',
-req_num       AS  '请求数'
-FROM EXCHANGE_INFO_REQ
+  report_date     AS  '交换时间',
+  ex_status       AS  '交换情况',
+  adv_appname     AS  '广告位App',
+  detail_name     AS  '广告位-获客计划(所属APP)',
+  adv_show_max    AS  '预计上限',
+  req_num         AS  '请求数',
+  iss_num         AS  '下发数',
+  show_num        AS  '展示数',
+  cli_num         AS  '点击数',
+  cli_show_rate   AS  '点击率'
+FROM DETAILS_SHOW
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
-[[ AND {{ app_name }} ]]
-ORDER BY report_date DESC
+[[ AND {{ adv_appname }} ]]
+[[ AND {{ plan_appname }} ]]
+ORDER BY report_date DESC;
 
-
-
--- 反欺诈(管理员)总计
-DROP VIEW IF EXISTS ADMIN_ADT_TOTAL;
-
-CREATE VIEW ADMIN_ADT_TOTAL AS
-SELECT
-cast(report_date AS date) AS report_date,
-app_name,
-request_sum,
-sum(device_exce + device_good + device_gene + device_diff + device_erro) AS device_sum,
-sum(iprate_exce + iprate_gene + iprate_diff + iprate_erro) AS ip_sum
-FROM UNFRAUD_RECOMMEND_WEFIX
-LEFT JOIN APP_INFO ON UNFRAUD_RECOMMEND_WEFIX.app_id = APP_INFO.app_id
-GROUP BY report_date,APP_INFO.app_name,request_sum;
-
-
-SELECT
-report_date   AS  '拦截时间',
-app_name      AS  '拦截应用',
-request_sum   AS  '总请求数',
-device_sum    AS  '设备请求数',
-ip_sum        AS  'IP请求数',
-CASE
-WHEN request_sum = device_sum AND request_sum = ip_sum THEN '数值相等'
-WHEN request_sum != device_sum AND device_sum = ip_sum AND request_sum > device_sum THEN '请求数较大'
-WHEN request_sum != device_sum AND device_sum = ip_sum AND request_sum < device_sum THEN '请求数较小'
-WHEN request_sum != device_sum AND request_sum = ip_sum AND device_sum > request_sum THEN '设备请求数较大'
-WHEN request_sum != device_sum AND request_sum = ip_sum AND device_sum < request_sum THEN '设备请求数较小'
-WHEN request_sum = device_sum AND device_sum != ip_sum AND ip_sum > device_sum THEN 'IP请求数较大'
-WHEN request_sum = device_sum AND device_sum != ip_sum AND ip_sum < device_sum THEN 'IP请求数较小'
-ELSE '三组数都不相等' END  AS  '判断数值相等'
-FROM ADMIN_ADT_TOTAL
-WHERE 1 = 1
-[[ AND {{ report_date }} ]]
-[[ AND {{ app_name }} ]]
-ORDER BY report_date DESC
-
-
-
-
-
-
--- 反欺诈信息(管理员)
-DROP VIEW IF EXISTS ADMIN_ADT_DETAIL;
-
-CREATE VIEW ADMIN_ADT_DETAIL AS
-SELECT
-cast(report_date AS date) AS report_date,
-app_name,
-request_sum,
-blacklist,
-device_exce,
-device_good,
-device_gene,
-device_diff,
-device_erro,
-iprate_exce,
-iprate_gene,
-iprate_diff,
-iprate_erro
-FROM UNFRAUD_RECOMMEND_WEFIX
-LEFT JOIN APP_INFO ON UNFRAUD_RECOMMEND_WEFIX.app_id = APP_INFO.app_id;
-
-
-
--- 反欺诈信息(管理员)
-SELECT
-report_date                             AS  '拦截时间',
-viewer_appname                          AS  '拦截应用',
-sum(cnt_b)                              AS  '总请求数',
-sum(if(inblacklist = true,cnt_b,0))     AS  '黑名单数',
-sum(if(quality_d = '优',cnt_d,0))       AS  '设备为优',
-sum(if(quality_d = '良',cnt_d,0))       AS  '设备为良',
-sum(if(quality_d = '一般',cnt_d,0))     AS  '设备为中',
-sum(if(quality_d = '差',cnt_d,0))       AS  '设备为差',
-sum(if(quality_d = 'NULL',cnt_d,0))     AS  '设备为烂',
-sum(if(quality_i = '正常',cnt_i,0))     AS  '网段正常',
-sum(if(quality_i = '一般',cnt_i,0))     AS  '网段一般',
-sum(if(quality_i = '可疑',cnt_i,0))     AS  '网段可疑',
-sum(if(quality_i = 'NULL',cnt_i,0))     AS  '网段为烂'
-FROM ADT_ADMIN
-WHERE 1 = 1
--- [[ AND {{ report_date }} ]]
--- [[ AND {{ viewer_appname }} ]]
-GROUP BY report_date,viewer_appname
-ORDER BY report_date DESC,viewer_appname
 
 
 
@@ -496,7 +441,312 @@ WHERE 1 = 1
 [[ AND {{ report_date }} ]]
 [[ AND {{ login_appname }} ]]
 [[ AND {{ viewer_appname }} ]]
-ORDER BY report_date DESC,login_appname,viewer_appname
+ORDER BY report_date DESC,login_appname,viewer_appname;
+
+
+
+
+
+
+
+
+
+
+
+
+-- 反欺诈总表
+SELECT
+report_date     AS  '拦截时间',
+viewer_appname  AS  '拦截应用',
+viewer_advname  AS  '拦截广告位',
+login_appname   AS  '设定应用',
+login_advname   AS  '设定广告位',
+cnt_b           AS  '总请求数',
+CASE status_b WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：黑名单',
+inblacklist     AS  '黑名单级别',
+flevel_b        AS  '黑名单拦截级别',
+fstatus_b       AS  '黑名单拦截状态',
+cnt_d           AS  '设备请求',
+CASE status_d WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：设备',
+quality_d       AS  '设备级别',
+flevel_d        AS  '设备拦截级别',
+fstatus_d       AS  '设备拦截状态',
+cnt_i           AS  '网段请求',
+CASE status_i WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：网段',
+quality_i       AS  '网段级别',
+flevel_i        AS  '网段拦截级别',
+fstatus_i       AS  '网段拦截状态'
+FROM ADT_ADMIN
+WHERE 1 = 1
+[[ AND {{ report_date }} ]]
+[[ AND {{ viewer_appname }} ]]
+[[ AND {{ login_appname }} ]]
+[[ AND {{ inblacklist }} ]]
+[[ AND {{ fstatus_b }} ]]
+[[ AND {{ quality_d }} ]]
+[[ AND {{ fstatus_d }} ]]
+[[ AND {{ quality_i }} ]]
+[[ AND {{ fstatus_i }} ]]
+ORDER BY report_date DESC,viewer_appname;
+
+
+
+
+
+
+
+
+
+
+
+-- 反欺诈信息(管理员1.0)
+-- 去重数据
+DROP VIEW IF EXISTS ADT_DISTINCT_B;
+CREATE VIEW ADT_DISTINCT_B AS
+SELECT DISTINCT
+report_date,
+login_appname,
+login_advname,
+viewer_appname  AS app_name,
+viewer_advname,
+status_b,
+flevel_b,
+fstatus_b,
+inblacklist,
+cnt_b
+FROM ADT_ADMIN;
+
+DROP VIEW IF EXISTS ADT_DISTINCT_D;
+CREATE VIEW ADT_DISTINCT_D AS
+SELECT DISTINCT
+report_date,
+login_appname,
+login_advname,
+viewer_appname  AS app_name,
+viewer_advname,
+status_d,
+flevel_d,
+fstatus_d,
+quality_d,
+cnt_d
+FROM ADT_ADMIN;
+
+DROP VIEW IF EXISTS ADT_DISTINCT_I;
+CREATE VIEW ADT_DISTINCT_I AS
+SELECT DISTINCT
+report_date,
+login_appname,
+login_advname,
+viewer_appname  AS app_name,
+viewer_advname,
+status_i,
+flevel_i,
+fstatus_i,
+quality_i,
+cnt_i
+FROM ADT_ADMIN;
+
+-- 轻度汇总数据 实际请求数
+DROP VIEW IF EXISTS ADT_ADMIN_B;
+CREATE VIEW ADT_ADMIN_B AS
+SELECT
+report_date,
+app_name,
+sum(cnt_b)                              AS  cnt_b,
+sum(if(inblacklist = 'true',cnt_b,0))   AS  blacklist
+FROM ADT_DISTINCT_B
+GROUP BY report_date,app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_D;
+CREATE VIEW ADT_ADMIN_D AS
+SELECT
+report_date,
+app_name,
+sum(cnt_d)                           AS  cnt_d,
+sum(if(quality_d = '优',cnt_d,0))    AS  device_exce,
+sum(if(quality_d = '良',cnt_d,0))    AS  device_good,
+sum(if(quality_d = '一般',cnt_d,0))  AS  device_gene,
+sum(if(quality_d = '差',cnt_d,0))    AS  device_diff,
+sum(if(quality_d = 'NULL',cnt_d,0))  AS  device_erro
+FROM ADT_DISTINCT_D
+GROUP BY report_date,app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_I;
+CREATE VIEW ADT_ADMIN_I AS
+SELECT
+report_date,
+app_name,
+sum(cnt_i)                          AS  cnt_i,
+sum(if(quality_i = '正常',cnt_i,0)) AS  iprate_exce,
+sum(if(quality_i = '一般',cnt_i,0)) AS  iprate_gene,
+sum(if(quality_i = '可疑',cnt_i,0)) AS  iprate_diff,
+sum(if(quality_i = 'NULL',cnt_i,0)) AS  iprate_erro
+FROM ADT_DISTINCT_I
+GROUP BY report_date,app_name;
+
+
+
+-- 反欺诈信息(管理员1.0) 汇总数据
+DROP VIEW IF EXISTS ADMIN_ADT_DETAIL;
+CREATE VIEW ADMIN_ADT_DETAIL AS
+SELECT
+ADT_ADMIN_B.report_date   AS  report_date,
+ADT_ADMIN_B.app_name      AS  app_name,
+cnt_b                     AS  cnt_b,
+blacklist                 AS  blacklist,
+cnt_d                     AS  cnt_d,
+device_exce               AS  device_exce,
+device_good               AS  device_good,
+device_gene               AS  device_gene,
+device_diff               AS  device_diff,
+device_erro               AS  device_erro,
+cnt_i                     AS  cnt_i,
+iprate_exce               AS  iprate_exce,
+iprate_gene               AS  iprate_gene,
+iprate_diff               AS  iprate_diff,
+iprate_erro               AS  iprate_erro
+FROM ADT_ADMIN_B
+JOIN ADT_ADMIN_D ON ADT_ADMIN_B.report_date = ADT_ADMIN_D.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_D.app_name
+JOIN ADT_ADMIN_I ON ADT_ADMIN_B.report_date = ADT_ADMIN_I.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_I.app_name;
+
+-- metabase使用SQL
+SELECT
+report_date   AS  '拦截时间',
+app_name      AS  '拦截应用',
+CASE
+WHEN cnt_b = cnt_d AND cnt_b = cnt_i THEN '数值相等'
+WHEN cnt_b != cnt_d AND cnt_d = cnt_i AND cnt_b > cnt_d THEN '请求数较大'
+WHEN cnt_b != cnt_d AND cnt_d = cnt_i AND cnt_b < cnt_d THEN '请求数较小'
+WHEN cnt_b != cnt_d AND cnt_b = cnt_i AND cnt_d > cnt_b THEN '设备请求数较大'
+WHEN cnt_b != cnt_d AND cnt_b = cnt_i AND cnt_d < cnt_b THEN '设备请求数较小'
+WHEN cnt_b = cnt_d AND cnt_d != cnt_i AND cnt_i > cnt_d THEN 'IP请求数较大'
+WHEN cnt_b = cnt_d AND cnt_d != cnt_i AND cnt_i < cnt_d THEN 'IP请求数较小'
+ELSE '三组数都不相等' END  AS  '判断数值相等',
+cnt_b         AS  '总请求数',
+cnt_d         AS  '设备请求',
+cnt_i         AS  '网段请求',
+blacklist     AS  '黑名单数',
+device_exce   AS  '设备为优',
+device_good   AS  '设备为良',
+device_gene   AS  '设备为中',
+device_diff   AS  '设备为差',
+device_erro   AS  '设备为烂',
+iprate_exce   AS  '网段正常',
+iprate_gene   AS  '网段一般',
+iprate_diff   AS  '网段可疑',
+iprate_erro   AS  '网段为烂'
+FROM ADMIN_ADT_DETAIL
+WHERE 1 = 1
+[[ AND {{ report_date }} ]]
+[[ AND {{ app_name }} ]]
+ORDER BY report_date DESC,app_name;
+
+
+
+
+
+
+
+-- 反欺诈信息(管理员2.0)
+-- 拦截数
+DROP VIEW IF EXISTS ADT_ADMIN_B_ICT;
+CREATE VIEW ADT_ADMIN_B_ICT AS
+SELECT
+report_date,
+app_name,
+sum(cnt_b) AS cnt_b
+FROM ADT_DISTINCT_B
+WHERE fstatus_b = 1
+GROUP BY report_date,app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_D_ICT;
+CREATE VIEW ADT_ADMIN_D_ICT AS
+SELECT
+report_date,
+app_name,
+sum(cnt_d) AS cnt_d
+FROM ADT_DISTINCT_D
+WHERE fstatus_d = 1
+GROUP BY report_date,app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_I_ICT;
+CREATE VIEW ADT_ADMIN_I_ICT AS
+SELECT
+report_date,
+app_name,
+sum(cnt_i) AS cnt_i
+FROM ADT_DISTINCT_I
+WHERE fstatus_i = 1
+GROUP BY report_date,app_name;
+
+
+-- 轻度汇总数据
+DROP VIEW IF EXISTS ADT_ADMIN_B_REQ;
+CREATE VIEW ADT_ADMIN_B_REQ AS
+SELECT
+ADT_ADMIN_B.report_date                                     AS  report_date,
+ADT_ADMIN_B.app_name                                        AS  app_name,
+ADT_ADMIN_B.cnt_b                                           AS  cnt_b_req,
+if(ADT_ADMIN_B_ICT.cnt_b IS NULL,0,ADT_ADMIN_B_ICT.cnt_b)   AS  cnt_b_ict
+FROM ADT_ADMIN_B
+LEFT JOIN ADT_ADMIN_B_ICT
+ON ADT_ADMIN_B.report_date = ADT_ADMIN_B_ICT.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_B_ICT.app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_D_REQ;
+CREATE VIEW ADT_ADMIN_D_REQ AS
+SELECT
+ADT_ADMIN_D.report_date                                     AS  report_date,
+ADT_ADMIN_D.app_name                                        AS  app_name,
+ADT_ADMIN_D.cnt_d                                           AS  cnt_d_req,
+if(ADT_ADMIN_D_ICT.cnt_d IS NULL,0,ADT_ADMIN_D_ICT.cnt_d)   AS  cnt_d_ict
+FROM ADT_ADMIN_D
+LEFT JOIN ADT_ADMIN_D_ICT
+ON ADT_ADMIN_D.report_date = ADT_ADMIN_D_ICT.report_date AND ADT_ADMIN_D.app_name = ADT_ADMIN_D_ICT.app_name;
+
+DROP VIEW IF EXISTS ADT_ADMIN_I_REQ;
+CREATE VIEW ADT_ADMIN_I_REQ AS
+SELECT
+ADT_ADMIN_I.report_date                                     AS  report_date,
+ADT_ADMIN_I.app_name                                        AS  app_name,
+ADT_ADMIN_I.cnt_i                                           AS  cnt_i_req,
+if(ADT_ADMIN_I_ICT.cnt_i IS NULL,0,ADT_ADMIN_I_ICT.cnt_i)   AS  cnt_i_ict
+FROM ADT_ADMIN_I
+LEFT JOIN ADT_ADMIN_I_ICT
+ON ADT_ADMIN_I.report_date = ADT_ADMIN_I_ICT.report_date AND ADT_ADMIN_I.app_name = ADT_ADMIN_I_ICT.app_name;
+
+-- 汇总数据
+DROP VIEW IF EXISTS ADT_ADMIN_DETAIL;
+CREATE VIEW ADT_ADMIN_DETAIL AS
+SELECT
+ADT_ADMIN_B_REQ.report_date   AS  report_date,
+ADT_ADMIN_B_REQ.app_name      AS  app_name,
+ADT_ADMIN_B_REQ.cnt_b_ict     AS  cnt_b_ict,
+ADT_ADMIN_D_REQ.cnt_d_ict     AS  cnt_d_ict,
+ADT_ADMIN_I_REQ.cnt_i_ict     AS  cnt_i_ict,
+ADT_ADMIN_B_REQ.cnt_b_req     AS  cnt_b_req,
+ADT_ADMIN_D_REQ.cnt_d_req     AS  cnt_d_req,
+ADT_ADMIN_I_REQ.cnt_i_req     AS  cnt_i_req
+FROM ADT_ADMIN_B_REQ
+JOIN ADT_ADMIN_D_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_D_REQ.report_date AND ADT_ADMIN_B_REQ.app_name = ADT_ADMIN_D_REQ.app_name
+JOIN ADT_ADMIN_I_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_I_REQ.report_date AND ADT_ADMIN_B_REQ.app_name = ADT_ADMIN_I_REQ.app_name;
+
+-- metabase的SQL
+SELECT
+report_date AS  '拦截时间',
+app_name    AS  '拦截应用',
+cnt_b_ict   AS  '黑名单拦截数',
+cnt_d_ict   AS  '设备拦截数',
+cnt_i_ict   AS  '网段拦截数',
+cnt_b_req   AS  '黑名单请求数',
+cnt_d_req   AS  '设备请求数',
+cnt_i_req   AS  '网段请求数'
+FROM ADT_ADMIN_DETAIL
+WHERE 1 = 1
+[[ AND {{ report_date }} ]]
+[[ AND {{ app_name }} ]]
+ORDER BY report_date DESC,app_name;
+
+
 
 
 
@@ -504,6 +754,8 @@ https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@test.json@@200
 
 https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@test.json@@200002
 
+SELECT CURRENT_USER,CURRENT_TIMESTAMP,CURRENT_DATE,CURRENT_TIME;
+AND report_date BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -7 day) AND CURRENT_DATE
 
 INSERT INTO ADT_DATA
 (report_date,login_userId,login_appId,login_advId,viewer_appId,viewer_advId,req_sum,blacklist_sum,sus_device_sum,sus_ip_sum,bl_device_sum,bl_ip_sum,dvi_ip_sum,bl_dvi_ip_sum)
@@ -514,6 +766,25 @@ VALUES
 (20191215,'7aef56be-184b-401b-86fb-1e2a834bf7ed','','','','',0,0,0,0,0,0,0,0),
 (20191225,'b6d433eb-2387-4c1a-acd3-a017b4fd69c4',1,3,'15vkdtYZcQVckj5JdBxrtP',2,10,1,1,1,1,1,1,1),
 (20191225,'7aef56be-184b-401b-86fb-1e2a834bf7ed',1,1,'15vkdtYZcQVckj5JdBxrtP',1,55,5,2,5,2,2,2,2);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
