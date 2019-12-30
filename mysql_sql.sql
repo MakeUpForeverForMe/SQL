@@ -1,4 +1,4 @@
-set @year_date_s=20191224
+set @year_date_s=20191227
 ;
 set @year_date_e=DATE_FORMAT(CURRENT_DATE,'%Y%m%d')
 ;
@@ -772,7 +772,7 @@ VALUES
 
 
 
-
+SELECT * FROM EXCHANGE_INFO;
 
 
 

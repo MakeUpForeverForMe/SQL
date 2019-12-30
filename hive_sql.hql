@@ -3162,6 +3162,15 @@ order by status_b,fstatus_b,inblacklist,cnt_b,status_d,fstatus_d,quality_d,cnt_d
 
 
 
+SELECT id,reqtime,createtime,tagid,extagid from ods_wefix.t_ad_query_water_json WHERE year_month = 201912 AND day_of_month between 27 AND 30 AND tagId = '4y55uTCb33EGufc8yvEjSQ'
+limit 50;
+
+
+SELECT distinct exchange_id,audit_app_id,audit_adver_id,audit_plan_id,apply_app_id,apply_plan_id,apply_adver_id,status,apply_user_id,audit_user_id from ods_wefix.exchange_info_tsv WHERE apply_adver_id = '4y55uTCb33EGufc8yvEjSQ' or audit_adver_id = '4y55uTCb33EGufc8yvEjSQ';
+
+
+SELECT * from ods_wefix.t_ad_action_water_json WHERE year_month = 201912 AND day_of_month between 27 AND 30 AND sourceid = 'DZMhiEgUe8n79wv3F1G7XH' AND extagid in ('4572EY23dBx8mzHpgqbhgD','86NobVk9Zy7twbUZJDFp7F')
+limit 50;
 
 
 
