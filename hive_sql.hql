@@ -3129,27 +3129,27 @@ with base as (
 )
 -- INSERT OVERWRITE TABLE dm_cf.adt_admin PARTITION(year_month,day_of_month)
 SELECT distinct
-report_date,
-login_appname,
-login_advname,
-viewer_appname,
-viewer_advname,
-status_b,
-flevel_b,
-fstatus_b,
-inblacklist,
-count(if(fstatus_b is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist) as cnt_b,
-status_d,
-flevel_d,
-fstatus_d,
-quality_d,
-count(if(fstatus_d is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_d,flevel_d,fstatus_d,quality_d) as cnt_d,
-status_i,
-flevel_i,
-fstatus_i,
-quality_i,
-count(if(fstatus_i is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_i,flevel_i,fstatus_i,quality_i) as cnt_i
--- ,'${year_month}','${day_of_month}'
+  report_date,
+  login_appname,
+  login_advname,
+  viewer_appname,
+  viewer_advname,
+  status_b,
+  flevel_b,
+  fstatus_b,
+  inblacklist,
+  count(if(fstatus_b is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist) as cnt_b,
+  status_d,
+  flevel_d,
+  fstatus_d,
+  quality_d,
+  count(if(fstatus_d is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_d,flevel_d,fstatus_d,quality_d) as cnt_d,
+  status_i,
+  flevel_i,
+  fstatus_i,
+  quality_i,
+  count(if(fstatus_i is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_i,flevel_i,fstatus_i,quality_i) as cnt_i
+  -- ,'${year_month}','${day_of_month}'
 from base
 where viewer_appname = '微米浏览器'
 -- group by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist,status_d,flevel_d,fstatus_d,quality_d,status_i,flevel_i,fstatus_i,quality_i
@@ -3174,12 +3174,17 @@ limit 50;
 
 
 
-select distinct id,reqtime,createtime,tagid,acquisitionid,extagid,year_month,day_of_month
+select *
 from ods_wefix.t_ad_query_water_json
-where year_month = '201911' and day_of_month = '25'
- -- and (test = 0 or test is null)
- ;
+where year_month = '201912' and day_of_month = '30'
+AND tagid in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq')
+AND reqtime is null AND createtime is null
+-- and (test = 0 or test is null)
+;
 
+set hivevar:year_month=201912;
+
+set hivevar:day_of_month=30;
 
 with base as (
   select
@@ -3213,7 +3218,7 @@ with base as (
   from (
     select distinct id,reqtime,createtime,tagid,acquisitionid,extagid,year_month,day_of_month
     from ods_wefix.t_ad_query_water_json
-    where year_month = '201911' and day_of_month = '30' and (test = 0 or test is null)
+    where year_month = '${year_month}' and day_of_month = '${day_of_month}' and (test = 0 or test is null)
   ) as query_water
   left join (
     select distinct waterid,createtime,status,display,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
@@ -3240,4 +3245,13 @@ with base as (
 )
 select distinct id,req_type,report_status,report_date,action_ctime,plan_adv_id,adv_id
 from base
-where report_date is null;
+where report_date is null
+AND adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
+
+
+865645020885014
+860604040683094
+862400044328754
+
+5e09d97f91125
+
