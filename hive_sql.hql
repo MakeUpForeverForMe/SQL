@@ -3249,9 +3249,4 @@ where report_date is null
 AND adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
 
 
-865645020885014
-860604040683094
-862400044328754
-
-5e09d97f91125
 
