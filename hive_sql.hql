@@ -3174,3 +3174,70 @@ limit 50;
 
 
 
+select distinct id,reqtime,createtime,tagid,acquisitionid,extagid,year_month,day_of_month
+from ods_wefix.t_ad_query_water_json
+where year_month = '201911' and day_of_month = '25'
+ -- and (test = 0 or test is null)
+ ;
+
+
+with base as (
+  select
+  query_water.id                                                                            as id,
+  substring(if(query_water.reqtime is null,query_water.createtime,query_water.reqtime),1,8) as report_date,
+  action_water.status                                                                       as report_status,
+  if(query_water.reqtime is null,'action','query')                                          as req_type,
+  action_water.createtime                                                                   as action_ctime,
+  case
+  when query_water.tagid = exchange_info.audit_adver_id then exchange_info.apply_app_id
+  when query_water.tagid = exchange_info.apply_adver_id then exchange_info.audit_app_id
+  else null end                                                                             as plan_app_id,
+  case
+  when query_water.tagid = exchange_info.audit_adver_id then exchange_info.apply_user_id
+  when query_water.tagid = exchange_info.apply_adver_id then exchange_info.audit_user_id
+  else if(plan_info.user_id is null,null,plan_info.user_id) end                             as plan_user_id,
+  if(query_water.acquisitionid is null,0,query_water.acquisitionid)                         as plan_id,
+  query_water.extagid                                                                       as plan_adv_id,
+  query_water.tagid                                                                         as adv_id,
+  case
+  when query_water.tagid = exchange_info.audit_adver_id then exchange_info.audit_app_id
+  when query_water.tagid = exchange_info.apply_adver_id then exchange_info.apply_app_id
+  else if(adv_info.app_id is null,null,adv_info.app_id) end                                 as adv_app_id,
+  case
+  when query_water.tagid = exchange_info.audit_adver_id then exchange_info.audit_user_id
+  when query_water.tagid = exchange_info.apply_adver_id then exchange_info.apply_user_id
+  else if(app_info.user_id is null,null,app_info.user_id) end                               as adv_user_id,
+  if(adv_info.ad_type is null,0,adv_info.ad_type)                                           as ad_type,
+  action_water.display                                                                      as action_display,
+  action_water.isclick                                                                      as action_isclick
+  from (
+    select distinct id,reqtime,createtime,tagid,acquisitionid,extagid,year_month,day_of_month
+    from ods_wefix.t_ad_query_water_json
+    where year_month = '201911' and day_of_month = '30' and (test = 0 or test is null)
+  ) as query_water
+  left join (
+    select distinct waterid,createtime,status,display,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
+  ) as action_water
+  on query_water.id = action_water.waterid
+  left join (
+    select distinct exchange_id,
+    audit_adver_id,audit_plan_id,audit_app_id,audit_user_id,
+    apply_adver_id,apply_plan_id,apply_app_id,apply_user_id
+    from ods_wefix.exchange_info_tsv
+    where audit_app_id != 'NULL' and audit_user_id != 'NULL' and apply_app_id != 'NULL' and apply_user_id != 'NULL' and status > 6
+  ) as exchange_info
+  on (query_water.tagid = exchange_info.audit_adver_id and query_water.extagid = exchange_info.apply_adver_id and query_water.acquisitionid = exchange_info.apply_plan_id)
+  or (query_water.tagid = exchange_info.apply_adver_id and query_water.extagid = exchange_info.audit_adver_id and query_water.acquisitionid = exchange_info.audit_plan_id)
+  left join (
+    select distinct acquisition_id,user_id from ods_wefix.acquisition_plan_tsv
+  ) as plan_info on query_water.acquisitionid = plan_info.acquisition_id
+  left join (
+    select distinct advertise_id,app_id,ad_type from ods_wefix.advertisement_info_tsv
+  ) as adv_info on query_water.tagid = adv_info.advertise_id
+  left join (
+    select distinct app_id,user_id from ods_wefix.app_info_tsv
+  ) as app_info on adv_info.app_id = app_info.app_id
+)
+select distinct id,req_type,report_status,report_date,action_ctime,plan_adv_id,adv_id
+from base
+where report_date is null;

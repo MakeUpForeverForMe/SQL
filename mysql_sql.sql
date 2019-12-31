@@ -189,6 +189,32 @@ or    (audit_adver_id = '2tMveHpPfG9bbpB4Q2gbRq' AND apply_plan_id = 421 AND app
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- 明细查询
 -- 换量信息统计
 DROP VIEW IF EXISTS ADV_COUNT_TMP;
@@ -234,6 +260,7 @@ SELECT
   acqp.sum_count                                  AS  plan_show_count,
   sum(advs.adv_iss_num)                           AS  iss_num,
   sum(advs.adv_show_num)                          AS  show_num,
+  sum(advs.adv_show_fail)                         AS  show_fail,
   sum(advs.adv_cli_num)                           AS  cli_num,
   sum(advs.adv_cli_num)/sum(advs.adv_show_num)    AS  cli_show_rate
 FROM ADVERTISING_SPACE        AS advs
@@ -282,6 +309,7 @@ SELECT
   plan_show_count   AS  plan_show_count,
   iss_num           AS  iss_num,
   show_num          AS  show_num,
+  show_fail         AS  show_fail,
   cli_num           AS  cli_num,
   cli_show_rate     AS  cli_show_rate
 FROM ADV_COUNT_TMP;
@@ -331,40 +359,42 @@ SELECT
   cnt.plan_show_count   AS  plan_show_count,
   cnt.iss_num           AS  iss_num,
   cnt.show_num          AS  show_num,
+  cnt.show_fail         AS  show_fail,
   cnt.cli_num           AS  cli_num,
   cnt.cli_show_rate     AS  cli_show_rate
 FROM EXCHANGE_INFO_REQ        AS req
 LEFT JOIN EXCHANGE_INFO_COUNT AS cnt ON req.report_date = cnt.report_date AND req.adv_appname = cnt.adv_appname AND req.adv_name = cnt.adv_name
-ORDER BY report_date DESC
-;
+ORDER BY report_date DESC;
 
 
 
 
 -- 明细查询（全）
 SELECT
-  report_date     AS  '交换时间',
-  ex_status       AS  '交换情况',
-  adv_appname     AS  '广告位App',
-  detail_name     AS  '广告位-获客计划(所属APP)',
-  adv_app_id      AS  '广告位AppId',
-  adv_name        AS  '广告位名称',
-  adv_id          AS  '广告位Id',
-  adv_show_max    AS  '广告位展示上限',
-  adv_show_count  AS  '广告位交换数量',
-  req_num         AS  '请求数',
-  plan_appname    AS  '获客计划App',
-  plan_app_id     AS  '获客计划AppId',
-  plan_name       AS  '获客计划名称',
-  plan_id         AS  '获客计划Id',
-  plan_adv_name   AS  '获客广告位名称',
-  plan_adv_id     AS  '获客广告位Id',
-  plan_show_max   AS  '获客展示上限',
-  plan_show_count AS  '获客交换数量',
-  iss_num         AS  '下发数',
-  show_num        AS  '展示数',
-  cli_num         AS  '点击数',
-  cli_show_rate   AS  '点击率'
+  report_date           AS  '交换时间',
+  ex_status             AS  '交换情况',
+  adv_appname           AS  '广告位App',
+  detail_name           AS  '广告位-获客计划(所属APP)',
+  adv_app_id            AS  '广告位AppId',
+  adv_name              AS  '广告位名称',
+  adv_id                AS  '广告位Id',
+  adv_show_max          AS  '广告位展示上限',
+  adv_show_count        AS  '广告位交换数量',
+  req_num               AS  '请求数',
+  plan_appname          AS  '获客计划App',
+  plan_app_id           AS  '获客计划AppId',
+  plan_name             AS  '获客计划名称',
+  plan_id               AS  '获客计划Id',
+  plan_adv_name         AS  '获客广告位名称',
+  plan_adv_id           AS  '获客广告位Id',
+  plan_show_max         AS  '获客展示上限',
+  plan_show_count       AS  '获客交换数量',
+  iss_num               AS  '下发数',
+  show_num + show_fail  AS  '展示总数',
+  show_num              AS  '展示数',
+  show_fail             AS  '超时数',
+  cli_num               AS  '点击数',
+  cli_show_rate         AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
@@ -382,14 +412,16 @@ SELECT
   req_num         AS  '请求数',
   iss_num         AS  '下发数',
   show_num        AS  '展示数',
+  show_fail       AS  '超时数',
   cli_num         AS  '点击数',
   cli_show_rate   AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
 [[ AND {{ adv_appname }} ]]
-[[ AND {{ plan_appname }} ]]
 ORDER BY report_date DESC;
+
+
 
 
 
@@ -507,7 +539,7 @@ SELECT DISTINCT
 report_date,
 login_appname,
 login_advname,
-viewer_appname  AS app_name,
+viewer_appname,
 viewer_advname,
 status_b,
 flevel_b,
@@ -522,7 +554,7 @@ SELECT DISTINCT
 report_date,
 login_appname,
 login_advname,
-viewer_appname  AS app_name,
+viewer_appname,
 viewer_advname,
 status_d,
 flevel_d,
@@ -537,7 +569,7 @@ SELECT DISTINCT
 report_date,
 login_appname,
 login_advname,
-viewer_appname  AS app_name,
+viewer_appname,
 viewer_advname,
 status_i,
 flevel_i,
@@ -551,17 +583,19 @@ DROP VIEW IF EXISTS ADT_ADMIN_B;
 CREATE VIEW ADT_ADMIN_B AS
 SELECT
 report_date,
-app_name,
+login_appname,
+viewer_appname,
 sum(cnt_b)                              AS  cnt_b,
 sum(if(inblacklist = 'true',cnt_b,0))   AS  blacklist
 FROM ADT_DISTINCT_B
-GROUP BY report_date,app_name;
+GROUP BY report_date,login_appname,viewer_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_D;
 CREATE VIEW ADT_ADMIN_D AS
 SELECT
 report_date,
-app_name,
+login_appname,
+viewer_appname,
 sum(cnt_d)                           AS  cnt_d,
 sum(if(quality_d = '优',cnt_d,0))    AS  device_exce,
 sum(if(quality_d = '良',cnt_d,0))    AS  device_good,
@@ -569,50 +603,50 @@ sum(if(quality_d = '一般',cnt_d,0))  AS  device_gene,
 sum(if(quality_d = '差',cnt_d,0))    AS  device_diff,
 sum(if(quality_d = 'NULL',cnt_d,0))  AS  device_erro
 FROM ADT_DISTINCT_D
-GROUP BY report_date,app_name;
+GROUP BY report_date,login_appname,viewer_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_I;
 CREATE VIEW ADT_ADMIN_I AS
 SELECT
 report_date,
-app_name,
+login_appname,
+viewer_appname,
 sum(cnt_i)                          AS  cnt_i,
 sum(if(quality_i = '正常',cnt_i,0)) AS  iprate_exce,
 sum(if(quality_i = '一般',cnt_i,0)) AS  iprate_gene,
 sum(if(quality_i = '可疑',cnt_i,0)) AS  iprate_diff,
 sum(if(quality_i = 'NULL',cnt_i,0)) AS  iprate_erro
 FROM ADT_DISTINCT_I
-GROUP BY report_date,app_name;
-
-
+GROUP BY report_date,login_appname,viewer_appname;
 
 -- 反欺诈信息(管理员1.0) 汇总数据
 DROP VIEW IF EXISTS ADMIN_ADT_DETAIL;
 CREATE VIEW ADMIN_ADT_DETAIL AS
 SELECT
-ADT_ADMIN_B.report_date   AS  report_date,
-ADT_ADMIN_B.app_name      AS  app_name,
-cnt_b                     AS  cnt_b,
-blacklist                 AS  blacklist,
-cnt_d                     AS  cnt_d,
-device_exce               AS  device_exce,
-device_good               AS  device_good,
-device_gene               AS  device_gene,
-device_diff               AS  device_diff,
-device_erro               AS  device_erro,
-cnt_i                     AS  cnt_i,
-iprate_exce               AS  iprate_exce,
-iprate_gene               AS  iprate_gene,
-iprate_diff               AS  iprate_diff,
-iprate_erro               AS  iprate_erro
+ADT_ADMIN_B.report_date     AS  report_date,
+ADT_ADMIN_B.viewer_appname  AS  viewer_appname,
+sum(cnt_b)                  AS  cnt_b,
+sum(blacklist)              AS  blacklist,
+sum(cnt_d)                  AS  cnt_d,
+sum(device_exce)            AS  device_exce,
+sum(device_good)            AS  device_good,
+sum(device_gene)            AS  device_gene,
+sum(device_diff)            AS  device_diff,
+sum(device_erro)            AS  device_erro,
+sum(cnt_i)                  AS  cnt_i,
+sum(iprate_exce)            AS  iprate_exce,
+sum(iprate_gene)            AS  iprate_gene,
+sum(iprate_diff)            AS  iprate_diff,
+sum(iprate_erro)            AS  iprate_erro
 FROM ADT_ADMIN_B
-JOIN ADT_ADMIN_D ON ADT_ADMIN_B.report_date = ADT_ADMIN_D.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_D.app_name
-JOIN ADT_ADMIN_I ON ADT_ADMIN_B.report_date = ADT_ADMIN_I.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_I.app_name;
+JOIN ADT_ADMIN_D ON ADT_ADMIN_B.report_date = ADT_ADMIN_D.report_date AND ADT_ADMIN_B.login_appname = ADT_ADMIN_D.login_appname AND ADT_ADMIN_B.viewer_appname = ADT_ADMIN_D.viewer_appname
+JOIN ADT_ADMIN_I ON ADT_ADMIN_B.report_date = ADT_ADMIN_I.report_date AND ADT_ADMIN_B.login_appname = ADT_ADMIN_I.login_appname AND ADT_ADMIN_B.viewer_appname = ADT_ADMIN_I.viewer_appname
+GROUP BY ADT_ADMIN_B.report_date,ADT_ADMIN_B.viewer_appname;
 
--- metabase使用SQL
+-- 反欺诈信息(管理员1.0)  metabase使用SQL
 SELECT
-report_date   AS  '拦截时间',
-app_name      AS  '拦截应用',
+report_date     AS  '拦截时间',
+viewer_appname  AS  '拦截应用',
 CASE
 WHEN cnt_b = cnt_d AND cnt_b = cnt_i THEN '数值相等'
 WHEN cnt_b != cnt_d AND cnt_d = cnt_i AND cnt_b > cnt_d THEN '请求数较大'
@@ -622,24 +656,24 @@ WHEN cnt_b != cnt_d AND cnt_b = cnt_i AND cnt_d < cnt_b THEN '设备请求数较
 WHEN cnt_b = cnt_d AND cnt_d != cnt_i AND cnt_i > cnt_d THEN 'IP请求数较大'
 WHEN cnt_b = cnt_d AND cnt_d != cnt_i AND cnt_i < cnt_d THEN 'IP请求数较小'
 ELSE '三组数都不相等' END  AS  '判断数值相等',
-cnt_b         AS  '总请求数',
-cnt_d         AS  '设备请求',
-cnt_i         AS  '网段请求',
-blacklist     AS  '黑名单数',
-device_exce   AS  '设备为优',
-device_good   AS  '设备为良',
-device_gene   AS  '设备为中',
-device_diff   AS  '设备为差',
-device_erro   AS  '设备为烂',
-iprate_exce   AS  '网段正常',
-iprate_gene   AS  '网段一般',
-iprate_diff   AS  '网段可疑',
-iprate_erro   AS  '网段为烂'
+cnt_b           AS  '总请求数',
+cnt_d           AS  '设备请求',
+cnt_i           AS  '网段请求',
+blacklist       AS  '黑名单数',
+device_exce     AS  '设备为优',
+device_good     AS  '设备为良',
+device_gene     AS  '设备为中',
+device_diff     AS  '设备为差',
+device_erro     AS  '设备为烂',
+iprate_exce     AS  '网段正常',
+iprate_gene     AS  '网段一般',
+iprate_diff     AS  '网段可疑',
+iprate_erro     AS  '网段为烂'
 FROM ADMIN_ADT_DETAIL
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
-[[ AND {{ app_name }} ]]
-ORDER BY report_date DESC,app_name;
+[[ AND {{ viewer_appname }} ]]
+ORDER BY report_date DESC,viewer_appname;
 
 
 
@@ -653,73 +687,75 @@ DROP VIEW IF EXISTS ADT_ADMIN_B_ICT;
 CREATE VIEW ADT_ADMIN_B_ICT AS
 SELECT
 report_date,
-app_name,
+login_appname,
 sum(cnt_b) AS cnt_b
 FROM ADT_DISTINCT_B
 WHERE fstatus_b = 1
-GROUP BY report_date,app_name;
+GROUP BY report_date,login_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_D_ICT;
 CREATE VIEW ADT_ADMIN_D_ICT AS
 SELECT
 report_date,
-app_name,
+login_appname,
 sum(cnt_d) AS cnt_d
 FROM ADT_DISTINCT_D
 WHERE fstatus_d = 1
-GROUP BY report_date,app_name;
+GROUP BY report_date,login_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_I_ICT;
 CREATE VIEW ADT_ADMIN_I_ICT AS
 SELECT
 report_date,
-app_name,
+login_appname,
 sum(cnt_i) AS cnt_i
 FROM ADT_DISTINCT_I
 WHERE fstatus_i = 1
-GROUP BY report_date,app_name;
-
+GROUP BY report_date,login_appname;
 
 -- 轻度汇总数据
 DROP VIEW IF EXISTS ADT_ADMIN_B_REQ;
 CREATE VIEW ADT_ADMIN_B_REQ AS
 SELECT
-ADT_ADMIN_B.report_date                                     AS  report_date,
-ADT_ADMIN_B.app_name                                        AS  app_name,
-ADT_ADMIN_B.cnt_b                                           AS  cnt_b_req,
-if(ADT_ADMIN_B_ICT.cnt_b IS NULL,0,ADT_ADMIN_B_ICT.cnt_b)   AS  cnt_b_ict
+ADT_ADMIN_B.report_date                                         AS  report_date,
+ADT_ADMIN_B.login_appname                                       AS  login_appname,
+sum(ADT_ADMIN_B.cnt_b)                                          AS  cnt_b_req,
+sum(if(ADT_ADMIN_B_ICT.cnt_b IS NULL,0,ADT_ADMIN_B_ICT.cnt_b))  AS  cnt_b_ict
 FROM ADT_ADMIN_B
 LEFT JOIN ADT_ADMIN_B_ICT
-ON ADT_ADMIN_B.report_date = ADT_ADMIN_B_ICT.report_date AND ADT_ADMIN_B.app_name = ADT_ADMIN_B_ICT.app_name;
+ON ADT_ADMIN_B.report_date = ADT_ADMIN_B_ICT.report_date AND ADT_ADMIN_B.login_appname = ADT_ADMIN_B_ICT.login_appname
+GROUP BY ADT_ADMIN_B.report_date,ADT_ADMIN_B.login_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_D_REQ;
 CREATE VIEW ADT_ADMIN_D_REQ AS
 SELECT
-ADT_ADMIN_D.report_date                                     AS  report_date,
-ADT_ADMIN_D.app_name                                        AS  app_name,
-ADT_ADMIN_D.cnt_d                                           AS  cnt_d_req,
-if(ADT_ADMIN_D_ICT.cnt_d IS NULL,0,ADT_ADMIN_D_ICT.cnt_d)   AS  cnt_d_ict
+ADT_ADMIN_D.report_date                                         AS  report_date,
+ADT_ADMIN_D.login_appname                                       AS  login_appname,
+sum(ADT_ADMIN_D.cnt_d)                                          AS  cnt_d_req,
+sum(if(ADT_ADMIN_D_ICT.cnt_d IS NULL,0,ADT_ADMIN_D_ICT.cnt_d))  AS  cnt_d_ict
 FROM ADT_ADMIN_D
 LEFT JOIN ADT_ADMIN_D_ICT
-ON ADT_ADMIN_D.report_date = ADT_ADMIN_D_ICT.report_date AND ADT_ADMIN_D.app_name = ADT_ADMIN_D_ICT.app_name;
+ON ADT_ADMIN_D.report_date = ADT_ADMIN_D_ICT.report_date AND ADT_ADMIN_D.login_appname = ADT_ADMIN_D_ICT.login_appname
+GROUP BY ADT_ADMIN_D.report_date,ADT_ADMIN_D.login_appname;
 
 DROP VIEW IF EXISTS ADT_ADMIN_I_REQ;
 CREATE VIEW ADT_ADMIN_I_REQ AS
 SELECT
-ADT_ADMIN_I.report_date                                     AS  report_date,
-ADT_ADMIN_I.app_name                                        AS  app_name,
-ADT_ADMIN_I.cnt_i                                           AS  cnt_i_req,
-if(ADT_ADMIN_I_ICT.cnt_i IS NULL,0,ADT_ADMIN_I_ICT.cnt_i)   AS  cnt_i_ict
+ADT_ADMIN_I.report_date                                         AS  report_date,
+ADT_ADMIN_I.login_appname                                       AS  login_appname,
+sum(ADT_ADMIN_I.cnt_i)                                          AS  cnt_i_req,
+sum(if(ADT_ADMIN_I_ICT.cnt_i IS NULL,0,ADT_ADMIN_I_ICT.cnt_i))  AS  cnt_i_ict
 FROM ADT_ADMIN_I
 LEFT JOIN ADT_ADMIN_I_ICT
-ON ADT_ADMIN_I.report_date = ADT_ADMIN_I_ICT.report_date AND ADT_ADMIN_I.app_name = ADT_ADMIN_I_ICT.app_name;
+ON ADT_ADMIN_I.report_date = ADT_ADMIN_I_ICT.report_date AND ADT_ADMIN_I.login_appname = ADT_ADMIN_I_ICT.login_appname
+GROUP BY ADT_ADMIN_I.report_date,ADT_ADMIN_I.login_appname;
 
 -- 汇总数据
 DROP VIEW IF EXISTS ADT_ADMIN_DETAIL;
 CREATE VIEW ADT_ADMIN_DETAIL AS
 SELECT
 ADT_ADMIN_B_REQ.report_date   AS  report_date,
-ADT_ADMIN_B_REQ.app_name      AS  app_name,
+ADT_ADMIN_B_REQ.login_appname AS  login_appname,
 ADT_ADMIN_B_REQ.cnt_b_ict     AS  cnt_b_ict,
 ADT_ADMIN_D_REQ.cnt_d_ict     AS  cnt_d_ict,
 ADT_ADMIN_I_REQ.cnt_i_ict     AS  cnt_i_ict,
@@ -727,13 +763,13 @@ ADT_ADMIN_B_REQ.cnt_b_req     AS  cnt_b_req,
 ADT_ADMIN_D_REQ.cnt_d_req     AS  cnt_d_req,
 ADT_ADMIN_I_REQ.cnt_i_req     AS  cnt_i_req
 FROM ADT_ADMIN_B_REQ
-JOIN ADT_ADMIN_D_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_D_REQ.report_date AND ADT_ADMIN_B_REQ.app_name = ADT_ADMIN_D_REQ.app_name
-JOIN ADT_ADMIN_I_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_I_REQ.report_date AND ADT_ADMIN_B_REQ.app_name = ADT_ADMIN_I_REQ.app_name;
+JOIN ADT_ADMIN_D_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_D_REQ.report_date AND ADT_ADMIN_B_REQ.login_appname = ADT_ADMIN_D_REQ.login_appname
+JOIN ADT_ADMIN_I_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_I_REQ.report_date AND ADT_ADMIN_B_REQ.login_appname = ADT_ADMIN_I_REQ.login_appname;
 
 -- metabase的SQL
 SELECT
 report_date AS  '拦截时间',
-app_name    AS  '拦截应用',
+login_appname    AS  '拦截应用',
 cnt_b_ict   AS  '黑名单拦截数',
 cnt_d_ict   AS  '设备拦截数',
 cnt_i_ict   AS  '网段拦截数',
@@ -743,8 +779,8 @@ cnt_i_req   AS  '网段请求数'
 FROM ADT_ADMIN_DETAIL
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
-[[ AND {{ app_name }} ]]
-ORDER BY report_date DESC,app_name;
+[[ AND {{ login_appname }} ]]
+ORDER BY report_date DESC,login_appname;
 
 
 
