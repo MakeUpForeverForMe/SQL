@@ -262,6 +262,7 @@ SELECT
   sum(advs.adv_show_num)                          AS  show_num,
   sum(advs.adv_show_fail)                         AS  show_fail,
   sum(advs.adv_cli_num)                           AS  cli_num,
+  sum(advs.adv_cli_fail)                          AS  cli_fail,
   sum(advs.adv_cli_num)/sum(advs.adv_show_num)    AS  cli_show_rate
 FROM ADVERTISING_SPACE        AS advs
   LEFT JOIN ADVERTISEMENT_INFO  AS advi     ON advs.adv_id = advi.advertise_id
@@ -311,6 +312,7 @@ SELECT
   show_num          AS  show_num,
   show_fail         AS  show_fail,
   cli_num           AS  cli_num,
+  cli_fail          AS  cli_fail,
   cli_show_rate     AS  cli_show_rate
 FROM ADV_COUNT_TMP;
 
@@ -361,6 +363,7 @@ SELECT
   cnt.show_num          AS  show_num,
   cnt.show_fail         AS  show_fail,
   cnt.cli_num           AS  cli_num,
+  cnt.cli_fail          AS  cli_fail,
   cnt.cli_show_rate     AS  cli_show_rate
 FROM EXCHANGE_INFO_REQ        AS req
 LEFT JOIN EXCHANGE_INFO_COUNT AS cnt ON req.report_date = cnt.report_date AND req.adv_appname = cnt.adv_appname AND req.adv_name = cnt.adv_name
@@ -392,8 +395,9 @@ SELECT
   iss_num               AS  '下发数',
   show_num + show_fail  AS  '展示总数',
   show_num              AS  '展示数',
-  show_fail             AS  '超时数',
+  show_fail             AS  '展示超时数',
   cli_num               AS  '点击数',
+  cli_fail              AS  '点击超时数',
   cli_show_rate         AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
@@ -412,8 +416,9 @@ SELECT
   req_num         AS  '请求数',
   iss_num         AS  '下发数',
   show_num        AS  '展示数',
-  show_fail       AS  '超时数',
+  show_fail       AS  '展示超时数',
   cli_num         AS  '点击数',
+  cli_fail        AS  '点击超时数',
   cli_show_rate   AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
@@ -768,14 +773,14 @@ JOIN ADT_ADMIN_I_REQ ON ADT_ADMIN_B_REQ.report_date = ADT_ADMIN_I_REQ.report_dat
 
 -- metabase的SQL
 SELECT
-report_date AS  '拦截时间',
-login_appname    AS  '拦截应用',
-cnt_b_ict   AS  '黑名单拦截数',
-cnt_d_ict   AS  '设备拦截数',
-cnt_i_ict   AS  '网段拦截数',
-cnt_b_req   AS  '黑名单请求数',
-cnt_d_req   AS  '设备请求数',
-cnt_i_req   AS  '网段请求数'
+report_date     AS  '拦截时间',
+login_appname   AS  '拦截应用',
+cnt_b_ict       AS  '黑名单拦截数',
+cnt_d_ict       AS  '设备拦截数',
+cnt_i_ict       AS  '网段拦截数',
+cnt_b_req       AS  '黑名单请求数',
+cnt_d_req       AS  '设备请求数',
+cnt_i_req       AS  '网段请求数'
 FROM ADT_ADMIN_DETAIL
 WHERE 1 = 1
 [[ AND {{ report_date }} ]]
@@ -791,6 +796,7 @@ https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@test.json@@200
 https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@test.json@@200002
 
 SELECT CURRENT_USER,CURRENT_TIMESTAMP,CURRENT_DATE,CURRENT_TIME;
+
 AND report_date BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -7 day) AND CURRENT_DATE
 
 INSERT INTO ADT_DATA

@@ -3250,3 +3250,114 @@ AND adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
 
 
 
+
+-- 奢分期 4y55uTCb33EGufc8yvEjSQ 爱租机 4572EY23dBx8mzHpgqbhgD
+SELECT waterid,createtime,sourceid,extagid,status,display,isclick from ods_wefix.t_ad_action_water_json WHERE year_month = '201912' and day_of_month = '30' AND sourceId = 'DZMhiEgUe8n79wv3F1G7XH' AND exTagId = '4572EY23dBx8mzHpgqbhgD';
+
+
+
+SELECT t1.waterid as waterid,createtime,status,display,if(isclick is null,0,isclick) as isclick,t1.year_month as year_month,t1.day_of_month as day_of_month
+from (
+  select distinct waterid,createtime,status,display,year_month,day_of_month from ods_wefix.t_ad_action_water_json
+  WHERE display = 1
+  AND year_month = '201912' and day_of_month = '30'
+) as t1
+left join (
+  select distinct waterid,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
+  WHERE display = 0
+) as t2 on t1.waterid = t2.waterid AND t1.year_month = t2.year_month AND t1.day_of_month = t2.day_of_month
+
+
+
+
+select report_date,app_name,apply_cnt
+from (
+  select
+  substring(create_time,1,8) as report_date,apply_app_id,count(distinct exchange_child_id) as apply_cnt
+  from ods_wefix.exchange_info_child_tsv where status = 2
+  and substring(create_time,1,6) = '202001' and substring(create_time,7,2) = '02'
+  group by substring(create_time,1,8),apply_app_id
+) as eict
+left join (
+  select distinct app_id,app_name from ods_wefix.app_info_tsv
+) app on eict.apply_app_id = app.app_id
+order by report_date,app_name
+;
+
+
+
+select report_date,app_name,change_cnt
+from (
+  select substring(createtime,1,8) as report_date,sourceid,count(distinct waterid) as change_cnt
+  from ods_wefix.t_ad_action_water_json
+  where year_month = '202001' and day_of_month = '02' and display = 1 and (status = 0 or status is null)
+  group by substring(createtime,1,8),sourceid
+) as action_water
+left join (
+  select distinct app_id,app_name from ods_wefix.app_info_tsv
+) app on action_water.sourceid = app.app_id
+order by report_date,app_name
+;
+
+
+select
+if(action_water.report_date is null,eict.report_date,action_water.report_date) as report_date,
+if(action_water.app_name is null,eict.app_name,action_water.app_name) as app_name,
+if(apply_cnt is null,0,apply_cnt) as apply_cnt,
+if(change_cnt is null,0,change_cnt) as change_cnt
+from (
+  select report_date,if(app_name is null,sourceid,app_name) as app_name,change_cnt
+  from
+  (
+    select substring(createtime,1,8) as report_date,sourceid,count(distinct waterid) as change_cnt
+    from ods_wefix.t_ad_action_water_json
+    where display = 1 and (status = 0 or status is null)
+    -- and year_month = '202001' and day_of_month = '02'
+    group by substring(createtime,1,8),sourceid
+  ) as action_water
+  left join (
+    select distinct app_id,app_name from ods_wefix.app_info_tsv
+  ) as app on action_water.sourceid = app.app_id
+) as action_water
+full join (
+  select report_date,if(app_name is null,apply_app_id,app_name) as app_name,apply_cnt
+  from
+  (
+    select substring(create_time,1,8) as report_date,apply_app_id,count(distinct exchange_child_id) as apply_cnt
+    from ods_wefix.exchange_info_child_tsv
+    where status = 2
+    -- and substring(create_time,1,6) = '202001' and substring(create_time,7,2) = '02'
+    group by substring(create_time,1,8),apply_app_id
+  ) as eict
+  left join (
+    select distinct app_id,app_name from ods_wefix.app_info_tsv
+  ) as app on eict.apply_app_id = app.app_id
+) as eict on action_water.report_date = eict.report_date and action_water.app_name = eict.app_name
+order by report_date,app_name
+;
+
+
+
+
+
+select distinct app_id,app_name from ods_wefix.app_info_tsv WHERE app_name = '玩车头条查违章';
+
+select substring(createtime,1,8) as report_date,sourceid,waterid
+-- count(distinct waterid) as change_cnt
+from ods_wefix.t_ad_action_water_json
+where display = 1 and (status = 0 or status is null)
+-- and year_month = '${year_month}' and day_of_month = '${day_of_month}'
+and year_month = '202001' and day_of_month = '02'
+AND sourceid = '7gJJLVeWgtAiq3CrQ2r9Sj'
+-- group by substring(createtime,1,8),sourceid
+;
+
+
+SELECT * from ods_wefix.t_ad_action_water_json WHERE waterid = '94290475';
+
+
+SELECT * from ods_wefix.t_ad_query_water_json WHERE id = '94290475';
+
+
+
+
