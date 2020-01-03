@@ -1,0 +1,559 @@
+# 各项$的用处
+$0 程序的名称
+$n 程序的第n个参数
+$# 程序的参数个数
+$$ 当前脚本进程ID
+$! 返回最后一个后台运行程序的进程ID
+$? 显示最后命令的退出状态。0表示没有错误，其他任何值表明有错误
+$- 显示shell使用的当前选项，与set命令功能相同
+$* 显示所有参数，以字符串的方式返回
+$@ 显示所有参数，以数组的方式返回
+
+# if判断时的用法
+-e  判断对象是否存在
+-d  判断对象是否存在，并且为目录
+-f  判断对象是否存在，并且为常规文件
+-L  判断对象是否存在，并且为符号链接
+-h  判断对象是否存在，并且为软链接
+-s  判断对象是否存在，并且长度不为0
+-r  判断对象是否存在，并且可读
+-w  判断对象是否存在，并且可写
+-x  判断对象是否存在，并且可执行
+-O  判断对象是否存在，并且属于当前用户
+-G  判断对象是否存在，并且属于当前用户组
+-n  判断变量是否非空
+-z  判断变量是否为空
+
+-nt 判断file1是否比file2新  [ "/data/file1" -nt "/data/file2" ]
+-ot 判断file1是否比file2旧  [ "/data/file1" -ot "/data/file2" ]
+ 
+-eq       //等于
+-ne       //不等于
+-gt       //大于
+-lt       //小于
+-ge       //大于等于
+-le       //小于等于
+
+
+
+echo -e '\033[0m关闭所有属性\033[0m'
+echo -e '\033[1m设置高亮\033[0m'
+echo -e '\033[4m下划线\033[0m'
+echo -e '\033[5m闪烁\033[0m'
+echo -e '\033[7m反显\033[0m'
+echo -e '\033[8m消隐\033[0m'
+echo -e '\033[30m -- \33[37m设置前景色黑,红,绿,棕,蓝,紫,青,白\033[0m'
+echo -e '\033[40m -- \33[47m设置背景色黑,红,绿,棕,蓝,紫,青,白\033[0m'
+echo -e '\033[nA光标上移n行\033[0m'
+echo -e '\033[nB光标下移n行\033[0m'
+echo -e '\033[nC光标右移n行\033[0m'
+echo -e '\033[nD光标左移n行\033[0m'
+echo -e '\033[y;xH设置光标位置\033[0m'
+echo -e '\033[2J清屏\033[0m'
+echo -e '\033[K清除从光标到行尾的内容\033[0m'
+echo -e '\033[s保存光标位置\033[0m'
+echo -e '\033[u恢复光标位置\033[0m'
+echo -e '\033[?25l隐藏光标\033[0m'
+echo -e '\033[?25h显示光标\033[0m'
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 不换行动态显示当前时间
+for i in `seq 10`; do
+  echo -n -e "\r\033[K\033[0m"
+  echo -n -e "current time : \033[34m"
+  echo -n `date +'%F %T'`
+  sleep 1
+done; echo -e "\033[0m"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+shift 左移1个参数
+shift 5 左移5个参数
+
+grep -wq 完全匹配字符所在行并不输出任何信息
+
+tr(translating) 用于转换字符的大小
+echo tableName | tr '[A-Z]' '[a-z]' 将小写变为大写 TABLENAME
+echo TABLENAME | tr '[A-Z]' '[a-z]' 将大写变为小写 tableName
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# case when多的第一种实现方式
+# :b:d:i:s:f: 其中开头的冒号是在有选项，但是没有参数时防止报错;参数后的冒号代表这个选项必须有参数
+# 索引 $OPTIND
+while getopts :b:d:i:s:f: opt; do
+  case $opt in
+    b) base_time="$OPTARG" ;;
+    d) date_format="$OPTARG" ;;
+    i) date_diff="$OPTARG" ;;
+    s) secon_arg="$OPTARG" ;;
+    f) format="$OPTARG" ;;
+    :) echo "请添加参数: -$OPTARG" ;;
+    ?) echo "选项未设置: -$OPTARG" ;;
+    *) echo "未知情况" ;;
+  esac
+done
+# case when多的第二种实现方式
+while true; do
+  if [ $# == 0 ]; then
+    break
+  elif [[ $#%2 -eq 0 ]]; then
+    # $OPTIND    特殊变量，option index，会逐个递增, 初始值为1 配合getopts使用
+    # $OPTARG    特殊变量，option argument，不同情况下有不同的值 配合getopts使用
+    case $1 in
+      '-aa' ) echo '参数是：'$2; echo '这是第 1 个匹配项'; shift 2;;
+      '-ba' ) echo '参数是：'$2; echo '这是第 2 个匹配项'; shift 2;;
+      '-ca' ) echo '参数是：'$2; echo '这是第 3 个匹配项'; shift 2;;
+      '-da' ) echo '参数是：'$2; echo '这是第 4 个匹配项'; shift 2;;
+      ? ) echo '参数是：'$2; echo '匹配项为 ? ： ? ‘问号’的作用是匹配一个字符'; shift 2;;
+      * ) echo '参数是：'$2; echo '匹配项为 * ： * ‘星号’的作用是匹配0个或多个字符'; exit
+      esac
+  else
+    echo "输入有误"
+    break
+  fi
+done
+
+
+#!/bin/bash
+
+echo "a is 5 ,b is 3. Please select your method: "
+
+a=5
+b=3
+
+select var in "a+b" "a-b" "a*b" "a/b"
+do
+  break
+done
+
+case $var in
+"a+b")  echo 'a+b= '`expr $a + $b`;;
+"a-b")  echo 'a-b= '`expr $a - $b`;;
+"a*b")  echo 'a*b= '`expr $a \* $b`;;
+"a/b")  echo 'a/b= '`expr $a / $b`;;
+*)  echo "input error"
+esac
+
+# 运行输出
+a is 5 ,b is 3. Please select your method:
+1) a+b
+2) a-b
+3) a*b
+4) a/b
+#? 1
+a+b= 8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# -n 不受.netrc文件的影响(ftp默认为读取.netrc文件中的设定)
+# -v 显示远程服务器相应信息
+# ftp自动登录批量下载文件。
+ftp -n  <<  eof       # eof只是一个分界符标志,也可以使用EOM,!等
+open 192.168.1.171
+user guest 123456
+binary                # 文件传输类型
+cd /home/data         # cd是在远程主机目录操作的命令
+lcd /home/databackup  # lcd是在本地主机目录操作的命令
+prompt                # 取消交互
+mget *                # mget是批量的下载文件
+close
+bye
+eof
+
+# ftp自动登录批量上传文件
+ftp -n  <<  eof
+open 192.168.1.171
+user guest 123456
+binary
+hash
+cd /home/data
+lcd /home/databackup
+prompt
+mput *
+close
+bye
+eof
+
+# ftp自动登录下载单个文件
+ftp -n << eof
+open 192.168.1.171
+user guest 123456
+binary
+cd /home/data
+lcd /home/databackup
+prompt
+get a.sh a.sh
+close
+bye
+eof
+
+# ftp自动登录上传单个文件
+ftp -n << eof
+open 192.168.1.171
+user guest 123456
+binary
+cd /home/data
+lcd /home/databackup
+prompt
+put a.sh a.sh
+close
+bye
+eof
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 发送信息到微信
+#!/bin/sh
+
+expireTime=7200
+
+dbFile="db.json"
+
+corpid=xxx
+corpsecret=xxx
+
+touser="xxx"
+toparty="xxx"
+agentid="xxx"
+content="服务器快崩了，你还在这里吟诗作对？"
+
+# s 为秒，m 为 分钟，h 为小时，d 为日数
+interval=1s
+
+## 发送报警信息
+sendMsg(){
+  if [ ! -f "$dbFile" ];then
+    touch "$dbFile"
+  fi
+
+  # 获取token
+  req_time=`jq '.req_time' $dbFile`
+  current_time=$(date +%s)
+  refresh=false
+  if [ ! -n "$req_time" ];then
+    refresh=true
+  else
+    if [ $((current_time-req_time)) -gt $expireTime ];then
+      refresh=true
+    fi
+  fi
+  if $refresh ;then
+    req_access_token_url=https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid=$corpid\&corpsecret=$corpsecret
+    access_res=$(curl -s -G $req_access_token_url | jq -r '.access_token')
+
+    # 保存文件
+    echo "" > $dbFile
+    echo -e "{" > $dbFile
+    echo -e "\t\"access_token\":\"$access_res\"," >> $dbFile
+    echo -e "\t\"req_time\":$current_time" >> $dbFile
+    echo -e "}" >> $dbFile
+
+    echo ">>>刷新Token成功<<<"
+  fi
+
+  ## 发送消息
+  msg_body="{\"touser\":\"$touser\",\"toparty\":\"$toparty\",\"msgtype\":\"text\",\"agentid\":$agentid,\"text\":{\"content\":\"$content\"}}"
+  access_token=`jq -r '.access_token' $dbFile`
+  req_send_msg_url=https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=$access_token
+  req_msg=$(curl -s -H "Content-Type: application/json" -X POST -d $msg_body $req_send_msg_url | jq -r '.errmsg')
+
+  echo "触发报警发送动作，返回信息为：" $req_msg
+
+}
+
+
+loopMonitor(){
+  echo 'loop'
+  flag=`uptime | awk '{printf "%.2f\n", $11 "\n"}'`
+
+  # 0.7 这个阈值可以视情况而定，如cpu核数为n，则可以设置为0.7 * n  具体视情况而定
+  c=$(echo "$flag > 0.7" | bc)
+
+  echo ">>>>>>>>>>>>>>>>>>`date`<<<<<<<<<<<<<<<<<<"
+  free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+  df -h | awk '$NF=="/"{printf "Disk Usage: %d/%dGB (%s)\n", $3,$2,$5}'
+  uptime | awk '{printf "CPU Load: %.2f\n", $11 "\n"}'
+  echo ">>>>>>>>>>>>>>>>>>end<<<<<<<<<<<<<<<<<<"
+
+  if [ $c -eq 1  ];then
+    sendMsg
+  fi
+}
+
+
+while true; do
+  loopMonitor
+  sleep $interval
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 连接MongoDB客户端
+./mongo 10.80.16.34:27017/admin -u readuser -p G2Vw38JZHeWvM2
+
+# MongoDB的export命令
+-d 数据库 -c 数据表 -o 输出路径 -f 字段(csv时必须指定-f)
+# MongoDB导出CSV
+mongoexport -h 10.83.16.26:27017 -u mongouser -p 6xVMjclL5DSGJPZ -d starsource -c 'ACQUISITION_PLAN' --type=csv -f -o mdb1-examplenet.csv
+
+# MongoDB导入CSV
+mongoimport --csv -d "baiduled" -c "dataCollection" -o aaa.csv
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 查看磁盘大小及使用率
+df -h
+
+# 查看当前目录下每个文件夹的大小
+du -sh *
+
+
+
+
+
+
+
+
+
+
+
+# 压解命令
+# tar-gzip压解
+# 压缩
+tar -zcvf aa.tar.gz aa
+# 解压
+tar -zxvf aa.tar.gz
+# tar-bzip2压解
+# 压缩
+tar -jcvf aa.tar.bz2 aa
+# 解压
+tar -jxvf aa.tar.bz2
+# gzip压解
+# 压缩(9为压缩比例，可为1-9。压缩后文件删除)
+gzip -9 aa
+# 解压
+gzip -d aa.gz
+# 直接查看压缩文件内容
+zcat aa.gz
+# bzip2压解
+# 压缩
+bzip2 aa
+# 解压
+bzip2 -d aa.bz2
+# 直接查看压缩文件内容
+bzcat aa.bz2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 安装dos2unix
+yum install -y dos2unix
+
+# yum的操作
+yum clean all && yum makecache
+yum update kernel  -y
+reboot
+
+uname -a
+CentOS 7 ：3.10.0-957.21.3
+
+
+
+
+
+
+
+
+
+
+
+# git的提交代码(-u update)
+git init(第一次需要)
+git add -f *
+git commit -m '注释'
+git commit --amend # 注释填写错误时修改
+git remote add origin git@github.com:MakeUpForeverForMe/etl.git(第一次时填写)
+git push -u origin master
+
+
+
+
+
+
+
+
+
+
+
+# hiveserver2的启动命令
+nohup /home/hadoop/hive-2.3.5/bin/hiveserver2 &>/dev/null &
+
+/home/hadoop/spark-2.3.2-bin-hadoop2.7/bin/beeline -u jdbc:hive2://10.80.176.20:10000 -n hadoop
+
+
+# 初始化hive数据库
+/home/hadoop/hive-2.3.5/bin/schematool -initSchema -dbType mysql
+
+
+
+
+
+
+
+
+
+
+# mysql连接客户端
+mysql -h10.80.176.22 -umeta azkaban -pmeta2015
+mysql -h10.83.96.7 -uroot hive -p < hive_hive.sql
+mysqldump -h10.83.96.7 -uroot weshare -p > hive_weshare.sql
+
+
+
+
+
+
+
+
+
+
+# 使用hiveserver2时，需要在core-site.xml中添加hadoop的用户识别
+<property>
+  <name>hadoop.proxyuser.hadoop.hosts</name>
+  <value>*</value>
+</property>
+<property>
+  <name>hadoop.proxyuser.hadoop.groups</name>
+  <value>*</value>
+</property>
+
+
+# 单独启动nodemanager
+./hadoop-2.7.7/sbin/yarn-daemon.sh start nodemanager
+
+
+# 下载地址：
+Ambari：http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0/ambari-2.7.3.0-centos7.tar.gz
+HDP：http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-centos7-rpm.tar.gz
+HDP-UTILS:http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7/HDP-UTILS-1.1.0.22-centos7.tar.gz
+
+
+# excel的十字光标
+Private Sub Workbook_SheetSelectionChange(ByVal Sh As Object, ByVal Target As Range)
+    Cells.Interior.ColorIndex = xlNone
+    Rows(Target.Row).Interior.Color = RGB(0,255,255)
+    Columns(Target.Column).Interior.Color = RGB(0,255,255)
+End Sub
+
+# ODBC连接字符串
+Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
+
