@@ -344,7 +344,7 @@ SELECT
   req.report_date       AS  report_date,
   cnt.ex_status         AS  ex_status,
   req.adv_appname       AS  adv_appname,
-  CONCAT(req.adv_appname,'-',if(cnt.plan_name IS NULL,'',cnt.plan_name),'(',if(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
+  CONCAT(req.adv_name,'-',if(cnt.plan_name IS NULL,'',cnt.plan_name),'(',if(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
   req.adv_app_id        AS  adv_app_id,
   req.adv_name          AS  adv_name,
   req.adv_id            AS  adv_id,
@@ -791,9 +791,43 @@ ORDER BY report_date DESC,login_appname;
 
 
 
-https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@test.json@@200002
 
-https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@test.json@@200002
+
+
+
+-- 偏好数据
+DROP VIEW IF EXISTS PREFERENCE_DATA;
+CREATE VIEW PREFERENCE_DATA AS
+SELECT
+  cast(report_date AS date) AS  report_date,
+  app_name_apply,
+  app_name_audit,
+  apply_cnt,
+  change_cnt
+FROM DATA_PREFERENCE;
+
+
+-- 偏好数据（metabase的SQL）
+SELECT
+  app_name_apply                              AS  '申请方',
+  app_name_audit                              AS  '审核方',
+  SUM(apply_cnt)                              AS  '参与换量申请次数',
+  COUNT(DISTINCT report_date)                 AS  '统计天数',
+  COUNT(if(change_cnt = 0,NULL,change_cnt))   AS  '有换量天数'
+FROM PREFERENCE_DATA
+WHERE 1 = 1
+[[ AND {{ report_date }} ]]
+[[ AND {{ app_name_apply }} ]]
+[[ AND {{ app_name_audit }} ]]
+GROUP BY app_name_apply,app_name_audit
+ORDER BY app_name_apply,app_name_audit;
+
+
+
+
+https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@none@@200002
+
+https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@none@@200002
 
 SELECT CURRENT_USER,CURRENT_TIMESTAMP,CURRENT_DATE,CURRENT_TIME;
 
