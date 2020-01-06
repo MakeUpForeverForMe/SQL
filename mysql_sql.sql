@@ -401,7 +401,7 @@ SELECT
   cli_show_rate         AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
 [[ AND {{ adv_appname }} ]]
 [[ AND {{ plan_appname }} ]]
 ORDER BY report_date DESC;
@@ -422,9 +422,66 @@ SELECT
   cli_show_rate   AS  '点击率'
 FROM DETAILS_SHOW
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
 [[ AND {{ adv_appname }} ]]
 ORDER BY report_date DESC;
+
+SELECT
+  report_date                           AS  '交换时间',
+  sum(if(req_num is NULL,0,req_num))    AS  '请求数',
+  sum(if(iss_num is NULL,0,iss_num))    AS  '下发数',
+  sum(if(show_num is NULL,0,show_num))  AS  '展示数',
+  sum(if(cli_num is NULL,0,cli_num))    AS  '点击数'
+FROM DETAILS_SHOW
+WHERE 1 = 1
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
+[[ AND {{ adv_appname }} ]]
+GROUP BY report_date
+ORDER BY report_date;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 偏好数据
+DROP VIEW IF EXISTS PREFERENCE_DATA;
+CREATE VIEW PREFERENCE_DATA AS
+SELECT
+  cast(report_date AS date) AS  report_date,
+  app_name_apply,
+  app_name_audit,
+  apply_cnt,
+  change_cnt
+FROM DATA_PREFERENCE;
+
+
+-- 偏好数据（metabase的SQL）
+SELECT
+  app_name_apply                              AS  '申请方',
+  app_name_audit                              AS  '审核方',
+  SUM(apply_cnt)                              AS  '参与换量申请次数',
+  COUNT(DISTINCT report_date)                 AS  '统计天数',
+  COUNT(if(change_cnt = 0,NULL,change_cnt))   AS  '有换量天数'
+FROM PREFERENCE_DATA
+WHERE 1 = 1
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
+[[ AND {{ app_name_apply }} ]]
+[[ AND {{ app_name_audit }} ]]
+GROUP BY app_name_apply,app_name_audit
+ORDER BY app_name_apply,app_name_audit;
+
+
+
+
 
 
 
@@ -436,7 +493,6 @@ ORDER BY report_date DESC;
 
 -- 反欺诈信息(用户)
 DROP VIEW IF EXISTS ADT_USER_DETAIL;
-
 CREATE VIEW ADT_USER_DETAIL AS
 SELECT
 cast(report_date AS date)   AS  report_date,
@@ -458,7 +514,7 @@ LEFT JOIN APP_INFO AS app_viewer ON ADT_DATA.viewer_appId = app_viewer.app_id
 LEFT JOIN ADVERTISEMENT_INFO AS adv_login ON ADT_DATA.login_advId = adv_login.advertise_id
 LEFT JOIN ADVERTISEMENT_INFO AS adv_viewer ON ADT_DATA.viewer_advId = adv_viewer.advertise_id;
 
-
+-- metabase  SQL
 SELECT
 report_date       AS  '拦截时间',
 login_appname     AS  '登录者应用',
@@ -475,7 +531,7 @@ dvi_ip_sum        AS  '可疑设备&可疑网段数',
 bl_dvi_ip_sum     AS  '黑名单&可疑设备&可疑网段数'
 FROM ADT_USER_DETAIL
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL)
 [[ AND {{ login_appname }} ]]
 [[ AND {{ viewer_appname }} ]]
 ORDER BY report_date DESC,login_appname,viewer_appname;
@@ -490,8 +546,7 @@ ORDER BY report_date DESC,login_appname,viewer_appname;
 
 
 
-
--- 反欺诈总表
+-- 反欺诈总表（1.0   2.0）
 SELECT
 report_date     AS  '拦截时间',
 viewer_appname  AS  '拦截应用',
@@ -499,23 +554,23 @@ viewer_advname  AS  '拦截广告位',
 login_appname   AS  '设定应用',
 login_advname   AS  '设定广告位',
 cnt_b           AS  '总请求数',
-CASE status_b WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：黑名单',
+CASE status_b WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求缺失' END AS '请求状态：黑名单',
 inblacklist     AS  '黑名单级别',
 flevel_b        AS  '黑名单拦截级别',
 fstatus_b       AS  '黑名单拦截状态',
 cnt_d           AS  '设备请求',
-CASE status_d WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：设备',
+CASE status_d WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求缺失' END AS '请求状态：设备',
 quality_d       AS  '设备级别',
 flevel_d        AS  '设备拦截级别',
 fstatus_d       AS  '设备拦截状态',
 cnt_i           AS  '网段请求',
-CASE status_i WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求确实' END AS '请求状态：网段',
+CASE status_i WHEN 0 THEN '请求本地' WHEN 1 THEN '请求TD' ELSE '请求缺失' END AS '请求状态：网段',
 quality_i       AS  '网段级别',
 flevel_i        AS  '网段拦截级别',
 fstatus_i       AS  '网段拦截状态'
 FROM ADT_ADMIN
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN)
 [[ AND {{ viewer_appname }} ]]
 [[ AND {{ login_appname }} ]]
 [[ AND {{ inblacklist }} ]]
@@ -525,15 +580,6 @@ WHERE 1 = 1
 [[ AND {{ quality_i }} ]]
 [[ AND {{ fstatus_i }} ]]
 ORDER BY report_date DESC,viewer_appname;
-
-
-
-
-
-
-
-
-
 
 
 -- 反欺诈信息(管理员1.0)
@@ -676,7 +722,7 @@ iprate_diff     AS  '网段可疑',
 iprate_erro     AS  '网段为烂'
 FROM ADMIN_ADT_DETAIL
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL)
 [[ AND {{ viewer_appname }} ]]
 ORDER BY report_date DESC,viewer_appname;
 
@@ -783,7 +829,7 @@ cnt_d_req       AS  '设备请求数',
 cnt_i_req       AS  '网段请求数'
 FROM ADT_ADMIN_DETAIL
 WHERE 1 = 1
-[[ AND {{ report_date }} ]]
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL)
 [[ AND {{ login_appname }} ]]
 ORDER BY report_date DESC,login_appname;
 
@@ -795,32 +841,6 @@ ORDER BY report_date DESC,login_appname;
 
 
 
--- 偏好数据
-DROP VIEW IF EXISTS PREFERENCE_DATA;
-CREATE VIEW PREFERENCE_DATA AS
-SELECT
-  cast(report_date AS date) AS  report_date,
-  app_name_apply,
-  app_name_audit,
-  apply_cnt,
-  change_cnt
-FROM DATA_PREFERENCE;
-
-
--- 偏好数据（metabase的SQL）
-SELECT
-  app_name_apply                              AS  '申请方',
-  app_name_audit                              AS  '审核方',
-  SUM(apply_cnt)                              AS  '参与换量申请次数',
-  COUNT(DISTINCT report_date)                 AS  '统计天数',
-  COUNT(if(change_cnt = 0,NULL,change_cnt))   AS  '有换量天数'
-FROM PREFERENCE_DATA
-WHERE 1 = 1
-[[ AND {{ report_date }} ]]
-[[ AND {{ app_name_apply }} ]]
-[[ AND {{ app_name_audit }} ]]
-GROUP BY app_name_apply,app_name_audit
-ORDER BY app_name_apply,app_name_audit;
 
 
 
@@ -828,10 +848,6 @@ ORDER BY app_name_apply,app_name_audit;
 https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@none@@200002
 
 https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@none@@200002
-
-SELECT CURRENT_USER,CURRENT_TIMESTAMP,CURRENT_DATE,CURRENT_TIME;
-
-AND report_date BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -7 day) AND CURRENT_DATE
 
 INSERT INTO ADT_DATA
 (report_date,login_userId,login_appId,login_advId,viewer_appId,viewer_advId,req_sum,blacklist_sum,sus_device_sum,sus_ip_sum,bl_device_sum,bl_ip_sum,dvi_ip_sum,bl_dvi_ip_sum)
@@ -844,11 +860,15 @@ VALUES
 (20191225,'7aef56be-184b-401b-86fb-1e2a834bf7ed',1,1,'15vkdtYZcQVckj5JdBxrtP',1,55,5,2,5,2,2,2,2);
 
 
+--           root@%,  2020-01-06 15:12:37,  2020-01-06,    15:12:37
+SELECT CURRENT_USER,  CURRENT_TIMESTAMP,    CURRENT_DATE,  CURRENT_TIME;
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -7 day) AND CURRENT_DATE
 
+SELECT DISTINCT
+DATE(report_date) AS report_date
+FROM ADT_DATA
+WHERE DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_DATA),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_DATA)
 
-
-
-SELECT * FROM EXCHANGE_INFO;
 
 
 
