@@ -1479,16 +1479,16 @@ select count(1),custcode from ods_bank.HISASSETBASICINFONEW where spark_job_numb
 
 select count(1),custcode from ods_bank.HISASSETBASICINFONEWETBASICINFO where spark_job_number=15915 group by custcode having count(1) > 1;
 
-SELECT
+select
 COUNT(1),
 mobile
 FROM
-(SELECT
+(select
   t.mobile,
   MAX(t.create_time) create_time
   FROM
   ods_source.client_info t
-  WHERE t.spark_job_number = 41952
+  where t.spark_job_number = 41952
   GROUP BY t.mobile) a
 GROUP BY a.mobile
 HAVING COUNT(1) > 1 ;
@@ -1503,54 +1503,54 @@ select count(*) from ods_source.client_info where mobile='ukEs5roZf4At+Ydf+nHyMw
 select count(*) from ods_bank.customerinfo where tel='ukEs5roZf4At+Ydf+nHyMw==';
 select count(*) from ods_link.t_borrower_info where phone_num='ukEs5roZf4At+Ydf+nHyMw==';
 
-SELECT
+select
 COUNT(*)
 FROM
-(SELECT
+(select
   b.*
   FROM
-  (SELECT
+  (select
     t.mobile,
     MAX(t.create_time) create_time
     FROM
     ods_source.client_info t
-    WHERE t.spark_job_number = 41952
+    where t.spark_job_number = 41952
     GROUP BY t.mobile) a
   LEFT JOIN ods_source.client_info b
   ON a.mobile = b.mobile
   AND a.create_time = b.create_time
   AND b.spark_job_number = 41952
-  WHERE b.mobile IS NOT NULL) a
-WHERE a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==';
+  where b.mobile IS NOT NULL) a
+where a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==';
 
-SELECT
+select
 t.mobile,
 t.create_time
 FROM
 ods_source.client_info t
-WHERE t.spark_job_number = 41952
+where t.spark_job_number = 41952
 AND t.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
 
 
-SELECT
+select
 COUNT(*)
 FROM
-(SELECT
+(select
   b.*
   FROM
-  (SELECT
+  (select
     t.mobile,
     MAX(t.create_time) create_time
     FROM
     ods_source.client_info t
-    WHERE t.spark_job_number = 41952
+    where t.spark_job_number = 41952
     GROUP BY t.mobile) a
   LEFT JOIN ods_source.client_info b
   ON a.mobile = b.mobile
-  WHERE a.create_time = b.create_time
+  where a.create_time = b.create_time
   AND b.spark_job_number = 41952
   AND b.mobile IS NOT NULL) a
-WHERE a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
+where a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
 
 -- 广州、一万以上、有房>0或有车>0或社保>-1
 select * from dwd_inter.event_client_source where datetime between '20190623000000' and '20190625000000' and city = '广州市' and expectation > 1 and (have_house > 0 or have_car > 0 or insure > -1) and mobile is not null;
@@ -2784,7 +2784,7 @@ from
   datediff(
     from_unixtime(unix_timestamp(max(substring(dt,1,8)),'yyyyMMdd'),'yyyy-MM-dd'),
     from_unixtime(unix_timestamp(min(substring(dt,1,8)),'yyyyMMdd'),'yyyy-MM-dd')
-  ) + 1 as dt_diff,
+    ) + 1 as dt_diff,
   count(distinct substring(dt,1,8)) as dt_cnt,
   min(substring(dt,1,8)) as min_dt,
   substring(dt,9,${num}) as hour,
@@ -2981,45 +2981,45 @@ with base as (
     ( select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,flevel,fstatus,inblacklist
       from ods_wefix.atd_black_json
       -- where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_black
+      ) as atd_black
     full join
     ( select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,flevel,fstatus,quality
       from ods_wefix.atd_device_json
       -- where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_device on atd_black.waterid = atd_device.waterid and atd_black.appid = atd_device.appid and atd_black.exid = atd_device.exid
+      ) as atd_device on atd_black.waterid = atd_device.waterid and atd_black.appid = atd_device.appid and atd_black.exid = atd_device.exid
     full join
     ( select substring(`time`,0,8) as report_date,waterid,ip,appid,exid,status,flevel,fstatus,quality
       from ods_wefix.atd_ip_json
       -- where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_ip on (atd_black.waterid = atd_ip.waterid and atd_black.appid = atd_ip.appid and atd_black.exid = atd_ip.exid)
-      or (atd_device.waterid = atd_ip.waterid and atd_device.appid = atd_ip.appid and atd_device.exid = atd_ip.exid)
-  ) as adt
+      ) as atd_ip on (atd_black.waterid = atd_ip.waterid and atd_black.appid = atd_ip.appid and atd_black.exid = atd_ip.exid)
+    or (atd_device.waterid = atd_ip.waterid and atd_device.appid = atd_ip.appid and atd_device.exid = atd_ip.exid)
+    ) as adt
   left join (select distinct exchange_id,
-      audit_adver_id,audit_plan_id,audit_app_id,audit_user_id,apply_adver_id,apply_plan_id,apply_app_id,apply_user_id
+    audit_adver_id,audit_plan_id,audit_app_id,audit_user_id,apply_adver_id,apply_plan_id,apply_app_id,apply_user_id
     from ods_wefix.exchange_info_tsv
     where audit_app_id != 'null' and audit_user_id != 'null' and apply_app_id != 'null' and apply_user_id != 'null' and status > 6
-  ) as exchange_info on adt.exid = exchange_info.exchange_id
+    ) as exchange_info on adt.exid = exchange_info.exchange_id
 )
 -- INSERT OVERWRITE TABLE dm_cf.adt_data PARTITION(year_month,day_of_month)
 select
-  report_date,
-  login_userid,
-  login_appid,
-  login_advid,
-  viewer_appid,
-  viewer_advid,
-  count(waterid) as  req_sum,
-  sum(if(fstatus_b = 1 and fstatus_d != 1 and fstatus_i != 1,1,0))  as  blacklist_sum,
-  sum(if(fstatus_b != 1 and fstatus_d = 1 and fstatus_i != 1,1,0))  as  sus_device_sum,
-  sum(if(fstatus_b != 1 and fstatus_d != 1 and fstatus_i = 1,1,0))  as  sus_ip_sum,
-  sum(if(fstatus_b = 1 and fstatus_d = 1 and fstatus_i != 1,1,0))   as  bl_device_sum,
-  sum(if(fstatus_b = 1 and fstatus_d != 1 and fstatus_i = 1,1,0))   as  bl_ip_sum,
-  sum(if(fstatus_b != 1 and fstatus_d = 1 and fstatus_i = 1,1,0))   as  dvi_ip_sum,
-  sum(if(fstatus_b = 1 and fstatus_d = 1 and fstatus_i = 1,1,0))    as  bl_dvi_ip_sum
+report_date,
+login_userid,
+login_appid,
+login_advid,
+viewer_appid,
+viewer_advid,
+count(waterid) as  req_sum,
+sum(if(fstatus_b = 1 and fstatus_d != 1 and fstatus_i != 1,1,0))  as  blacklist_sum,
+sum(if(fstatus_b != 1 and fstatus_d = 1 and fstatus_i != 1,1,0))  as  sus_device_sum,
+sum(if(fstatus_b != 1 and fstatus_d != 1 and fstatus_i = 1,1,0))  as  sus_ip_sum,
+sum(if(fstatus_b = 1 and fstatus_d = 1 and fstatus_i != 1,1,0))   as  bl_device_sum,
+sum(if(fstatus_b = 1 and fstatus_d != 1 and fstatus_i = 1,1,0))   as  bl_ip_sum,
+sum(if(fstatus_b != 1 and fstatus_d = 1 and fstatus_i = 1,1,0))   as  dvi_ip_sum,
+sum(if(fstatus_b = 1 and fstatus_d = 1 and fstatus_i = 1,1,0))    as  bl_dvi_ip_sum
   -- ,'${year_month}','${day_of_month}'
-from base
-where fstatus_d = 1
-group by report_date,login_userid,login_appid,login_advid,viewer_appid,viewer_advid;
+  from base
+  where fstatus_d = 1
+  group by report_date,login_userid,login_appid,login_advid,viewer_appid,viewer_advid;
 
 
 
@@ -3105,53 +3105,53 @@ with base as (
     ( select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,flevel,fstatus,inblacklist
       from ods_wefix.atd_black_json
       where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_black
+      ) as atd_black
     full join
     ( select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,flevel,fstatus,quality
       from ods_wefix.atd_device_json
       where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_device on atd_black.waterid = atd_device.waterid and atd_black.appid = atd_device.appid and atd_black.exid = atd_device.exid
+      ) as atd_device on atd_black.waterid = atd_device.waterid and atd_black.appid = atd_device.appid and atd_black.exid = atd_device.exid
     full join
     ( select substring(`time`,0,8) as report_date,waterid,ip,appid,exid,status,flevel,fstatus,quality
       from ods_wefix.atd_ip_json
       where year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as atd_ip on (atd_black.waterid = atd_ip.waterid and atd_black.appid = atd_ip.appid and atd_black.exid = atd_ip.exid)
-      or (atd_device.waterid = atd_ip.waterid and atd_device.appid = atd_ip.appid and atd_device.exid = atd_ip.exid)
-  ) as adt
+      ) as atd_ip on (atd_black.waterid = atd_ip.waterid and atd_black.appid = atd_ip.appid and atd_black.exid = atd_ip.exid)
+    or (atd_device.waterid = atd_ip.waterid and atd_device.appid = atd_ip.appid and atd_device.exid = atd_ip.exid)
+    ) as adt
   left join (select distinct exchange_id,audit_adver_id,audit_plan_id,audit_app_id,audit_user_id,apply_adver_id,apply_plan_id,apply_app_id,apply_user_id
     from ods_wefix.exchange_info_tsv
     where audit_app_id != 'null' and audit_user_id != 'null' and apply_app_id != 'null' and apply_user_id != 'null' and status > 6
-  ) as exchange_info on adt.exid = exchange_info.exchange_id
+    ) as exchange_info on adt.exid = exchange_info.exchange_id
   left join (select distinct app_id,app_name from ods_wefix.app_info_tsv) as app_audit on exchange_info.audit_app_id = app_audit.app_id
   left join (select distinct app_id,app_name from ods_wefix.app_info_tsv) as app_apply on exchange_info.apply_app_id = app_apply.app_id
   left join (select distinct advertise_id,advertise_name as adv_name from ods_wefix.advertisement_info_tsv) as adv_audit on exchange_info.audit_adver_id = adv_audit.advertise_id
   left join (select distinct advertise_id,advertise_name as adv_name from ods_wefix.advertisement_info_tsv) as adv_apply on exchange_info.apply_adver_id = adv_apply.advertise_id
 )
 -- INSERT OVERWRITE TABLE dm_cf.adt_admin PARTITION(year_month,day_of_month)
-SELECT distinct
-  report_date,
-  login_appname,
-  login_advname,
-  viewer_appname,
-  viewer_advname,
-  status_b,
-  flevel_b,
-  fstatus_b,
-  inblacklist,
-  count(if(fstatus_b is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist) as cnt_b,
-  status_d,
-  flevel_d,
-  fstatus_d,
-  quality_d,
-  count(if(fstatus_d is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_d,flevel_d,fstatus_d,quality_d) as cnt_d,
-  status_i,
-  flevel_i,
-  fstatus_i,
-  quality_i,
-  count(if(fstatus_i is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_i,flevel_i,fstatus_i,quality_i) as cnt_i
+select distinct
+report_date,
+login_appname,
+login_advname,
+viewer_appname,
+viewer_advname,
+status_b,
+flevel_b,
+fstatus_b,
+inblacklist,
+count(if(fstatus_b is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist) as cnt_b,
+status_d,
+flevel_d,
+fstatus_d,
+quality_d,
+count(if(fstatus_d is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_d,flevel_d,fstatus_d,quality_d) as cnt_d,
+status_i,
+flevel_i,
+fstatus_i,
+quality_i,
+count(if(fstatus_i is null,null,waterid)) over(partition by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_i,flevel_i,fstatus_i,quality_i) as cnt_i
   -- ,'${year_month}','${day_of_month}'
-from base
-where viewer_appname = '微米浏览器'
+  from base
+  where viewer_appname = '微米浏览器'
 -- group by report_date,login_appname,login_advname,viewer_appname,viewer_advname,status_b,flevel_b,fstatus_b,inblacklist,status_d,flevel_d,fstatus_d,quality_d,status_i,flevel_i,fstatus_i,quality_i
 order by status_b,fstatus_b,inblacklist,cnt_b,status_d,fstatus_d,quality_d,cnt_d,status_i,fstatus_i,quality_i,cnt_i
 ;
@@ -3162,14 +3162,14 @@ order by status_b,fstatus_b,inblacklist,cnt_b,status_d,fstatus_d,quality_d,cnt_d
 
 
 
-SELECT id,reqtime,createtime,tagid,extagid from ods_wefix.t_ad_query_water_json WHERE year_month = 201912 AND day_of_month between 27 AND 30 AND tagId = '4y55uTCb33EGufc8yvEjSQ'
+select id,reqtime,createtime,tagid,extagid from ods_wefix.t_ad_query_water_json where year_month = 201912 AND day_of_month between 27 AND 30 AND tagId = '4y55uTCb33EGufc8yvEjSQ'
 limit 50;
 
 
-SELECT distinct exchange_id,audit_app_id,audit_adver_id,audit_plan_id,apply_app_id,apply_plan_id,apply_adver_id,status,apply_user_id,audit_user_id from ods_wefix.exchange_info_tsv WHERE apply_adver_id = '4y55uTCb33EGufc8yvEjSQ' or audit_adver_id = '4y55uTCb33EGufc8yvEjSQ';
+select distinct exchange_id,audit_app_id,audit_adver_id,audit_plan_id,apply_app_id,apply_plan_id,apply_adver_id,status,apply_user_id,audit_user_id from ods_wefix.exchange_info_tsv where apply_adver_id = '4y55uTCb33EGufc8yvEjSQ' or audit_adver_id = '4y55uTCb33EGufc8yvEjSQ';
 
 
-SELECT * from ods_wefix.t_ad_action_water_json WHERE year_month = 201912 AND day_of_month between 27 AND 30 AND sourceid = 'DZMhiEgUe8n79wv3F1G7XH' AND extagid in ('4572EY23dBx8mzHpgqbhgD','86NobVk9Zy7twbUZJDFp7F')
+select * from ods_wefix.t_ad_action_water_json where year_month = 201912 AND day_of_month between 27 AND 30 AND sourceid = 'DZMhiEgUe8n79wv3F1G7XH' AND extagid in ('4572EY23dBx8mzHpgqbhgD','86NobVk9Zy7twbUZJDFp7F')
 limit 50;
 
 
@@ -3219,10 +3219,10 @@ with base as (
     select distinct id,reqtime,createtime,tagid,acquisitionid,extagid,year_month,day_of_month
     from ods_wefix.t_ad_query_water_json
     where year_month = '${year_month}' and day_of_month = '${day_of_month}' and (test = 0 or test is null)
-  ) as query_water
+    ) as query_water
   left join (
     select distinct waterid,createtime,status,display,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
-  ) as action_water
+    ) as action_water
   on query_water.id = action_water.waterid
   left join (
     select distinct exchange_id,
@@ -3230,18 +3230,18 @@ with base as (
     apply_adver_id,apply_plan_id,apply_app_id,apply_user_id
     from ods_wefix.exchange_info_tsv
     where audit_app_id != 'NULL' and audit_user_id != 'NULL' and apply_app_id != 'NULL' and apply_user_id != 'NULL' and status > 6
-  ) as exchange_info
+    ) as exchange_info
   on (query_water.tagid = exchange_info.audit_adver_id and query_water.extagid = exchange_info.apply_adver_id and query_water.acquisitionid = exchange_info.apply_plan_id)
   or (query_water.tagid = exchange_info.apply_adver_id and query_water.extagid = exchange_info.audit_adver_id and query_water.acquisitionid = exchange_info.audit_plan_id)
   left join (
     select distinct acquisition_id,user_id from ods_wefix.acquisition_plan_tsv
-  ) as plan_info on query_water.acquisitionid = plan_info.acquisition_id
+    ) as plan_info on query_water.acquisitionid = plan_info.acquisition_id
   left join (
     select distinct advertise_id,app_id,ad_type from ods_wefix.advertisement_info_tsv
-  ) as adv_info on query_water.tagid = adv_info.advertise_id
+    ) as adv_info on query_water.tagid = adv_info.advertise_id
   left join (
     select distinct app_id,user_id from ods_wefix.app_info_tsv
-  ) as app_info on adv_info.app_id = app_info.app_id
+    ) as app_info on adv_info.app_id = app_info.app_id
 )
 select distinct id,req_type,report_status,report_date,action_ctime,plan_adv_id,adv_id
 from base
@@ -3252,19 +3252,19 @@ AND adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
 
 
 -- 奢分期 4y55uTCb33EGufc8yvEjSQ 爱租机 4572EY23dBx8mzHpgqbhgD
-SELECT waterid,createtime,sourceid,extagid,status,display,isclick from ods_wefix.t_ad_action_water_json WHERE year_month = '201912' and day_of_month = '30' AND sourceId = 'DZMhiEgUe8n79wv3F1G7XH' AND exTagId = '4572EY23dBx8mzHpgqbhgD';
+select waterid,createtime,sourceid,extagid,status,display,isclick from ods_wefix.t_ad_action_water_json where year_month = '201912' and day_of_month = '30' AND sourceId = 'DZMhiEgUe8n79wv3F1G7XH' AND exTagId = '4572EY23dBx8mzHpgqbhgD';
 
 
 
-SELECT t1.waterid as waterid,createtime,status,display,if(isclick is null,0,isclick) as isclick,t1.year_month as year_month,t1.day_of_month as day_of_month
+select t1.waterid as waterid,createtime,status,display,if(isclick is null,0,isclick) as isclick,t1.year_month as year_month,t1.day_of_month as day_of_month
 from (
   select distinct waterid,createtime,status,display,year_month,day_of_month from ods_wefix.t_ad_action_water_json
-  WHERE display = 1
+  where display = 1
   AND year_month = '201912' and day_of_month = '30'
 ) as t1
 left join (
   select distinct waterid,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
-  WHERE display = 0
+  where display = 0
 ) as t2 on t1.waterid = t2.waterid AND t1.year_month = t2.year_month AND t1.day_of_month = t2.day_of_month
 
 
@@ -3327,22 +3327,22 @@ from (
       select distinct waterid,createtime,sourceid,extagid,year_month,day_of_month from ods_wefix.t_ad_action_water_json
       where display = 1 and (status = 0 or status is null)
       and year_month = '${year_month}' and day_of_month = '${day_of_month}'
-    ) as action_water
+      ) as action_water
     join (
-      SELECT id,year_month,day_of_month from ods_wefix.t_ad_query_water_json WHERE (test = 0 or test is null)
-    ) as query_water
+      select id,year_month,day_of_month from ods_wefix.t_ad_query_water_json where (test = 0 or test is null)
+      ) as query_water
     on action_water.year_month = query_water.year_month AND action_water.day_of_month = query_water.day_of_month AND action_water.waterid = query_water.id
     left join (
       select distinct advertise_id,app_id as ex_adv_id from ods_wefix.advertisement_info_tsv
-    ) as adv_info on action_water.extagid = adv_info.advertise_id
+      ) as adv_info on action_water.extagid = adv_info.advertise_id
     group by substring(createtime,1,8),sourceid,ex_adv_id
-  ) as action_water
+    ) as action_water
   left join (
     select distinct app_id,app_name from ods_wefix.app_info_tsv
-  ) as app_apply on action_water.sourceid = app_apply.app_id
+    ) as app_apply on action_water.sourceid = app_apply.app_id
   left join (
     select distinct app_id,app_name from ods_wefix.app_info_tsv
-  ) as app_audit on action_water.ex_adv_id = app_audit.app_id
+    ) as app_audit on action_water.ex_adv_id = app_audit.app_id
 ) as action_water
 full join (
   select
@@ -3357,13 +3357,13 @@ full join (
     where status = 2
     and substring(create_time,1,6) = '${year_month}' and substring(create_time,7,2) = '${day_of_month}'
     group by substring(create_time,1,8),apply_app_id,audit_app_id
-  ) as eict
+    ) as eict
   left join (
     select distinct app_id,app_name from ods_wefix.app_info_tsv
-  ) as app_apply on eict.apply_app_id = app_apply.app_id
+    ) as app_apply on eict.apply_app_id = app_apply.app_id
   left join (
     select distinct app_id,app_name from ods_wefix.app_info_tsv
-  ) as app_audit on eict.audit_app_id = app_audit.app_id
+    ) as app_audit on eict.audit_app_id = app_audit.app_id
 ) as eict on action_water.report_date = eict.report_date and action_water.app_name_apply = eict.app_name_apply and action_water.app_name_audit = eict.app_name_audit
 order by report_date,app_name_apply,app_name_audit
 ;
@@ -3372,7 +3372,7 @@ order by report_date,app_name_apply,app_name_audit
 
 
 
-select distinct app_id,app_name from ods_wefix.app_info_tsv WHERE app_name = '玩车头条查违章';
+select distinct app_id,app_name from ods_wefix.app_info_tsv where app_name = '玩车头条查违章';
 
 select substring(createtime,1,8) as report_date,sourceid,waterid
 -- count(distinct waterid) as change_cnt
@@ -3385,14 +3385,59 @@ AND sourceid = '7gJJLVeWgtAiq3CrQ2r9Sj'
 ;
 
 
-SELECT * from ods_wefix.t_ad_action_water_json WHERE waterid = '94290475';
+select * from ods_wefix.t_ad_action_water_json where waterid = '94290475';
 
 
-SELECT * from ods_wefix.t_ad_query_water_json WHERE id = '94290475';
+select * from ods_wefix.t_ad_query_water_json where id = '94290475';
 
 
-SELECT * from dm_cf.data_preference;
+select * from dm_cf.data_preference;
 
+
+INSERT OVERWRITE TABLE dm_cf.retention_overview
+select
+create_date,
+login_date,
+email,
+mobile,
+str_to_map(concat_ws(',',collect_set(concat(app_name,':',cast(status as string)))))  as  apps
+from (
+  select login_date,user_id,email,mobile,create_date
+  from (
+    select
+    substring(login_time,1,8) as login_date,
+    user_id,
+    email,
+    mobile,
+    substring(create_time,1,8) as create_date,
+    row_number() over(partition by user_id,substring(login_time,1,8) order by update_time desc) as od
+    from ods_wefix.user_info_tsv
+    where user_id not in ('87d787dc-ddaa-4dd9-b5f1-4e980177a376','2f25c429-1598-43e0-8f63-ba16ea3b1c73','dbfd22ac-9fe4-43f9-9e88-8ac0af92e52e')
+  ) as tmp
+  where od = 1
+) as usr
+left join (
+  select distinct user_id,app_name,
+  case status
+  when 1    then '上线'
+  when 2    then '下线'
+  when 3    then '审核中'
+  when 999  then '删除'
+  else '未知' end as status
+  from ods_wefix.app_info_tsv
+) as app on usr.user_id = app.user_id
+group by create_date,login_date,email,mobile
+;
+
+
+
+
+
+
+
+
+
+select count(distinct user_id) from ods_wefix.user_info_tsv;
 
 
 
