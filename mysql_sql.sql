@@ -344,7 +344,7 @@ SELECT
   req.report_date       AS  report_date,
   cnt.ex_status         AS  ex_status,
   req.adv_appname       AS  adv_appname,
-  CONCAT(req.adv_name,'-',if(cnt.plan_name IS NULL,'',cnt.plan_name),'(',if(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
+  CONCAT(req.adv_name,'-',IF(cnt.plan_name IS NULL,'',cnt.plan_name),'(',IF(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
   req.adv_app_id        AS  adv_app_id,
   req.adv_name          AS  adv_name,
   req.adv_id            AS  adv_id,
@@ -428,10 +428,10 @@ ORDER BY report_date DESC;
 
 SELECT
   report_date                           AS  '交换时间',
-  sum(if(req_num is NULL,0,req_num))    AS  '请求数',
-  sum(if(iss_num is NULL,0,iss_num))    AS  '下发数',
-  sum(if(show_num is NULL,0,show_num))  AS  '展示数',
-  sum(if(cli_num is NULL,0,cli_num))    AS  '点击数'
+  sum(IF(req_num IS NULL,0,req_num))    AS  '请求数',
+  sum(IF(iss_num IS NULL,0,iss_num))    AS  '下发数',
+  sum(IF(show_num IS NULL,0,show_num))  AS  '展示数',
+  sum(IF(cli_num IS NULL,0,cli_num))    AS  '点击数'
 FROM DETAILS_SHOW
 WHERE 1 = 1
 AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
@@ -470,7 +470,7 @@ SELECT
   app_name_audit                              AS  '审核方',
   SUM(apply_cnt)                              AS  '参与换量申请次数',
   COUNT(DISTINCT report_date)                 AS  '统计天数',
-  COUNT(if(change_cnt = 0,NULL,change_cnt))   AS  '有换量天数'
+  COUNT(IF(change_cnt = 0,NULL,change_cnt))   AS  '有换量天数'
 FROM PREFERENCE_DATA
 WHERE 1 = 1
 AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
@@ -637,7 +637,7 @@ report_date,
 login_appname,
 viewer_appname,
 sum(cnt_b)                              AS  cnt_b,
-sum(if(inblacklist = 'true',cnt_b,0))   AS  blacklist
+sum(IF(inblacklist = 'true',cnt_b,0))   AS  blacklist
 FROM ADT_DISTINCT_B
 GROUP BY report_date,login_appname,viewer_appname;
 
@@ -648,11 +648,11 @@ report_date,
 login_appname,
 viewer_appname,
 sum(cnt_d)                           AS  cnt_d,
-sum(if(quality_d = '优',cnt_d,0))    AS  device_exce,
-sum(if(quality_d = '良',cnt_d,0))    AS  device_good,
-sum(if(quality_d = '一般',cnt_d,0))  AS  device_gene,
-sum(if(quality_d = '差',cnt_d,0))    AS  device_diff,
-sum(if(quality_d = 'NULL',cnt_d,0))  AS  device_erro
+sum(IF(quality_d = '优',cnt_d,0))    AS  device_exce,
+sum(IF(quality_d = '良',cnt_d,0))    AS  device_good,
+sum(IF(quality_d = '一般',cnt_d,0))  AS  device_gene,
+sum(IF(quality_d = '差',cnt_d,0))    AS  device_diff,
+sum(IF(quality_d = 'NULL',cnt_d,0))  AS  device_erro
 FROM ADT_DISTINCT_D
 GROUP BY report_date,login_appname,viewer_appname;
 
@@ -663,10 +663,10 @@ report_date,
 login_appname,
 viewer_appname,
 sum(cnt_i)                          AS  cnt_i,
-sum(if(quality_i = '正常',cnt_i,0)) AS  iprate_exce,
-sum(if(quality_i = '一般',cnt_i,0)) AS  iprate_gene,
-sum(if(quality_i = '可疑',cnt_i,0)) AS  iprate_diff,
-sum(if(quality_i = 'NULL',cnt_i,0)) AS  iprate_erro
+sum(IF(quality_i = '正常',cnt_i,0)) AS  iprate_exce,
+sum(IF(quality_i = '一般',cnt_i,0)) AS  iprate_gene,
+sum(IF(quality_i = '可疑',cnt_i,0)) AS  iprate_diff,
+sum(IF(quality_i = 'NULL',cnt_i,0)) AS  iprate_erro
 FROM ADT_DISTINCT_I
 GROUP BY report_date,login_appname,viewer_appname;
 
@@ -771,7 +771,7 @@ SELECT
 ADT_ADMIN_B.report_date                                         AS  report_date,
 ADT_ADMIN_B.login_appname                                       AS  login_appname,
 sum(ADT_ADMIN_B.cnt_b)                                          AS  cnt_b_req,
-sum(if(ADT_ADMIN_B_ICT.cnt_b IS NULL,0,ADT_ADMIN_B_ICT.cnt_b))  AS  cnt_b_ict
+sum(IF(ADT_ADMIN_B_ICT.cnt_b IS NULL,0,ADT_ADMIN_B_ICT.cnt_b))  AS  cnt_b_ict
 FROM ADT_ADMIN_B
 LEFT JOIN ADT_ADMIN_B_ICT
 ON ADT_ADMIN_B.report_date = ADT_ADMIN_B_ICT.report_date AND ADT_ADMIN_B.login_appname = ADT_ADMIN_B_ICT.login_appname
@@ -783,7 +783,7 @@ SELECT
 ADT_ADMIN_D.report_date                                         AS  report_date,
 ADT_ADMIN_D.login_appname                                       AS  login_appname,
 sum(ADT_ADMIN_D.cnt_d)                                          AS  cnt_d_req,
-sum(if(ADT_ADMIN_D_ICT.cnt_d IS NULL,0,ADT_ADMIN_D_ICT.cnt_d))  AS  cnt_d_ict
+sum(IF(ADT_ADMIN_D_ICT.cnt_d IS NULL,0,ADT_ADMIN_D_ICT.cnt_d))  AS  cnt_d_ict
 FROM ADT_ADMIN_D
 LEFT JOIN ADT_ADMIN_D_ICT
 ON ADT_ADMIN_D.report_date = ADT_ADMIN_D_ICT.report_date AND ADT_ADMIN_D.login_appname = ADT_ADMIN_D_ICT.login_appname
@@ -795,7 +795,7 @@ SELECT
 ADT_ADMIN_I.report_date                                         AS  report_date,
 ADT_ADMIN_I.login_appname                                       AS  login_appname,
 sum(ADT_ADMIN_I.cnt_i)                                          AS  cnt_i_req,
-sum(if(ADT_ADMIN_I_ICT.cnt_i IS NULL,0,ADT_ADMIN_I_ICT.cnt_i))  AS  cnt_i_ict
+sum(IF(ADT_ADMIN_I_ICT.cnt_i IS NULL,0,ADT_ADMIN_I_ICT.cnt_i))  AS  cnt_i_ict
 FROM ADT_ADMIN_I
 LEFT JOIN ADT_ADMIN_I_ICT
 ON ADT_ADMIN_I.report_date = ADT_ADMIN_I_ICT.report_date AND ADT_ADMIN_I.login_appname = ADT_ADMIN_I_ICT.login_appname
@@ -838,6 +838,69 @@ ORDER BY report_date DESC,login_appname;
 
 
 
+-- 留存概览 类型调整
+DROP VIEW IF EXISTS RETENTION_OVERVIEW_DETAIL;
+CREATE VIEW RETENTION_OVERVIEW_DETAIL AS
+SELECT
+cast(create_date as date)   AS  create_date,
+cast(login_date as date)    AS  login_date,
+email                       AS  email,
+mobile                      AS  mobile,
+apps                        AS  apps
+FROM RETENTION_OVERVIEW;
+
+-- 留存概览 metabase SQL 总数
+SELECT
+COUNT(DISTINCT user_id)    AS  '总用户数',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -6 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近7天未登陆',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -13 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近14天未登陆',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -29 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近30天未登陆'
+FROM (
+  SELECT
+  login_date,
+  IF(email IS NULL,mobile,email)  AS  user_id
+  FROM RETENTION_OVERVIEW_DETAIL
+  WHERE login_date <= [[ {{ login_date }} #]]CURRENT_DATE
+) AS tmp;
+
+
+
+-- 留存概览 metabase SQL 详细
+SELECT
+create_date   AS  '创建日期',
+email         AS  '用户邮箱',
+mobile        AS  '用户手机',
+CASE
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -29 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近30天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -13 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近14天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -6 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近7天未登陆'
+END           AS  '未登录时长',
+apps          AS  '创建应用'
+FROM RETENTION_OVERVIEW_DETAIL
+WHERE login_date < DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -6 day)
+ORDER BY email,mobile;
 
 
 
@@ -845,9 +908,9 @@ ORDER BY report_date DESC,login_appname;
 
 
 
-https://dataauth.w-fix.com/validate/data/auth/dashboard?view=9@@@@none@@200002
+https://dataauth.w-fix.com/validate/data/auth/dashboard?view=13@@@@none@@view00013
 
-https://dataauth.w-fix.com/validate/data/auth/question?view=4@@@@none@@200002
+https://dataauth.w-fix.com/validate/data/auth/question?view=22@@@@none@@view00001
 
 INSERT INTO ADT_DATA
 (report_date,login_userId,login_appId,login_advId,viewer_appId,viewer_advId,req_sum,blacklist_sum,sus_device_sum,sus_ip_sum,bl_device_sum,bl_ip_sum,dvi_ip_sum,bl_dvi_ip_sum)
@@ -862,23 +925,51 @@ VALUES
 
 --           root@%,  2020-01-06 15:12:37,  2020-01-06,    15:12:37
 SELECT CURRENT_USER,  CURRENT_TIMESTAMP,    CURRENT_DATE,  CURRENT_TIME;
-AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -7 day) AND CURRENT_DATE
+AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE
 
 SELECT DISTINCT
 DATE(report_date) AS report_date
 FROM ADT_DATA
-WHERE DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_DATA),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_DATA)
+WHERE DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_DATA),INTERVAL -6 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_DATA)
 
 
 
 
 
 
+set @dd=DATE(20200109);
+SELECT
+create_date   AS  '创建日期',
+email         AS  '用户邮箱',
+mobile        AS  '用户手机',
+login_date    AS  '登录时间',
+CASE
+WHEN login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -2 day) AND @dd THEN '最近3天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -1 day) AND @dd THEN '最近2天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -0 day) AND @dd THEN '最近1天未登陆'
+END           AS  '未登录时长',
+apps          AS  '创建应用'
+FROM RETENTION_OVERVIEW_DETAIL
+WHERE 1 = 1
+AND login_date < DATE_ADD(@dd,INTERVAL -0 day)
+ORDER BY email,mobile;
 
 
 
 
-
+set @dd=20200108;
+SELECT
+COUNT(DISTINCT user_id)    AS  '总用户数',
+COUNT(DISTINCT IF(login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -0 day) AND @dd,NULL,user_id))  AS  '最近7天未登陆',
+COUNT(DISTINCT IF(login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -1 day) AND @dd,NULL,user_id))  AS  '最近14天未登陆',
+COUNT(DISTINCT IF(login_date NOT BETWEEN DATE_ADD(@dd,INTERVAL -2 day) AND @dd,NULL,user_id))  AS  '最近30天未登陆'
+FROM (
+  SELECT
+  login_date,
+  IF(email IS NULL,mobile,email)  AS  user_id
+  FROM RETENTION_OVERVIEW_DETAIL
+  WHERE login_date <= @dd
+) AS tmp;
 
 
 

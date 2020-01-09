@@ -1518,8 +1518,8 @@ FROM
     GROUP BY t.mobile) a
   LEFT JOIN ods_source.client_info b
   ON a.mobile = b.mobile
-  AND a.create_time = b.create_time
-  AND b.spark_job_number = 41952
+  and a.create_time = b.create_time
+  and b.spark_job_number = 41952
   where b.mobile IS NOT NULL) a
 where a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==';
 
@@ -1529,7 +1529,7 @@ t.create_time
 FROM
 ods_source.client_info t
 where t.spark_job_number = 41952
-AND t.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
+and t.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
 
 
 select
@@ -1548,8 +1548,8 @@ FROM
   LEFT JOIN ods_source.client_info b
   ON a.mobile = b.mobile
   where a.create_time = b.create_time
-  AND b.spark_job_number = 41952
-  AND b.mobile IS NOT NULL) a
+  and b.spark_job_number = 41952
+  and b.mobile IS NOT NULL) a
 where a.mobile = 'bEE+Qem63qIw1wp3WqQ6aA==' ;
 
 -- 广州、一万以上、有房>0或有车>0或社保>-1
@@ -2380,9 +2380,9 @@ select
 count(distinct waterid),
 -- sum(display) as display,
 -- sum(isclick) as isclick,
-sourceId,exTagId from ods_wefix.t_ad_action_water_json
--- where sourceId = 'CdbaYKjoNtaAXCh53BbN9B' and exTagId = 'Bxg8EjYEAfbDMdNhvAByzn'
-where sourceId = '24LF3C2YfmCXFmerY4w74P' and exTagId = '2tMveHpPfG9bbpB4Q2gbRq'
+sourceId,extagid from ods_wefix.t_ad_action_water_json
+-- where sourceId = 'CdbaYKjoNtaAXCh53BbN9B' and extagid = 'Bxg8EjYEAfbDMdNhvAByzn'
+where sourceId = '24LF3C2YfmCXFmerY4w74P' and extagid = '2tMveHpPfG9bbpB4Q2gbRq'
 and year_month = '201912' and day_of_month = '04'
 -- and createtime > '20191204190000'
 and status = 0
@@ -2419,7 +2419,7 @@ and isclick = 1
 --   -- and status = 0
 --   -- group by query_water.tagid,query_water.acquisitionid,query_water.extagid
 -- )
-group by sourceId,exTagId
+group by sourceId,extagid
 ;
 
 
@@ -2901,20 +2901,20 @@ limit 5
 
 -- 20191219 10752697  imei  966809422913919 2JdX3WKytiiD7ziwpTVz2e  163 1 true  0 false
 select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,fLevel,fStatus,inBlackList from ods_wefix.atd_black_json
--- where year_month = 201912 AND day_of_month = 19
+-- where year_month = 201912 and day_of_month = 19
 where waterid = 10752697
 limit 50
 ;
 
 -- 20191219 10752697  imei  966809422913919 2JdX3WKytiiD7ziwpTVz2e  163 1 差 0 NULL
 select substring(`time`,0,8) as report_date,waterid,type,id,appid,exid,status,fLevel,fStatus,quality from ods_wefix.atd_device_json
--- where year_month = 201912 AND day_of_month = 19
+-- where year_month = 201912 and day_of_month = 19
 where waterid = 10752697
 limit 50
 ;
 
 select substring(`time`,0,8) as report_date,waterid,ip,appid,exid,status,fLevel,fStatus,quality from ods_wefix.atd_ip_json
--- where year_month = 201912 AND day_of_month = 19
+-- where year_month = 201912 and day_of_month = 19
 -- where ip = '116.25.189.6'
 where waterid = 10752697
 limit 50
@@ -3026,12 +3026,12 @@ sum(if(fstatus_b = 1 and fstatus_d = 1 and fstatus_i = 1,1,0))    as  bl_dvi_ip_
 
 
 -- 查询ADT中相差数据的信息
-select waterid from ods_wefix.atd_black_json where year_month = 201912 and day_of_month = 23 AND appid = '24LF3C2YfmCXFmerY4w74P'
-and waterid not IN (select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 AND appid = '24LF3C2YfmCXFmerY4w74P');
+select waterid from ods_wefix.atd_black_json where year_month = 201912 and day_of_month = 23 and appid = '24LF3C2YfmCXFmerY4w74P'
+and waterid not IN (select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 and appid = '24LF3C2YfmCXFmerY4w74P');
 
-select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 AND appid = '24LF3C2YfmCXFmerY4w74P';
+select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 and appid = '24LF3C2YfmCXFmerY4w74P';
 
-select waterid from ods_wefix.atd_ip_json where year_month = 201912 and day_of_month = 23 AND appid = '24LF3C2YfmCXFmerY4w74P' and waterid not IN (select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 AND appid = '24LF3C2YfmCXFmerY4w74P');
+select waterid from ods_wefix.atd_ip_json where year_month = 201912 and day_of_month = 23 and appid = '24LF3C2YfmCXFmerY4w74P' and waterid not IN (select waterid from ods_wefix.atd_device_json where year_month = 201912 and day_of_month = 23 and appid = '24LF3C2YfmCXFmerY4w74P');
 
 
 select fLevel,fStatus,inBlackList,count(waterId) from ods_wefix.atd_black_json group by fLevel,fStatus,inBlackList;
@@ -3162,14 +3162,14 @@ order by status_b,fstatus_b,inblacklist,cnt_b,status_d,fstatus_d,quality_d,cnt_d
 
 
 
-select id,reqtime,createtime,tagid,extagid from ods_wefix.t_ad_query_water_json where year_month = 201912 AND day_of_month between 27 AND 30 AND tagId = '4y55uTCb33EGufc8yvEjSQ'
+select id,reqtime,createtime,tagid,extagid from ods_wefix.t_ad_query_water_json where year_month = 201912 and day_of_month between 27 and 30 and tagid = '4y55uTCb33EGufc8yvEjSQ'
 limit 50;
 
 
 select distinct exchange_id,audit_app_id,audit_adver_id,audit_plan_id,apply_app_id,apply_plan_id,apply_adver_id,status,apply_user_id,audit_user_id from ods_wefix.exchange_info_tsv where apply_adver_id = '4y55uTCb33EGufc8yvEjSQ' or audit_adver_id = '4y55uTCb33EGufc8yvEjSQ';
 
 
-select * from ods_wefix.t_ad_action_water_json where year_month = 201912 AND day_of_month between 27 AND 30 AND sourceid = 'DZMhiEgUe8n79wv3F1G7XH' AND extagid in ('4572EY23dBx8mzHpgqbhgD','86NobVk9Zy7twbUZJDFp7F')
+select * from ods_wefix.t_ad_action_water_json where year_month = 201912 and day_of_month between 27 and 30 and sourceid = 'DZMhiEgUe8n79wv3F1G7XH' and extagid in ('4572EY23dBx8mzHpgqbhgD','86NobVk9Zy7twbUZJDFp7F')
 limit 50;
 
 
@@ -3177,8 +3177,8 @@ limit 50;
 select *
 from ods_wefix.t_ad_query_water_json
 where year_month = '201912' and day_of_month = '30'
-AND tagid in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq')
-AND reqtime is null AND createtime is null
+and tagid in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq')
+and reqtime is null and createtime is null
 -- and (test = 0 or test is null)
 ;
 
@@ -3246,13 +3246,13 @@ with base as (
 select distinct id,req_type,report_status,report_date,action_ctime,plan_adv_id,adv_id
 from base
 where report_date is null
-AND adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
+and adv_id in ('86NobVk9Zy7twbUZJDFp7F','2tMveHpPfG9bbpB4Q2gbRq');
 
 
 
 
 -- 奢分期 4y55uTCb33EGufc8yvEjSQ 爱租机 4572EY23dBx8mzHpgqbhgD
-select waterid,createtime,sourceid,extagid,status,display,isclick from ods_wefix.t_ad_action_water_json where year_month = '201912' and day_of_month = '30' AND sourceId = 'DZMhiEgUe8n79wv3F1G7XH' AND exTagId = '4572EY23dBx8mzHpgqbhgD';
+select waterid,createtime,sourceid,extagid,status,display,isclick from ods_wefix.t_ad_action_water_json where year_month = '201912' and day_of_month = '30' and sourceId = 'DZMhiEgUe8n79wv3F1G7XH' and extagid = '4572EY23dBx8mzHpgqbhgD';
 
 
 
@@ -3260,12 +3260,12 @@ select t1.waterid as waterid,createtime,status,display,if(isclick is null,0,iscl
 from (
   select distinct waterid,createtime,status,display,year_month,day_of_month from ods_wefix.t_ad_action_water_json
   where display = 1
-  AND year_month = '201912' and day_of_month = '30'
+  and year_month = '201912' and day_of_month = '30'
 ) as t1
 left join (
   select distinct waterid,isclick,year_month,day_of_month from ods_wefix.t_ad_action_water_json
   where display = 0
-) as t2 on t1.waterid = t2.waterid AND t1.year_month = t2.year_month AND t1.day_of_month = t2.day_of_month
+) as t2 on t1.waterid = t2.waterid and t1.year_month = t2.year_month and t1.day_of_month = t2.day_of_month
 
 
 
@@ -3331,7 +3331,7 @@ from (
     join (
       select id,year_month,day_of_month from ods_wefix.t_ad_query_water_json where (test = 0 or test is null)
       ) as query_water
-    on action_water.year_month = query_water.year_month AND action_water.day_of_month = query_water.day_of_month AND action_water.waterid = query_water.id
+    on action_water.year_month = query_water.year_month and action_water.day_of_month = query_water.day_of_month and action_water.waterid = query_water.id
     left join (
       select distinct advertise_id,app_id as ex_adv_id from ods_wefix.advertisement_info_tsv
       ) as adv_info on action_water.extagid = adv_info.advertise_id
@@ -3380,7 +3380,7 @@ from ods_wefix.t_ad_action_water_json
 where display = 1 and (status = 0 or status is null)
 -- and year_month = '${year_month}' and day_of_month = '${day_of_month}'
 and year_month = '202001' and day_of_month = '02'
-AND sourceid = '7gJJLVeWgtAiq3CrQ2r9Sj'
+and sourceid = '7gJJLVeWgtAiq3CrQ2r9Sj'
 -- group by substring(createtime,1,8),sourceid
 ;
 
@@ -3400,7 +3400,8 @@ create_date,
 login_date,
 email,
 mobile,
-str_to_map(concat_ws(',',collect_set(concat(app_name,':',cast(status as string)))))  as  apps
+str_to_map(concat_ws(' | ',collect_set(concat(app_name,':',cast(status as string)))))  as  apps
+,'202001'  as  year_month,'09'  as  day_of_month
 from (
   select login_date,user_id,email,mobile,create_date
   from (
@@ -3413,7 +3414,7 @@ from (
     row_number() over(partition by user_id,substring(login_time,1,8) order by update_time desc) as od
     from ods_wefix.user_info_tsv
     where user_id not in ('87d787dc-ddaa-4dd9-b5f1-4e980177a376','2f25c429-1598-43e0-8f63-ba16ea3b1c73','dbfd22ac-9fe4-43f9-9e88-8ac0af92e52e')
-  ) as tmp
+    ) as tmp
   where od = 1
 ) as usr
 left join (
@@ -3432,13 +3433,14 @@ group by create_date,login_date,email,mobile
 
 
 
-
-
-
-
-
-select count(distinct user_id) from ods_wefix.user_info_tsv;
-
+select * from ods_wefix.t_ad_query_water_json
+where 1 = 1
+and year_month = 202001
+-- and day_of_month = 09
+and tagid = 'JPs7fjjMPGFWWF9AGhxi36'
+-- and extagid = ''
+limit 50
+;
 
 
 
