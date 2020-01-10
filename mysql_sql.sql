@@ -344,7 +344,7 @@ SELECT
   req.report_date       AS  report_date,
   cnt.ex_status         AS  ex_status,
   req.adv_appname       AS  adv_appname,
-  CONCAT(req.adv_name,'-',IF(cnt.plan_name IS NULL,'',cnt.plan_name),'(',IF(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
+  CONCAT(req.adv_name,'-----',IF(cnt.plan_name IS NULL,'',cnt.plan_name),'(',IF(cnt.plan_appname IS NULL,'',cnt.plan_appname),')')  AS  detail_name,
   req.adv_app_id        AS  adv_app_id,
   req.adv_name          AS  adv_name,
   req.adv_id            AS  adv_id,
@@ -531,7 +531,7 @@ dvi_ip_sum        AS  '可疑设备&可疑网段数',
 bl_dvi_ip_sum     AS  '黑名单&可疑设备&可疑网段数'
 FROM ADT_USER_DETAIL
 WHERE 1 = 1
-AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL)
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL),INTERVAL -6 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_USER_DETAIL)
 [[ AND {{ login_appname }} ]]
 [[ AND {{ viewer_appname }} ]]
 ORDER BY report_date DESC,login_appname,viewer_appname;
@@ -570,7 +570,7 @@ flevel_i        AS  '网段拦截级别',
 fstatus_i       AS  '网段拦截状态'
 FROM ADT_ADMIN
 WHERE 1 = 1
-AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN)
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN),INTERVAL -6 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN)
 [[ AND {{ viewer_appname }} ]]
 [[ AND {{ login_appname }} ]]
 [[ AND {{ inblacklist }} ]]
@@ -722,7 +722,7 @@ iprate_diff     AS  '网段可疑',
 iprate_erro     AS  '网段为烂'
 FROM ADMIN_ADT_DETAIL
 WHERE 1 = 1
-AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL)
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL),INTERVAL -6 day) AND (SELECT DATE(MAX(report_date)) FROM ADMIN_ADT_DETAIL)
 [[ AND {{ viewer_appname }} ]]
 ORDER BY report_date DESC,viewer_appname;
 
@@ -829,7 +829,7 @@ cnt_d_req       AS  '设备请求数',
 cnt_i_req       AS  '网段请求数'
 FROM ADT_ADMIN_DETAIL
 WHERE 1 = 1
-AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL),INTERVAL -7 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL)
+AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL),INTERVAL -6 day) AND (SELECT DATE(MAX(report_date)) FROM ADT_ADMIN_DETAIL)
 [[ AND {{ login_appname }} ]]
 ORDER BY report_date DESC,login_appname;
 
@@ -908,6 +908,39 @@ ORDER BY email,mobile;
 
 
 
+-- 新增概览 metabase SQL
+SELECT
+`create_date` AS '创建日期',
+`cnt_usr`     AS '新增注册',
+`cnt_app`     AS '新增App数',
+`cnt_adv`     AS '新增广告位',
+`cnt_pln`     AS '新增获客计划'
+FROM (
+  SELECT
+  `create_date`,
+  `cnt_usr`,
+  `cnt_app`,
+  `cnt_adv`,
+  `cnt_pln`,
+  {{ create_date_s }} AS data_type
+  FROM ADDITION_OVERVIEW
+  WHERE 1 = 1
+  AND IF(([[ {{ create_date_s }} #]]0
+   ) = 1,{{ create_date_s }},[[ {{ create_date_e }} #]]DATE(`create_date`) BETWEEN DATE_ADD((SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW),INTERVAL -6 day) AND (SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW)
+  )
+) AS tmp
+WHERE data_type = 1
+ORDER BY create_date DESC;
+
+
+
+
+
+
+
+
+
+
 https://dataauth.w-fix.com/validate/data/auth/dashboard?view=13@@@@none@@view00013
 
 https://dataauth.w-fix.com/validate/data/auth/question?view=22@@@@none@@view00001
@@ -970,6 +1003,23 @@ FROM (
   FROM RETENTION_OVERVIEW_DETAIL
   WHERE login_date <= @dd
 ) AS tmp;
+
+
+
+SELECT
+create_date AS '创建日期',
+cnt_usr     AS '新增注册',
+cnt_app     AS '新增App数',
+cnt_adv     AS '新增广告位',
+cnt_pln     AS '新增获客计划'
+FROM ADDITION_OVERVIEW
+WHERE 1 = 1
+AND create_date BETWEEN DATE_ADD((SELECT DATE(MAX(create_date)) FROM ADDITION_OVERVIEW),INTERVAL -6 day) AND (SELECT DATE(MAX(create_date)) FROM ADDITION_OVERVIEW)
+OR create_date = '20200110'
+ORDER BY create_date DESC;
+
+
+
 
 
 
