@@ -222,19 +222,19 @@ CREATE VIEW ADV_COUNT_TMP AS
 SELECT
   cast(advs.report_date AS date)                AS  report_date,
   CASE exin.`status`
-  WHEN 1 THEN CONCAT('申请人 ',app_apply.app_name,' 已申请')
-  WHEN 2 THEN CONCAT('审核人 ',app_audit.app_name,' 审核中')
-  WHEN 3 THEN CONCAT('审核人 ',app_audit.app_name,' 审核不通过')
-  WHEN 4 THEN CONCAT('审核人 ',app_audit.app_name,' 审核通过')
-  WHEN 5 THEN CONCAT('申请人 ',app_apply.app_name,' 审核中')
-  WHEN 6 THEN CONCAT('申请人 ',app_apply.app_name,' 审核不通过')
+  WHEN 1 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 已申请')
+  WHEN 2 THEN CONCAT('审核人 ',app_audit.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核中')
+  WHEN 3 THEN CONCAT('审核人 ',app_audit.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核不通过')
+  WHEN 4 THEN CONCAT('审核人 ',app_audit.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核通过')
+  WHEN 5 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核中')
+  WHEN 6 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核不通过')
   WHEN 7 THEN '流量交换开始'
-  WHEN 8 THEN CONCAT('审核人 ',app_audit.app_name,' 暂停流量交换')
-  WHEN 9 THEN CONCAT('申请人 ',app_apply.app_name,' 暂停流量交换')
-  WHEN 10 THEN CONCAT('申请人 ',app_apply.app_name,' 停止流量交换')
-  WHEN 11 THEN CONCAT('审核人 ',app_audit.app_name,' 停止流量交换')
+  WHEN 8 THEN CONCAT('审核人 ',app_audit.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 暂停流量交换')
+  WHEN 9 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 暂停流量交换')
+  WHEN 10 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 停止流量交换')
+  WHEN 11 THEN CONCAT('审核人 ',app_audit.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 停止流量交换')
   WHEN 12 THEN '系统停止'
-  WHEN 13 THEN CONCAT('申请人 ',app_apply.app_name,' 审核通过')
+  WHEN 13 THEN CONCAT('申请人 ',app_apply.app_name,' 于 ',SUBSTRING(exin.update_time,1,8),' 审核通过')
   WHEN 14 THEN '待生效(生效变为7)'
   WHEN 999 THEN '删除'
   ELSE exin.`status` END                          AS  ex_status,
@@ -444,9 +444,43 @@ ORDER BY report_date;
 
 
 
+-- 新增概览 metabase SQL
+SELECT
+`create_date` AS '创建日期',
+`cnt_usr`     AS '新增注册',
+`cnt_app`     AS '新增App数',
+`cnt_adv`     AS '新增广告位',
+`cnt_pln`     AS '新增获客计划'
+FROM (
+  SELECT
+  `create_date`,
+  `cnt_usr`,
+  `cnt_app`,
+  `cnt_adv`,
+  `cnt_pln`,
+  {{ create_date_s }} AS data_type
+  FROM ADDITION_OVERVIEW
+  WHERE 1 = 1
+  AND IF(([[ {{ create_date_s }} #]]0
+   ) = 1,{{ create_date_s }},[[ {{ create_date_e }} #]]DATE(`create_date`) BETWEEN DATE_ADD((SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW),INTERVAL -6 day) AND (SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW)
+  )
+) AS tmp
+WHERE data_type = 1
+ORDER BY create_date DESC;
 
 
-
+SELECT `create_date` AS '创建日期', `cnt_usr` AS '新增注册', `cnt_app` AS '新增App数', `cnt_adv` AS '新增广告位', `cnt_pln` AS '新增获客计划'
+FROM (
+SELECT `create_date`, `cnt_usr`, `cnt_app`, `cnt_adv`, `cnt_pln`,
+date(`ADDITION_OVERVIEW`.`create_date`) BETWEEN ? AND ? AS data_type
+FROM ADDITION_OVERVIEW
+WHERE 1 = 1
+-- AND IF((date(`ADDITION_OVERVIEW`.`create_date`) BETWEEN ? AND ? #0
+-- ) = 1,date(`ADDITION_OVERVIEW`.`create_date`) BETWEEN ? AND ?,DATE(`create_date`) BETWEEN DATE_ADD((SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW),INTERVAL -6 day) AND (SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW)
+-- )
+) AS tmp
+WHERE data_type = 1
+ORDER BY create_date DESC;
 
 
 
@@ -461,7 +495,8 @@ SELECT
   app_name_audit,
   apply_cnt,
   change_cnt
-FROM DATA_PREFERENCE;
+FROM DATA_PREFERENCE
+WHERE app_name_apply NOT IN ('k135-a57','kn-a57','wefixt1','wefixtb');
 
 
 -- 偏好数据（metabase的SQL）
@@ -478,6 +513,89 @@ AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INT
 [[ AND {{ app_name_audit }} ]]
 GROUP BY app_name_apply,app_name_audit
 ORDER BY app_name_apply,app_name_audit;
+
+
+
+
+
+
+
+
+-- 留存概览 类型调整
+DROP VIEW IF EXISTS RETENTION_OVERVIEW_DETAIL;
+CREATE VIEW RETENTION_OVERVIEW_DETAIL AS
+SELECT
+cast(create_date as date)   AS  create_date,
+cast(login_date as date)    AS  login_date,
+email                       AS  email,
+mobile                      AS  mobile,
+apps                        AS  apps
+FROM RETENTION_OVERVIEW;
+
+
+-- 留存概览 metabase SQL 总数
+SELECT
+COUNT(DISTINCT user_id)    AS  '总用户数',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -6 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近7天未登陆',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -13 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近14天未登陆',
+COUNT(DISTINCT IF(
+  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+    ,INTERVAL -29 day)
+  AND [[ {{ login_date }} #]]CURRENT_DATE
+    ,NULL,user_id)
+)  AS  '最近30天未登陆'
+FROM (
+  SELECT
+  login_date,
+  IF(email IS NULL,mobile,email)  AS  user_id
+  FROM RETENTION_OVERVIEW_DETAIL
+  WHERE login_date <= [[ {{ login_date }} #]]CURRENT_DATE
+) AS tmp;
+
+
+
+-- 留存概览 metabase SQL 详细
+SELECT
+create_date   AS  '创建日期',
+email         AS  '用户邮箱',
+mobile        AS  '用户手机',
+CASE
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -29 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近30天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -13 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近14天未登陆'
+WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -6 day) AND [[ {{ login_date }} #]]CURRENT_DATE
+THEN '最近7天未登陆'
+END           AS  '未登录时长',
+apps          AS  '创建应用'
+FROM RETENTION_OVERVIEW_DETAIL
+WHERE login_date < DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
+  ,INTERVAL -6 day)
+ORDER BY login_date DESC,email,mobile;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -535,9 +653,6 @@ AND [[ {{ report_date }} #]]DATE(report_date) BETWEEN DATE_ADD((SELECT DATE(MAX(
 [[ AND {{ login_appname }} ]]
 [[ AND {{ viewer_appname }} ]]
 ORDER BY report_date DESC,login_appname,viewer_appname;
-
-
-
 
 
 
@@ -838,100 +953,6 @@ ORDER BY report_date DESC,login_appname;
 
 
 
--- 留存概览 类型调整
-DROP VIEW IF EXISTS RETENTION_OVERVIEW_DETAIL;
-CREATE VIEW RETENTION_OVERVIEW_DETAIL AS
-SELECT
-cast(create_date as date)   AS  create_date,
-cast(login_date as date)    AS  login_date,
-email                       AS  email,
-mobile                      AS  mobile,
-apps                        AS  apps
-FROM RETENTION_OVERVIEW;
-
--- 留存概览 metabase SQL 总数
-SELECT
-COUNT(DISTINCT user_id)    AS  '总用户数',
-COUNT(DISTINCT IF(
-  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-    ,INTERVAL -6 day)
-  AND [[ {{ login_date }} #]]CURRENT_DATE
-    ,NULL,user_id)
-)  AS  '最近7天未登陆',
-COUNT(DISTINCT IF(
-  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-    ,INTERVAL -13 day)
-  AND [[ {{ login_date }} #]]CURRENT_DATE
-    ,NULL,user_id)
-)  AS  '最近14天未登陆',
-COUNT(DISTINCT IF(
-  login_date BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-    ,INTERVAL -29 day)
-  AND [[ {{ login_date }} #]]CURRENT_DATE
-    ,NULL,user_id)
-)  AS  '最近30天未登陆'
-FROM (
-  SELECT
-  login_date,
-  IF(email IS NULL,mobile,email)  AS  user_id
-  FROM RETENTION_OVERVIEW_DETAIL
-  WHERE login_date <= [[ {{ login_date }} #]]CURRENT_DATE
-) AS tmp;
-
-
-
--- 留存概览 metabase SQL 详细
-SELECT
-create_date   AS  '创建日期',
-email         AS  '用户邮箱',
-mobile        AS  '用户手机',
-CASE
-WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-  ,INTERVAL -29 day) AND [[ {{ login_date }} #]]CURRENT_DATE
-THEN '最近30天未登陆'
-WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-  ,INTERVAL -13 day) AND [[ {{ login_date }} #]]CURRENT_DATE
-THEN '最近14天未登陆'
-WHEN login_date NOT BETWEEN DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-  ,INTERVAL -6 day) AND [[ {{ login_date }} #]]CURRENT_DATE
-THEN '最近7天未登陆'
-END           AS  '未登录时长',
-apps          AS  '创建应用'
-FROM RETENTION_OVERVIEW_DETAIL
-WHERE login_date < DATE_ADD([[ {{ login_date }} #]]CURRENT_DATE
-  ,INTERVAL -6 day)
-ORDER BY email,mobile;
-
-
-
-
-
-
-
--- 新增概览 metabase SQL
-SELECT
-`create_date` AS '创建日期',
-`cnt_usr`     AS '新增注册',
-`cnt_app`     AS '新增App数',
-`cnt_adv`     AS '新增广告位',
-`cnt_pln`     AS '新增获客计划'
-FROM (
-  SELECT
-  `create_date`,
-  `cnt_usr`,
-  `cnt_app`,
-  `cnt_adv`,
-  `cnt_pln`,
-  {{ create_date_s }} AS data_type
-  FROM ADDITION_OVERVIEW
-  WHERE 1 = 1
-  AND IF(([[ {{ create_date_s }} #]]0
-   ) = 1,{{ create_date_s }},[[ {{ create_date_e }} #]]DATE(`create_date`) BETWEEN DATE_ADD((SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW),INTERVAL -6 day) AND (SELECT DATE(MAX(`create_date`)) FROM ADDITION_OVERVIEW)
-  )
-) AS tmp
-WHERE data_type = 1
-ORDER BY create_date DESC;
-
 
 
 
@@ -944,6 +965,10 @@ ORDER BY create_date DESC;
 https://dataauth.w-fix.com/validate/data/auth/dashboard?view=13@@@@none@@view00013
 
 https://dataauth.w-fix.com/validate/data/auth/question?view=22@@@@none@@view00001
+
+http://10.83.0.108:8095/validate/data/auth/davinci/dashboard?view=2@@@@none@@view00002
+
+http://10.83.0.108:8095/validate/data/auth/davinci/display?view=1
 
 INSERT INTO ADT_DATA
 (report_date,login_userId,login_appId,login_advId,viewer_appId,viewer_advId,req_sum,blacklist_sum,sus_device_sum,sus_ip_sum,bl_device_sum,bl_ip_sum,dvi_ip_sum,bl_dvi_ip_sum)

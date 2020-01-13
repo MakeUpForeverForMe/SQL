@@ -3505,8 +3505,12 @@ select * from dm_cf.retention_overview;
 
 
 
-
-
+-- 趣看天下 : 2tMveHpPfG9bbpB4Q2gbRq    点点 : 6t1WftASHpErE1gNcd352B
+select count(distinct id) from ods_wefix.t_ad_query_water_json
+where year_month = 202001 and day_of_month = 12
+and tagid = '2tMveHpPfG9bbpB4Q2gbRq'
+and extagid = '6t1WftASHpErE1gNcd352B'
+;
 
 
 
