@@ -234,7 +234,7 @@ etl
 # 生产
 # jdbc:mysql://10.80.176.22:3306/hive?createDatabaseIfNotExist=true&useSSL=false&characterEncoding=UTF-8
 # 测试
-jdbc:mysql://10.83.96.7:3306/hive?createDatabaseIfNotExist=true&useSSL=false&characterEncoding=UTF-8
+jdbc:mysql://10.83.96.7:3306/hive?createDatabaseIfNotExist=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8
 RRDdjhPULOdZ703
 
 

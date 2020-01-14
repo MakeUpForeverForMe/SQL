@@ -3512,10 +3512,19 @@ and tagid = '2tMveHpPfG9bbpB4Q2gbRq'
 and extagid = '6t1WftASHpErE1gNcd352B'
 ;
 
+-- 人人天气  App P4CUSbLPLzVXyz22jHcCym Adv JPs7fjjMPGFWWF9AGhxi36
+-- 点点      App AK5c17X3cpNTVEtvRZZTX2 Adv 4cLQBJrGPtQwAkwbP3mmDs
+select distinct test from ods_wefix.t_ad_query_water_json
+where year_month = 202001 and day_of_month = 13
+and tagid = 'JPs7fjjMPGFWWF9AGhxi36'
+and extagid = '4cLQBJrGPtQwAkwbP3mmDs'
+;
 
-
-
-
+select count(distinct id) from ods_wefix.t_ad_query_water_json
+where year_month = 202001 and day_of_month = 13
+and tagid = '4cLQBJrGPtQwAkwbP3mmDs'
+and extagid = 'JPs7fjjMPGFWWF9AGhxi36'
+;
 
 
 

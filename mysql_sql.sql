@@ -372,7 +372,7 @@ ORDER BY report_date DESC;
 
 
 
--- 明细查询（全）
+-- 明细查询（全） metabase sql
 SELECT
   report_date           AS  '交换时间',
   ex_status             AS  '交换情况',
@@ -383,7 +383,6 @@ SELECT
   adv_id                AS  '广告位Id',
   adv_show_max          AS  '广告位展示上限',
   adv_show_count        AS  '广告位交换数量',
-  req_num               AS  '请求数',
   plan_appname          AS  '获客计划App',
   plan_app_id           AS  '获客计划AppId',
   plan_name             AS  '获客计划名称',
@@ -392,6 +391,7 @@ SELECT
   plan_adv_id           AS  '获客广告位Id',
   plan_show_max         AS  '获客展示上限',
   plan_show_count       AS  '获客交换数量',
+  req_num               AS  '请求数',
   iss_num               AS  '下发数',
   show_num + show_fail  AS  '展示总数',
   show_num              AS  '展示数',
@@ -406,6 +406,45 @@ AND [[ {{ report_date }} #]] DATE(report_date) BETWEEN DATE_ADD(CURRENT_DATE,INT
 [[ AND {{ plan_appname }} ]]
 ORDER BY report_date DESC;
 
+-- 明细查询（全） davinci sql
+SELECT
+  report_date           AS  '交换时间',
+  ex_status             AS  '交换情况',
+  adv_appname           AS  '广告位应用名称',
+  adv_app_id            AS  '广告位应用编号',
+  adv_name              AS  '广告位名称',
+  adv_id                AS  '广告位编号',
+  adv_show_max          AS  '广告位展示上限',
+  adv_show_count        AS  '广告位交换数量',
+  detail_name           AS  '广告位-获客计划(所属APP)',
+  plan_appname          AS  '获客计划应用名称',
+  plan_app_id           AS  '获客计划应用编号',
+  plan_name             AS  '获客计划名称',
+  plan_id               AS  '获客计划编号',
+  plan_adv_name         AS  '获客广告位名称',
+  plan_adv_id           AS  '获客广告位编号',
+  plan_show_max         AS  '获客展示上限',
+  plan_show_count       AS  '获客交换数量',
+  req_num               AS  '请求数',
+  iss_num               AS  '下发数',
+  show_num + show_fail  AS  '展示总数',
+  show_num              AS  '展示数',
+  show_fail             AS  '展示超时数',
+  cli_num               AS  '点击数',
+  cli_fail              AS  '点击超时数',
+  cli_show_rate         AS  '点击率'
+FROM DETAILS_SHOW
+WHERE 1 = 1
+$if(adv_appname)$
+  AND adv_appname in ($adv_appname$)
+$endif$
+$if(plan_appname)$
+  AND plan_appname in ($plan_appname$)
+$endif$
+ORDER BY report_date DESC;
+$if(report_date)$
+  AND $report_date$ /* report_date BETWEEN DATE_ADD(CURRENT_DATE,INTERVAL -6 day) AND CURRENT_DATE */
+$endif$
 -- 明细查询
 SELECT
   report_date     AS  '交换时间',
@@ -966,9 +1005,9 @@ https://dataauth.w-fix.com/validate/data/auth/dashboard?view=13@@@@none@@view000
 
 https://dataauth.w-fix.com/validate/data/auth/question?view=22@@@@none@@view00001
 
-http://10.83.0.108:8095/validate/data/auth/davinci/dashboard?view=2@@@@none@@view00002
+https://dataauth.w-fix.com/validate/data/auth/davinci/dashboard?view=1@@@@none@@view00001
 
-http://10.83.0.108:8095/validate/data/auth/davinci/display?view=1
+https://dataauth.w-fix.com/validate/data/auth/davinci/display?view=1
 
 INSERT INTO ADT_DATA
 (report_date,login_userId,login_appId,login_advId,viewer_appId,viewer_advId,req_sum,blacklist_sum,sus_device_sum,sus_ip_sum,bl_device_sum,bl_ip_sum,dvi_ip_sum,bl_dvi_ip_sum)
