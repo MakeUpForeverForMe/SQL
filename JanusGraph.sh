@@ -3,6 +3,7 @@ export HADOOP_CONF_DIR=/usr/hdp/3.1.0.0-78/hadoop/etc/hadoop
 export CLASSPATH=$HADOOP_CONF_DIR
 /home/hdfs/janusgraph-0.4.0/bin/gremlin.sh -i /home/hdfs/janusgraph-0.4.0/northwind.groovy
 
+./bin/gremlin.sh -i northwind.groovy
 
 // 创建 sql形式
 graph = NorthwindFactory.createGraph()
