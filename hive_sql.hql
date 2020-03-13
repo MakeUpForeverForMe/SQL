@@ -3528,7 +3528,45 @@ and extagid = 'JPs7fjjMPGFWWF9AGhxi36'
 
 
 
-
+-- 欣怡的表
+select
+c.project_no,
+a.iou_no,
+b.interest_rate_type,
+b.loan_annual_interest_rate,
+b.total_yield,
+b.subsidy_fee,
+b.discount_amount,
+a.remaining_principal,
+a.current_overdue_days,
+b.dealer_name,
+c.car_type,
+c.car_series,
+c.car_models,
+c.car_age
+from (
+  select distinct iou_no,remaining_principal,current_overdue_days
+  -- ,message_timestamp,row_number() over(partition by iou_no order by message_timestamp desc) as od
+  from ods_starconnect.10_distinct_starconnect_assets_reconciliation_info
+  where data_fetch_date = '2020-03-12'
+) as a
+left join (
+  select * from (
+    select distinct iou_no,interest_rate_type,loan_annual_interest_rate,total_yield,subsidy_fee,discount_amount,dealer_name
+    ,message_timestamp,row_number() over(partition by iou_no order by message_timestamp desc) as od
+    from ods_starconnect.01_starconnect_loancontract
+    where project_no in ('cl00326','CL201911130070','cl00297','cl00306')
+  ) as t1
+  where t1.od = 1
+) b on a.iou_no = b.iou_no
+left join (
+  select * from (
+    select distinct iou_no,project_no,car_type,car_series,car_models,car_age
+    ,message_timestamp,row_number() over(partition by iou_no order by message_timestamp desc) as od
+    from ods_starconnect.04_starconnect_mortgage_car_info
+  ) t2
+  where t2.od = 1
+) c on a.iou_no = c.iou_no
 
 
 
