@@ -61,7 +61,7 @@ echo -e '\033[?25h显示光标\033[0m'
 
 
 
-
+echo '{"biType": gjdogjd$h*^^54,"gdsdfgd":45146}' | grep -Po 'biType[": ]+\K[^" ,]+' # result : gjdogjd$h*^^54
 
 
 
