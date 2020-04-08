@@ -1,3 +1,11 @@
+#!/bin/bash -e
+
+. /etc/profile
+. ~/.bash_profile
+base_dir=$(dirname "${BASH_SOURCE[0]}")
+
+
+
 # 各项$的用处
 $0 程序的名称
 $n 程序的第n个参数
@@ -75,6 +83,37 @@ for i in `seq 10`; do
   echo -n `date +'%F %T'`
   sleep 1
 done; echo -e "\033[0m"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 按要求切分文件
+base_dir=$(dirname "${BASH_SOURCE[0]}")
+
+oldIFS=$IFS
+IFS=#
+
+lists=($(cat $base_dir/saas.hql | grep -B1 -A5 -i 'drop' | sed 's/--$/#/g'))
+
+for list in ${lists[@]}; do
+  file_name=$(echo $list | grep -Poi 'drop.*\.\K[^;]+' | sed 's/`//g').hql
+  echo $list > $base_dir/hql/$file_name
+done
+
+
+
+
+
 
 
 
