@@ -1,0 +1,1184 @@
+ALTER TABLE dwd_inter.event_client_source RENAME TO dwd_inter.event_client_source_old;
+
+ALTER TABLE ods_wefix.t_ad_query_water_json ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
+
+ALTER TABLE dm_cf.unfraud_recommend_wefix DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+
+show databases;
+show partitions ods_wefix.t_ad_query_water_json;
+
+DROP DATABASE IF EXISTS ods_source cascade;
+DROP DATABASE IF EXISTS ods_wefix cascade;
+
+CREATE DATABASE IF NOT EXISTS ods_wefix;
+CREATE DATABASE IF NOT EXISTS dm_cf;
+
+DROP TABLE IF EXISTS dm_cf.dm_user_info;
+
+org.apache.hive.hcatalog.data.JsonSerDe
+
+drop function encrypt_aes;
+drop function decrypt_aes;
+
+create function encrypt_aes as 'com.weshare.udf.Aes_Encrypt';
+create function decrypt_aes as 'com.weshare.udf.Aes_Decrypt';
+
+show functions like '*json*';
+
+desc function extended encrypt_aes;
+
+p_r_l(){ echo ${1%.*}; }
+p_l_l(){ echo ${1%%.*}; }
+p_r_r(){ echo ${1##*.}; }
+s_r_r(){ echo ${1##*/}; }
+for file in atd_black.201911/* atd_black.201912/* atd_device.201911/* atd_device.201912/* atd_ip.201911/* atd_ip.201912/*; do
+  tb=$(p_l_l $(s_r_r $file))
+  dt=$(p_r_r $(p_r_l $file))
+  ty=$(p_r_r $file)
+  printf '%-50s %-12s %-10s %-8s %-4s %s\n' $file $tb $dt ${dt:0:6} ${dt:6:2} $ty
+  # sed -n '/^\s*$/p' $file
+  # sed -i '/^\s*$/d' $file
+  # echo \
+  # hdfs dfs -put -f $file /warehouse/tablespace/managed/hive/ods_wefix.db/${tb}_${ty}/year_month=${dt:0:6}/day_of_month=${dt:6:2}
+done
+
+
+
+p_r_l(){ echo ${1%.*}; }
+p_l_l(){ echo ${1%%.*}; }
+p_r_r(){ echo ${1##*.}; }
+s_r_r(){ echo ${1##*/}; }
+for file in t_ad_action_water.201911/* t_ad_action_water.201912/* t_ad_query_water.201911/* t_ad_query_water.201912/*; do
+  tb=$(p_l_l $(s_r_r $file))
+  dt=$(p_r_r $(p_r_l $file))
+  ty=$(p_r_r $file)
+  printf '%-50s %-12s %-10s %-8s %-4s %s\n' $file $tb $dt ${dt:0:6} ${dt:6:2} $ty
+  # sed -n '/"test":1/p' $file
+  tail $file | grep '"test":1'
+  # sed -n '/"test":0/p' $file
+  tail $file | grep '"test":0'
+  # sed -n 's/"test":true/"test":1/p' $file
+  # sed -n 's/"test":false/"test":0/p' $file
+  # sed -i 's/"test":true/"test":1/g' $file
+  # sed -i 's/"test":false/"test":0/g' $file
+  # echo \
+  # hdfs dfs -put -f $file /warehouse/tablespace/managed/hive/ods_wefix.db/${tb}_${ty}/year_month=${dt:0:6}/day_of_month=${dt:6:2}
+done
+
+
+
+hdfs dfs -rm /warehouse/tablespace/managed/hive/ods_wefix.db/t_ad_query_water_json/year_month=201912/day_of_month=12/*
+hdfs dfs -rm /warehouse/tablespace/managed/hive/ods_wefix.db/t_ad_action_water_json/year_month=201912/day_of_month=12/*
+
+hdfs dfs -put -f t_ad_query_water.20191205.json /warehouse/tablespace/managed/hive/ods_wefix.db/t_ad_query_water_json/year_month=201912/day_of_month=05
+
+
+sed "s/table/$(high_case $table)/; s/startDate/$startDate/g; s/endDate/$endDate/g" $extract
+
+mysql -P3306 -h10.80.16.7 -uroot -p'Xfx2018@)!*' -Dmicrob -s -N -e 'select * from EXCHANGE_INFO where (20191216000000 <= create_time and create_time < 20191218000000) or (20191216000000 <= update_time and update_time < 20191218000000);'
+
+
+
+http://10.83.0.108:8095/validate/data/auth?type=dashboard&view=3@@@@test.json@@200002
+
+
+
+beeline -n hdfs -u jdbc:hive2://spark:10000 \
+--showHeader=false --outputformat=csv2 -e \
+'select create_date,report_date,plan_user_id,plan_app_id,plan_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate from dm_cf.advertising_space where year_month = 201912 and day_of_month = 05;' > /hadoop/data/mysql/advertising_space.csv;
+
+mysql -P3306 -h10.80.16.7 -uroot -p'Xfx2018@)!*' -Dmicrob -e "LOAD DATA LOCAL INFILE '/hadoop/data/mysql/advertising_space.csv' REPLACE INTO TABLE ADVERTISING_SPACE FIELDS TERMINATED BY ',' (create_date,report_date,plan_user_id,plan_app_id,plan_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate)"
+
+
+mongoexport --type=json -h 10.80.16.34:27017 -u reportor -p reportorKOLU -d ad_report -c t_ad_query_water -q '{"createTime":{$gte:"20191204000000"}}' | sed 's/{"$oid"://; s/},/,/' >> /hadoop/data/ods_wefix/t_ad_query_water.201912/t_ad_query_water.json
+
+
+
+mysql -P3306 -h10.80.176.22 -umeta -pmeta2015 -Ddatamart -e "LOAD DATA LOCAL INFILE '/hadoop/data/mysql/advertising_space.csv' REPLACE INTO TABLE ADVERTISING_SPACE FIELDS TERMINATED BY ',' (create_date,report_date,plan_user_id,plan_app_id,plan_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate)"
+
+
+mysql -P3306 -hmysql22 -uroot -p'INikGPLun*8v' -Dmicrob -e "select * from ADT_DATA where date(report_date) = $(date +%Y%m%d)"
+
+
+
+mysql -P3306 -h'10.83.16.22' -uroot -p'INikGPLun*8v' -Dmicrob -e "select * from ADT_DATA where date(report_date) = $(date +%Y%m%d)"
+
+mysql -P3306 -hmysql22 -uroot -p'INikGPLun*8v' -Dmicrob -e "LOAD DATA LOCAL INFILE '/hadoop/data/mysql/advertising_space.csv' REPLACE INTO TABLE ADVERTISING_SPACE FIELDS TERMINATED BY ',' (create_date,report_date,plan_user_id,plan_app_id,plan_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate);"
+
+
+
+
+# advertising_space 字段
+# create_date,report_date,plan_user_id,plan_app_id,plan_id,plan_adv_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate
+
+# unfraud_recommend_wefix 字段
+# report_date,app_name,blacklist,request_sum,device_exce,device_good,device_gene,device_diff,device_erro,iprate_exce,iprate_gene,iprate_diff,iprate_erro
+
+
+for (( stime = 20191115; stime <= $(date +%Y%m%d); stime=$(date -d "1 day $stime" +%Y%m%d) )); do
+  beeline -u jdbc:hive2://spark:10000 -n hdfs \
+  --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} \
+  -e '
+  ALTER TABLE ods_wefix.t_ad_query_water_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+  ALTER TABLE ods_wefix.t_ad_action_water_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+  '
+  beeline -u jdbc:hive2://spark:10000 -n hdfs \
+  --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} \
+  -f '/home/hdfs/starsource/warehouse/dm/dm_cf/advertising_space.hql'
+done
+
+beeline -u jdbc:hive2://spark:10000 -n hdfs --showHeader=false --outputformat=csv2 -e 'select create_date,report_date,plan_user_id,plan_app_id,plan_id,plan_adv_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate from dm_cf.advertising_space' > /hadoop/data/mysql/advertising_space.csv
+
+mysql -Dmicrob -e "load data local infile '/hadoop/data/mysql/advertising_space.csv' REPLACE INTO TABLE ADVERTISING_SPACE FIELDS TERMINATED BY ',' (create_date,report_date,plan_user_id,plan_app_id,plan_id,plan_adv_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate);"
+
+
+mysql -P3306 -hmysql07 -uroot -p'Xfx2018@)!*' -Dmicrob -N -s -e "SELECT * FROM EXCHANGE_INFO;" >> /hadoop/data/ods_wefix/exchange_info.tsv
+
+
+p_num=20
+p_opera(){
+  pids=(${pids[@]:-} $!)
+  while [[ ${#pids[@]} -ge $p_num ]]; do
+    pids_old=(${pids[@]})   pids=()
+    for p in "${pids_old[@]}";do
+      [[ -d "/proc/$p" ]] && pids=(${pids[@]} $p)
+    done
+    num=${#pids[@]}
+    sleep 0.01
+  done
+}
+for (( stime = $(date +%Y%m%d); stime >= 20190101; stime=$(date -d "-1 day $stime" +%Y%m%d) )); do
+  {
+    beeline -u jdbc:hive2://spark:10000 -n hdfs \
+    --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} \
+    -e 'ALTER TABLE ods_wefix.t_ad_action_water_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");'
+    # '
+    # ALTER TABLE ods_wefix.atd_black_json DROP IF EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+    # ALTER TABLE ods_wefix.atd_device_json DROP IF EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+    # ALTER TABLE ods_wefix.atd_ip_json DROP IF EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+
+    # ALTER TABLE ods_wefix.atd_black_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+    # ALTER TABLE ods_wefix.atd_device_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+    # ALTER TABLE ods_wefix.atd_ip_json ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");
+    # '
+  } &
+  p_opera
+done
+
+unset ftime p_num sql
+p_num=150 ftime=  etime=20200101
+for (( stime = ${ftime:=$(date +%Y%m%d)}; stime >= ${etime:=20190101}; stime=$(date -d "-1 day $stime" +%Y%m%d) )); do
+  year_month=${stime:0:6}   day_of_month=${stime:6:2}
+  sql+="
+  ALTER TABLE ods_wefix.atd_black_json DROP IF EXISTS PARTITION (year_month='${year_month}',day_of_month='${day_of_month}');
+  ALTER TABLE ods_wefix.atd_black_json ADD IF NOT EXISTS PARTITION (year_month='${year_month}',day_of_month='${day_of_month}');
+  "
+  d_diff=$(( ($(date -d $ftime +%s) - $(date -d $stime +%s)) / 86400 ))
+  [[ ($d_diff != 0 && $(( $d_diff % ${p_num:-150} )) == 0) || $stime == $etime ]] && {
+    beeline -u jdbc:hive2://spark:10000 -n hdfs -e "${sql}"
+    unset sql
+  }
+done
+
+
+
+
+
+
+
+
+p_num=20
+p_opera(){
+  pids=(${pids[@]:-} $!)
+  while [[ ${#pids[@]} -ge $p_num ]]; do
+    pids_old=(${pids[@]})   pids=()
+    for p in "${pids_old[@]}";do
+      [[ -d "/proc/$p" ]] && pids=(${pids[@]} $p)
+    done
+    num=${#pids[@]}
+    sleep 0.01
+  done
+}
+for (( stime = 20191115; stime <= $(date +%Y%m%d); stime=$(date -d "1 day $stime" +%Y%m%d) )); do
+  {
+    beeline -u jdbc:hive2://spark:10000 -n hdfs \
+    --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} \
+    -f '/home/hdfs/starsource/warehouse/dm/dm_cf/advertising_space.hql'
+  } &
+  p_opera
+done
+
+netstat  -ltpn | grep 10016
+netstat  -anb | grep 10016
+
+lsof | grep delete
+
+
+# TD数据
+堡垒机   172.20.0.6
+VPN账号  winco_weshareholdings
+
+
+Hadoop集群信息YhABC3NBn2p29Sa(未知密码)
+master        10.80.176.3           hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+slavemaster   10.80.176.35          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+slave1        10.80.176.2           hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+slave2        10.80.176.26          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+slave3        10.80.176.48          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+etl           10.80.176.13          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+ambari        10.80.176.21          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+spark         10.80.176.20          hadoop    hadoop!987          root      *uy8J!Dp5UxTOPo
+MYSQL主       10.80.16.7            BDUser_R  xy@Eh93AmnCkMbiU    root      Xfx2018@)!*         DB:starsource
+MySQL从       10.80.96.5            BDUser_R  xy@Eh93AmnCkMbiU    root      Xfx2018@)!*         DB:starsource
+MySQLETL(dmp) 10.80.176.22          meta      meta2015            root      Cs85$pjNO^*T0zq     DB:datamart
+MongoDB       10.80.16.34:27017     mongouser S6gvEdMzYVUT8x      readuser  G2Vw38JZHeWvM2      DB:starsource   admin
+Oracle        10.1.16.2:1521        etlreader etlreader2019       ServerName:orcl               DB:orcl
+后端开发环境  10.80.0.15            app       app@123             root       Xfx2018@)!*
+后端开发环境  10.80.0.32            app       app@123             root       Xfx2018@)!*
+后端开发环境  10.80.0.35            app       app@123             root       Xfx2018@)!*
+后端开发环境  10.80.0.37            app       app@123             root       Xfx2018@)!*
+后端开发环境  10.80.0.49            app       app@123             root       Xfx2018@)!*
+API撞库APP    10.80.0.19            app       app@123             root       Xfx2018@)!*
+API撞库APP    10.80.0.148           app       app@123             root       !mQtq4g$`5Vz
+中转服务器    10.90.0.5             ximing.wei
+apb-report@service.weshareholdings.com    &kQ4TOWerGlfpUm7   25   https://10.80.0.133/owa
+
+
+
+UAT环境服务器
+master          10.83.96.4          hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+masterslave     10.83.96.6          hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+slave1          10.83.96.8          hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+slave2          10.83.96.12         hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+slave3          10.83.96.15         hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+spark           10.83.96.9          hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+etl             10.83.96.13         hadoop     hadoop!987         root  8Gpn2N8b0SXwahJ
+web报表服务     10.83.96.3          hadoop     hadoop!987         root  YhABC3NBn2p29Sa
+星源测试服务器  10.83.0.114         root       7huKPfb$auMT5f@s
+MYSQL(星源测试) 10.83.16.22         root       INikGPLun*8v       microb    etl
+MySQLETL(dmp)   10.83.96.7          root       RRDdjhPULOdZ703
+MYSQL(local)    10.10.18.48         root       password
+MongoDB         10.83.16.26:27017   mongouser  6xVMjclL5DSGJPZ    DB:starsource
+Oracle          10.83.16.3:1521     ABSBANK    absbank            DB:orcl
+后端测试环境    10.83.0.114         app        app@123            root  7huKPfb$auMT5f@s
+后端测试环境    10.83.0.41          chkusr     HGSX97UhF$>A!2TN
+后端测试环境    10.83.0.108         chkusr     HGSX97UhF$>A!2TN
+测试中间服务器  10.83.0.32          it-dev     058417gv
+apb-report@weshareholdings.com.cn   Ws2018!08@        25         https://10.83.0.44/owa
+
+
+result1.gz  181832361331065379306/output/output_detail_activeAppList/result.gz
+result2.gz  181832361331065379306/output/output_detail_activeAppList_converted/result.gz
+
+result3.gz  18183333827490249783/output/output_detail_activeAppList/result.gz
+result4.gz  18183333827490249783/output/output_detail_activeAppList_converted/result.gz
+
+
+
+
+./mongo 10.80.16.34:27017/admin -u readuser -p G2Vw38JZHeWvM2
+./mongo 10.83.16.26:27017/starsource -u mongouser -p 6xVMjclL5DSGJPZ
+./mongo 10.80.16.34:27017/starsource -u mongouser -p S6gvEdMzYVUT8x
+
+
+-d 数据库 -c 数据表 -o 输出路径 -f 字段(csv时必须指定-f)
+MongoDB导出CSV
+mongoexport -h 10.83.16.26:27017 -u mongouser -p 6xVMjclL5DSGJPZ -d starsource -c 'ACQUISITION_PLAN' --csv -f -o mdb1-examplenet.csv
+
+MongoDB导入CSV
+mongoimport --csv -d "baiduled" -c "dataCollection" -o aaa.csv
+
+
+for file in /hadoop/data/lower_B/t_ad_action_water.*/*; do
+  file_date=${file##*.} year_month=${file_date:0:6} day_of_month=${file_date:6:2}
+  beeline -n hdfs -u jdbc:hive2://10.80.176.20:10000 --hivevar year_month=${year_month} --hivevar day_of_month=${day_of_month} -e 'ALTER TABLE ods_lowerb.t_ad_action_water ADD IF NOT EXISTS PARTITION(year_month="${year_month}",day_of_month="${day_of_month}")'
+done
+
+
+
+for file in /hadoop/data/star_source/flow_record/*; do
+  file_date=${file##*.} file_date=${file_date//-/} year_month=${file_date:0:6} day_of_month=${file_date:6:2}
+  beeline -n hdfs -u jdbc:hive2://10.80.176.20:10000 --hivevar year_month=${year_month} --hivevar day_of_month=${day_of_month} -e 'ALTER TABLE ods_source.flow_record_json ADD IF NOT EXISTS PARTITION(year_month="${year_month}",day_of_month="${day_of_month}")'
+done
+
+for file in /hadoop/data/star_source/flow_record/*; do
+  file_date=${file##*.} file_date=${file_date//-/} year_month=${file_date:0:6} day_of_month=${file_date:6:2}
+  beeline -n hdfs -u jdbc:hive2://10.80.176.20:10000 --hivevar year_month=${year_month} --hivevar day_of_month=${day_of_month} -e 'INSERT OVERWRITE TABLE ods_source.flow_record PARTITION(year_month,day_of_month) SELECT * FROM (SELECT distinct ROW_NUMBER() OVER(PARTITION BY `_id`,code ORDER BY utime DESC) od,* FROM ods_source.flow_record_json) tmp WHERE year_month = "${year_month}" and day_of_month = "${day_of_month}" and tmp.od=1;'
+done
+
+
+sed -i 's/exchangeId/exchange_id/' /hadoop/data/ods_wefix/t_ad_query_water.201911/t_ad_query_water.20191128.json
+
+
+
+grep -Po '"id_type[":]+.[^,]+' /hadoop/data/lower_B/t_ad_query_water.2019*/* | sort -u
+
+
+for dirs in /hadoop/data/lower_B/t_ad_query_water.*; do
+  [[ ! -d $dirs ]] && continue
+  for files in $dirs/*; do
+    file=${files##*.} date=${file:0:6} day=${file:6:2}
+    echo $files /warehouse/tablespace/managed/hive/ods_lowerb.db/t_ad_query_water/year_month=${date}/day_of_month=${day}
+    hdfs dfs -put -f ${files} /warehouse/tablespace/managed/hive/ods_lowerb.db/t_ad_query_water/year_month=${date}/day_of_month=${day}
+    beeline -n hdfs \
+    -u jdbc:hive2://spark:10000 \
+    --hivevar database=$database --hivevar table=$table \
+    --hivevar ym=$date --hivevar dm=$day -e \
+    'ALTER TABLE ods_lowerb.t_ad_query_water ADD IF NOT EXISTS PARTITION (year_month="${ym}",day_of_month="${dm}");'
+  done
+done
+
+
+
+
+
+
+database=ods_lowerb
+table=t_ad_query_water
+for ym in $(hdfs dfs -ls -C /warehouse/tablespace/managed/hive/$database.db/$table); do
+  ym_dir=$ym ym=${ym##*/} ym=(${ym//=/ }) ym=${ym[1]}
+  for dm in $(hdfs dfs -ls -C $ym_dir); do
+    # file=$(hdfs dfs -ls -C $dm)
+    # [[ -n $file ]] && continue
+    dm_dir=$dm dm=${dm##*/} dm=(${dm//=/ }) dm=${dm[1]}
+    echo -e '\n'$ym'-----'$dm'-----'$dm_dir'\n'
+    beeline -n hdfs \
+    -u jdbc:hive2://spark:10000 \
+    --hivevar database=$database --hivevar table=$table \
+    --hivevar ym=$ym --hivevar dm=$dm -e \
+    'ALTER TABLE ${database}.${table} ADD IF NOT EXISTS PARTITION (year_month="${ym}",day_of_month="${dm}");'
+    # 'ALTER TABLE ${database}.${table} DROP PARTITION (year_month=${ym},day_of_month=${dm});'
+    # hdfs dfs -rm -r $dm_dir
+  done
+done
+
+
+
+
+
+
+
+endDate=20190912
+while [[ $endDate -lt $(date +%Y%m%d) ]]; do
+  beeline -n hdfs -u jdbc:hive2://10.80.176.20:10000 --hivevar endDate=${endDate} \
+  -e '
+  INSERT into TABLE tmp_type
+  select ${endDate} as datetime,2 as type,crowd_id,tdresult,id,crowd_name
+  from (select distinct * from tmp where datetime between date_format(date_sub(from_unixtime(unix_timestamp("${endDate}","yyyyMMdd"),"yyyy-MM-dd"),1),"yyyyMMdd") and ${endDate}) as tmp
+  group by crowd_id,crowd_name,id,tdresult
+  having count(id) = 2
+  union all
+  select ${endDate} as datetime,3 as type,crowd_id,tdresult,id,crowd_name
+  from (select distinct * from tmp where datetime between date_format(date_sub(from_unixtime(unix_timestamp("${endDate}","yyyyMMdd"),"yyyy-MM-dd"),2),"yyyyMMdd") and ${endDate}) as tmp
+  group by crowd_id,crowd_name,id,tdresult
+  having count(id) = 3;'
+  endDate=$(date -d "-$(( $(date -d "$(date +%Y%m%d)" +%j) - $(date -d "$endDate" +%j) - 1 )) day" +%Y%m%d)
+done
+
+
+
+
+
+input_s_time=1569859200
+input_e_time=$(date +%s)
+
+trans_y_m_d_hms(){ date -d@$1 +%Y%m%d%H%M%S; }
+
+startDate=$(trans_y_m_d_hms $input_s_time)
+startDate=${startDate:0:8}
+endDate=$(trans_y_m_d_hms $input_e_time)
+endDate=${endDate:0:8}
+
+
+for (( startDate=$startDate; $startDate <= $endDate; startDate=$(date -d "1 day $startDate" +%Y%m%d) )); do
+  echo $startDate   $endDate
+done
+
+
+
+
+for host in master masterslave slave1 slave2 slave3; do
+  # ssh $host 'mkdir -p /hadoop/data/es/{data,logs}'
+  # ssh $host 'chown -R es:es /hadoop/data'
+  # scp -r /home/hdfs/elasticsearch-6.6.0 $host:/home/es
+  # scp /home/hdfs/elasticsearch-6.6.0/config/elasticsearch.yml $host:/home/es/elasticsearch-6.6.0/config
+
+  # ssh $host 'ls -lh /home/es/*'
+  # ssh $host 'grep "path.data:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+  # ssh $host 'grep "path.logs:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+
+
+  # ip_host=($(grep -w $host /etc/hosts))
+  # ssh $host "sed -i 's/^node.name:.*/node.name: ${ip_host[1]}/' /home/es/elasticsearch-6.6.0/config/elasticsearch.yml"
+  # ssh $host "sed -i 's/^network.host:.*/network.host: ${ip_host[0]}/' /home/es/elasticsearch-6.6.0/config/elasticsearch.yml"
+
+  # ssh $host "sed -i 's#^path.data:.*#path.data: /hadoop/data/es/data#' /home/es/elasticsearch-6.6.0/config/elasticsearch.yml"
+  # ssh $host "sed -i 's#^path.logs::.*#path.data: /hadoop/data/es/logs#' /home/es/elasticsearch-6.6.0/config/elasticsearch.yml"
+
+  # ssh $host 'grep "path.data:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+  # ssh $host 'grep "path.logs:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+
+  # ssh $host 'grep "node.name:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+  # ssh $host 'grep "network.host:" /home/es/elasticsearch-6.6.0/config/elasticsearch.yml'
+
+  # curl http://$host:9200
+  # curl -XGET "http://$host:9200/_cluster/health?pretty"
+done
+
+
+
+
+
+
+beeline -u jdbc:hive2://spark:10000 -n hdfs --showHeader=false --outputformat=csv2 -e 'select * from dm_cf.unfraud_recommend_wefix' > /hadoop/data/mysql/unfraud_recommend_wefix.csv
+
+mysql -h10.83.16.14 -P3306 -uroot -p'Xfx2018@)!*' -Dmicrob -e "load data local infile '/hadoop/data/mysql/unfraud_recommend_wefix.csv' REPLACE INTO TABLE UNFRAUD_RECOMMEND_WEFIX FIELDS TERMINATED BY ',' (report_date,app_id,blacklist,request_sum,device_exce,device_good,device_gene,device_diff,device_erro,iprate_exce,iprate_gene,iprate_diff,iprate_erro);"
+
+
+
+
+
+
+for (( stime = 20191112; stime <= 20191127; stime=$(date -d "1 day $stime" +%Y%m%d) )); do
+  beeline -u jdbc:hive2://spark:10000 -n hdfs --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} -f '/home/hdfs/starsource/warehouse/dm/dm_cf/advertising_space.hql'
+done
+
+
+
+beeline -u jdbc:hive2://spark:10000 -n hdfs --showHeader=false --outputformat=csv2 -e 'select * from dm_cf.advertising_space where year_month = 201911 and day_of_month = 28' > /hadoop/data/mysql/advertising_space.csv
+
+mysql -h10.83.16.14 -P3306 -uroot -p'Xfx2018@)!*' -Dmicrob -e "load data local infile '/hadoop/data/mysql/advertising_space.csv' REPLACE INTO TABLE ADVERTISING_SPACE FIELDS TERMINATED BY ',' (create_date,report_date,plan_user_id,plan_app_id,plan_id,adv_user_id,adv_app_id,adv_id,adv_type,adv_req_num,adv_iss_num,iss_req_rate,adv_show_num,show_iss_rate,adv_cli_num,cli_show_rate);"
+
+
+p_opera(){
+  pids=(${pids[@]:-} $!)
+  while [[ ${#pids[@]} -ge $p_num ]]; do
+    pids_old=(${pids[@]})   pids=()
+    for p in "${pids_old[@]}";do
+      [[ -d "/proc/$p" ]] && pids=(${pids[@]} $p)
+    done
+    num=${#pids[@]}
+    sleep 0.01
+  done
+}
+
+database=ods_wefix
+table=t_ad_action_water_json
+# table=t_ad_query_water_json
+stime=20191101
+ntime=$(date +%Y%m%d)
+p_num=30
+for (( stime = $stime; stime <= $ntime; stime=$(date -d "1 day $stime" +%Y%m%d) )); do
+  beeline -u jdbc:hive2://spark:10000 -n hdfs \
+  --hivevar database=${database} --hivevar table=${table} \
+  --hivevar year_month=${stime:0:6} --hivevar day_of_month=${stime:6:2} \
+  -e 'ALTER TABLE ${database}.${table} ADD IF NOT EXISTS PARTITION (year_month="${year_month}",day_of_month="${day_of_month}");' &
+done
+
+
+
+s_r_r(){ echo ${1##*/}; }
+p_l_l(){ echo ${1%%.*}; }
+
+file=$(ls /hadoop/data/ods_wefix/atd_device.201911/*29*)
+# file=$(ls /hadoop/data/ods_wefix/atd_ip.201911/*29*)
+
+tbl=$(p_l_l $(s_r_r $file)) # atd_ip
+
+# sed -n '/\s\+/p' $file
+
+# sed -i '/\s\+/d' $file
+
+hdfs dfs -put -f $file /warehouse/tablespace/managed/hive/ods_wefix.db/${tbl}_json/year_month=201911/day_of_month=29
+
+
+
+
+
+yum install -y dos2unix
+
+yum install -y lrzsz
+
+
+yum clean all && yum makecache
+yum update kernel  -y
+reboot
+
+uname -a
+CentOS 7 ：3.10.0-957.21.3
+
+
+ssh-keygen -t rsa
+ssh-copy-id -i hadoop@10.80..176.13
+
+
+# git的提交代码(-u update)
+git init(第一次需要)
+git add -f *
+git commit -m '注释'
+git remote add origin git@github.com:MakeUpForeverForMe/etl.git(第一次时填写)
+git push -u origin master
+
+
+
+
+
+
+for database in $(beeline -u jdbc:hive2://10.80.176.20:10000 -n hdfs --silent=true --outputformat=csv2 --showHeader=false -e 'show databases;' 2> /dev/null | grep -v "default\|information_schema\|sys"); do for table in $(beeline -u jdbc:hive2://10.80.176.20:10000 -n hdfs --silent=true --outputformat=csv2 --showHeader=false --hivevar database=$database -e "show tables from ${database};" 2> /dev/null); do echo -e "\n$database.$table\n\n""$(beeline -u jdbc:hive2://10.80.176.20:10000 -n hdfs --silent=true --outputformat=csv2 --showHeader=false -e "desc $database.$table;" 2> /dev/null)"; done; done
+
+
+
+
+
+
+
+
+# val session = SparkSession
+# .builder()
+# .appName(this.getClass.getSimpleName.filter(!_.equals('$')))
+# .master("local[*]")
+# .config("spark.sql.shuffle.partitions", 1000)
+# .config("spark.default.parallelism", 1000)
+# .config("spark.cores.max", 6)
+# .config("spark.executor.cores", 1)
+# .config("spark.executor.memory", "9G")
+# .getOrCreate()
+
+
+
+
+
+
+
+
+
+
+# MySQL
+# 获取数据库
+sqoop list-databases --connect jdbc:mysql://10.80.16.7:3306 --username BDUser_R --password xy@Eh93AmnCkMbiU
+
+# 获取starsource库中的表
+sqoop list-tables --connect jdbc:mysql://10.80.16.7:3306/starsource --username BDUser_R --password xy@Eh93AmnCkMbiU
+
+# 将关系型数据的表结构复制到hive中
+for table in ADS_INBOUND ADS_RETURN CLIENT_INFO EVENT_LOGGER ORG_INFO PRODUCT_INFO RECOMMEND_RECON SOURCE_ORG_INFO STRATEGY_MATCHING; do
+  sqoop create-hive-table --connect jdbc:mysql://10.80.16.7:3306/starsource --table $table --username BDUser_R --password xy@Eh93AmnCkMbiU --hive-database ods_source_old --hive-table $table
+done
+
+# 从关系数据库导入文件到hive中 --direct --fields-terminated-by '\t'
+sqoop import --connect jdbc:mysql://10.80.16.7:3306/starsource --table sum_pull_push  --username BDUser_R --password xy@Eh93AmnCkMbiU -m 1 --hive-import --hive-database ods_source_old --hive-table test --delete-target-dir --fields-terminated-by '\t'
+
+
+
+# Oracle
+sqoop list-tables --connect jdbc:oracle:thin:@10.1.16.2:1521:orcl --username etlreader --password etlreader2019
+
+
+sqoop eval --connect jdbc:oracle:thin:@10.1.16.2:1521:orcl --username etlreader --password etlreader2019 -e "select * from HISASSETBASICINFO"
+
+
+
+
+
+
+
+bin/sqoop import \
+--connect jdbc:mysql://10.80.96.5:3306/starsource \
+--username BDUser_R \
+--password xy@Eh93AmnCkMbiU \
+--query 'select id, brand_id,name from bbs_product  where $CONDITIONS LIMIT 100' \
+--target-dir /user/xuyou/sqoop/imp_bbs_product_sannpy_ \
+--delete-target-dir \
+--num-mappers 1 \
+--compress \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+--direct \
+--fields-terminated-by '\t'
+
+
+
+
+
+
+# 将hive中的表数据导入到mysql中
+sqoop export --connect jdbc:mysql://localhost:3306/test --username root --password admin --table uv_info --export-dir /user/hive/warehouse/uv/dt=2011-08-03
+
+sqoop export --connect jdbc:mysql://localhost:3306/test --username root --password admin --table uv_info --export-dir /user/hive/warehouse/uv/dt=2011-08-03 --input-fields-terminated-by '\t'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+python /usr/lib/python2.7/site-packages/ambari_agent/HostCleanup.py --silent --skip=users
+
+for i in 2 3 13 20 21 26 35 48; do ssh root@10.80.176.$i "ambari-agent stop; yum erase ambari-agent -y; ambari-server stop; yum erase ambari-server -y; yum remove -y hadoop_2* hdp-select* ranger_2* zookeeper* bigtop* atlas-metadata* ambari* postgresql spark*; rm -rf /var/lib/ambari* /var/run/ambari* /usr/lib/amrbari* /etc/ambari* /var/log/ambari* /usr/lib/python2.7/site-packages/ambari* /etc/yum.repos.d/ambari* /etc/yum.repos.d/hdp*";done
+
+
+for i in 2 3 13 20 26 35 48; do ssh root@10.80.176.$i "ambari-agent stop; yum erase ambari-agent -y; yum remove -y ambari-agent; yum remove -y hadoop_2* hdp-select* ranger_2* zookeeper* bigtop* atlas-metadata* ambari* postgresql spark* /var/lib/ambari* /var/run/ambari* /usr/lib/amrbari* /etc/ambari* /var/log/ambari* /usr/lib/python2.7/site-packages/ambari*";done
+
+
+
+
+sed -i 's/verify=.*/verify=disable/g' /etc/python/cert-verification.cfg
+
+tar -zxvf /root/soft/ambari-2.7.3.0-centos7.tar.gz -C /var/www/html/hdp；tar -zxvf /root/soft/HDP-3.1.0.0-centos7-rpm.tar.gz -C /var/www/html/hdp；tar -zxvf /root/soft/HDP-UTILS-1.1.0.22-centos7.tar.gz -C /var/www/html/hdp
+
+
+# 强制覆盖
+\cp -f /var/www/html/hdp/ambari/centos7/2.7.3.0-139/ambari.repo ./;\cp -f /var/www/html/hdp/HDP/centos7/3.1.0.0-78/hdp.repo ./
+
+createrepo  ./
+
+for i in 2 3 13 20 21 26 35 48; do scp /etc/yum.repos.d/{ambari.repo,hdp.repo} root@10.80.176.$i:/etc/yum.repos.d; yum clean all; yum makecache; done
+
+
+
+yum -y install ambari-server
+
+/root/mysql-5.5.62/bin/mysql -h10.80.176.22 -umeta ambari -pmeta2015 < /var/lib/ambari-server/resources/Ambari-DDL-MySQL-CREATE.sql
+
+ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar
+
+ambari-server start
+
+
+jdbc:mysql://10.80.176.22:3306/hive?createDatabaseIfNotExist=true&amp;useSSL=false&amp;characterEncoding=UTF-8
+
+
+
+
+
+
+
+# 查找scala安装目录
+rpm -qa | grep scala | xargs rpm -ql | grep bin
+rpm -qa | grep jdk
+rpm -e --nodeps jdk-8u181-linux-x64.rpm
+rpm -ivh jdk-8u181-linux-x64.rpm
+
+
+
+
+
+
+~/flume-1.9.0/bin/flume-ng agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-test_log.conf -n agent -Dflume.root.logger=info,console
+
+
+~/flume-1.9.0/bin/flume-ng agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-avro_sink.conf -n agent -Dflume.root.logger=info,console
+
+~/flume-1.9.0/bin/flume-ng agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-hdfs_sink-01.conf -n agent -Dflume.root.logger=info,console
+
+~/flume-1.9.0/bin/flume-ng agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-hdfs_sink-02.conf -n agent -Dflume.root.logger=info,console
+
+
+nohup ~/flume-1.9.0/bin/flume-ng agent -n agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-collect.conf -Xmx8G &>> /dev/null &
+
+nohup ~/flume-1.9.0/bin/flume-ng agent -n agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-avro_sink.conf &>> /dev/null &
+
+nohup ~/flume-1.9.0/bin/flume-ng agent -n agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-hdfs_sink-01.conf &>> /dev/null &
+nohup ~/flume-1.9.0/bin/flume-ng agent -n agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-hdfs_sink-02.conf &>> /dev/null &
+
+ps -ef | grep -v grep | grep -v tail | grep flume | awk '{print $2}' | xargs kill
+
+ps -ef | grep -v grep | grep -v tail | grep flume-test_log.conf | awk '{print $2}' | xargs kill
+
+
+
+nohup ~/flume-1.9.0/bin/flume-ng agent --conf ~/flume-1.9.0/conf/ -f ~/flume-1.9.0/conf/flume-test_log.conf -n agent &>> /dev/null &
+
+
+
+
+初始化hive数据库
+/home/hadoop/hive-2.3.5/bin/schematool -initSchema -dbType mysql
+
+
+mysql -h10.80.176.22 -umeta azkaban -p
+meta2015
+
+RRDdjhPULOdZ703
+mysql -h10.83.96.7 -uroot azkaban -p
+
+mysql -h10.83.96.7 -uroot hive -p < hive_hive.sql
+
+mysqldump -h10.83.96.7 -uroot weshare -p > hive_weshare.sql
+mysqldump -h10.83.96.7 -uroot hive -p > hive_hive.sql
+
+mysql -h10.83.96.7 -uroot hive -p < hive_weshare.sql
+mysql -h10.83.96.7 -uroot weshare -p < hive_weshare.sql
+
+
+Cs85$pjNO^*T0zq
+
+mysql -h10.80.176.22 -uroot hive -p < hive_hive.sql
+
+mysqldump -h10.80.176.22 -uroot weshare -p > hive_weshare.sql
+mysqldump -h10.80.176.22 -uroot hive -p > hive_hive.sql
+
+
+
+mysqldump -h10.80.176.22 -uroot -p data_report > data_report.sql
+mysqldump -h10.80.176.22 -uroot -p enterprise > enterprise.sql
+
+
+mysql -h10.80.176.22 -uroot -p enterprise
+
+Cs85$pjNO^*T0zq
+
+
+mysql -h10.80.176.22 -uroot hive -pCs85$pjNO^*T0zq < hive_weshare.sql
+mysql -h10.80.176.22 -uroot weshare -pCs85$pjNO^*T0zq < hive_weshare.sql
+
+
+<property>
+<name>hadoop.proxyuser.hadoop.hosts</name>
+<value>*</value>
+</property>
+<property>
+<name>hadoop.proxyuser.hadoop.groups</name>
+<value>*</value>
+</property>
+
+./zookeeper-3.4.13/bin/zkServer.sh start
+./zookeeper-3.4.13/bin/zkServer.sh status
+./hadoop-2.7.7/sbin/start-dfs.sh
+./hadoop-2.7.7/sbin/start-yarn.sh
+./hadoop-2.7.7/sbin/yarn-daemon.sh start nodemanager
+
+新星源
+recommend_flow  code
+
+无推送结果     0
+筛选出来        100
+H5进入我的贷款    101
+h5进行点击      102
+推荐成功        200
+延时分发        300
+异常推送成功      400
+系统错误        500
+审批不通过(推荐失败) 501
+产品方handle异常   502
+推荐结果为空      505
+
+
+event_logger eventType
+
+流量进入      1
+注册落库      2
+合同签署成功  3
+完善信息      4
+标签匹配      5
+风控匹配      6
+成功推荐      7
+CPA点击跳转   100
+
+
+source_info
+source_mode
+api接入，页面跳转可能发生    1
+简易版H5+api                2
+全流程进件                  3
+h5透传                     4
+api透传，不留信息           5
+redirectPage
+无需跳转(对应透传)          0
+手机注册页                  1
+留资页(用户详情页)          2
+货架页(结果页,产品展示页)    3
+
+
+
+
+没有价值
+product_info loantype
+不限        0
+现金贷     1
+车贷        2
+房贷        3
+小微贷     4
+助贷        5
+
+
+老星源
+event_logger中的event
+流量进入      1   收到短信验证或因特力代投放转到我们的页面
+注册未落库   2   新用户注册
+有效入库      3   填写完成基本信息或因特力1填写完留资信息
+合同签署成功    4
+保存客户信息    5
+标签匹配      6
+风控匹配      7
+成功推荐      8
+CPA点击跳转   100
+
+接口形式时1没有task_id，2开始有(因特力1)
+接口形式时1、2没有task_id，3开始有(因特力代投放)
+自营形式时1、2没有task_id，3开始有
+
+
+
+三种流量接入方式(需要的都是新用户)
+一、因特力1 ——> 流资信息 ——> 结果页
+接收数：  因特力1给我们的数据
+有效接收数：用户填写完成留资信息的数据
+有效推送输：结果页中返回recommend_ret = 200 的数据
+独家有效推送： client_info.route = A
+非独家有效推送：client_info.route = B
+二、因特力代投放 ——> 基本信息 ——> 留资信息 ——> 结果页
+接收数：  因特力代投放给我们的数据
+有效接收数：用户填写完成基本信息的数据
+有效推送输：结果页中返回recommend_ret = 200 的数据
+三、其他 ——> 首页 ——> 基本信息 ——> 留资信息 ——> 结果页
+接收数：  填写完成首页的数据
+有效接收数：用户填写完成基本信息的数据
+有效推送输：结果页中返回recommend_ret = 200 的数据
+因特力代投放的通路
+xfx-01 新分享-01（今日头条）
+xfx-02 新分享-02（今日头条）
+xfx-03 新分享-03（今日头条）
+xfx-04 新分享-04（今日头条）
+
+
+
+
+recommend_recon中的recommend_rec
+无推送结果     100
+审批通过        200
+重复流量        500（系统内部错误）
+审批不通过     501（客户信息重复）
+审批过程出现异常    503（推送时系统内部错误）
+
+
+
+流量方标记
+10001 因特利1
+10002 百度
+10003 UC
+10004 陌陌
+10005 今日头条
+10006 抖音
+10007 潮科信息
+10008 短信测试
+10009 因特力代投放
+10010 贷超测试球球借
+10011 黑牛保险
+10012 卡集
+10013 好分期
+10014 聚汇无限
+10015 瑞汇元短信
+10016 同盾科技短信
+10017 天拓-信息流-wb粉丝通-大额
+10018 天拓-信息流-快手-小额
+10019 天拓-信息流-陌陌-小额
+10020 因特利待投放2
+10021 墨智科技
+10022 方瑞
+10023 天拓-信息流-快手-大额
+10024 天拓-信息流-陌陌-大额
+10025 麦火
+10026 小B流量
+10027 厚拓-百度原生-大额
+10028 厚拓-百度原生-小额
+10029 亿海蓝
+10030 小破云网络
+10031 TalkingDate
+10032 新浪爱问
+10033 天拓-信息流-wb粉丝通-小额
+10034 公众号
+
+产品方标记
+300000  百盛金服
+300001  助贷网
+300002  帮帮优贷
+300003  房金所
+300004  小小金融
+300005  杏仁派
+300006  蛋花花
+300007  51人品贷
+300008  佳佳融
+300009  易贷网
+300010  薪资贷
+300011  花无尽
+300012  点点金融
+300013  普江云贷
+300014  东方融资网
+300015  小财鱼
+300016  好花钱
+300017  闪贷
+300018  信诺贷
+300019  借云
+300020  助力钱包
+300021  360借条
+300022  融贷
+300023  网商金融
+300024  球球借
+300025  仁信口袋
+300026  给你花
+300027  闪电借款
+300028  未睐贷款
+300029  房司令
+300030  开发人员测试产品（请勿操作）
+300031  及贷
+300032  代你还
+300033  聚财小神牛
+300035  点点
+300036  速易
+300037  速贷
+300041  信用超人
+300042  信用超人贷
+300043  晟振舒贷
+300044  猎豹贷款
+300045  钞急好借
+300046  点点贷
+300047  51银行贷
+300048  百度有钱花
+300049  融泽财富
+300050  融贷通
+300051  贷融融
+300052  房融通
+300053  农商普惠
+300054  御顺金融
+300055  宏翰金融
+300056  蜘蛛
+
+
+老星源系统前端H5产品业务逻辑及后台写表次序-
+
+0. 如果流量方调用Weshare API，向ads_inbound table里面写入一条记录；如果流量方代投放Weshare页面，则不向该表写入数据（目前只有 因特利1 这个渠道会向ads_inbound table写数据，其它的流量渠道不会）
+
+1. 流量方向Weshare推送流量，event_logger table写入event=1的事件记录
+
+2. 校验全局策略规则，
+2a. 如果校验不通过，将流量退回给流量方机构，向ads_return table写入一行记录，return_type字段为流量退回的原因，流程结束
+
+//系统错误
+public static final int ADS_RETURN_TYPE_SYSTEM_ERROR = 0;
+//格式校验错误
+public static final int ADS_RETURN_TYPE_VALIDATION_FAILED = 1;
+//流量重复
+public static final int ADS_RETURN_TYPE_DUPLICATE = 2;
+
+//流量重复(预处理判重通过后，在推荐主流程入库时返回重复，一般原因为用户在手机点击了返回，重走推荐流程)
+public static final int ADS_RETURN_TYPE_DUPLICATE_WHEN_RECOMMEND = 21;
+
+//CA校验失败
+public static final int ADS_RETURN_TYPE_CA_FAILED = 3;
+//征信评分过低
+public static final int ADS_RETURN_TYPE_CREDIT_LOW = 4;
+//无法匹配产品
+public static final int ADS_RETURN_TYPE_NO_PRODUCT = 5;
+//手机验证码等待超时
+public static final int ADS_RETURN_TYPE_CA_TIMEOUT = 6;
+//流量方额度满
+public static final int ADS_RETURN_TYPE_FLOW_CONTROL = 7;
+
+//订单号重复
+public static final int ADS_RETURN_TYPE_ORDER_DUPLICATE = 8;
+
+//CA加签失败
+public static final int ADS_RETURN_TYPE_CONTRACT_FAILED = 9;
+//区域不匹配
+public static final int ADS_RETURN_TYPE_AREA_NOT_ALLOW = 10;
+
+//流量入口关闭
+public static final int ADS_RETURN_TYPE_SHUTDOWN = 11;
+
+//非工作日推送
+public static final int ADS_RETURN_TYPE_WORK_DAY_ONLY = 12;
+
+2b. 如果全局规则校验通过，向ads_recon table写入一行记录，event_type字段为流量退回原因（与ads_return table一样）
+
+3. 2b步骤执行过后，根据source_org_info table校验流量方额度
+
+4. 流量方额度校验通过，有效流量未入库，event_logger table写入一行event_type=2的记录
+
+5. 用户在前端H5页面上勾选用户授权协议后点击提交按钮，event_logger table写入一行event_type=4的记录
+
+6. 用户基本信息写入client_info table（除留存资产信息页面上的信息以外）
+
+7. 后台保存用户基本信息，event_logger table写入一行event_type=5的记录
+
+8. 返回流量接收结果给流量机构
+
+9. 有效流量入库，event_logger table写入一行event_type=3的记录
+
+10. 跳转到留存资产信息页面，用户填写完资产信息后保存提交，资产信息字段更新到client_info table
+
+11. 后台校验产品方策略，选出产品，此时未将用户推荐给产品方机构，event_logger table写入一行event_type=6的记录
+
+12. 将用户推荐给产品方机构，recommend_recon table写入一条记录，recommend_ret字段写入推荐结果
+
+//无推送结果
+public static final int PENDING = 100;
+//审批通过
+public static final int RECOMEND_SUCCESS = 200;
+//重复流量
+public static final int DUPLICATE = 500;
+//审批不通过
+public static final int RECOMMEND_FAILED = 501;
+//审批过程出现异常
+public static final int SYS_FAILED = 503;
+
+13. 用户看到结果页面，上面是H5分发的机构，下面是API分发的机构，event_logger table写入event_type=8的记录
+注：一个用户，会同时推送给多个H5机构和多个API机构，H5机构几乎100%推送成功，API机构可能推送失败，所以可以认为一个用户只要推送给产品方，必定能够成功推送给一家产品方机构
+
+14. 如果10秒内用户没有关闭页面，会跳到广告页面，event_logger table写入一行event_type=100的记录
+
+
+注：所有环节，只要出现错误，都会想ads_recon table写入一条记录，随后流程结束
+
+
+ads_inbound table - 订单转换关系表，记录流量方订单与Weshare订单的对应关系
+ads_return table - 流量方推过来的流量，Weshare退回时写入
+ads_recon table - 流量方推过来的流量，每一笔都写入
+
+目前，只有 因特利1 是call Weshare API的方式推送流量，因此会向ads_inbound table写入数据，其它渠道推送流量时则不会写入；因特利1 推送来的流量会直接通过所有的策略规则校验，并直接经过event_type=1/2/3/4/5的所有步骤
+
+
+因特力1计划成本按有效推送算
+因特力代投放按点击一次算     event = 1
+其他按注册一次算            event = 2
+
+
+
+下载地址：
+Ambari：http://public-repo-1.hortonworks.com/ambari/centos7/2.x/updates/2.7.3.0/ambari-2.7.3.0-centos7.tar.gz
+HDP：http://public-repo-1.hortonworks.com/HDP/centos7/3.x/updates/3.1.0.0/HDP-3.1.0.0-centos7-rpm.tar.gz
+HDP-UTILS:http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.22/repos/centos7/HDP-UTILS-1.1.0.22-centos7.tar.gz
+
+
+idea的秘钥
+56ZS5PQ1RF-eyJsaWNlbnNlSWQiOiI1NlpTNVBRMVJGIiwibGljZW5zZWVOYW1lIjoi5q2j54mI5o6I5p2DIC4iLCJhc3NpZ25lZU5hbWUiOiIiLCJhc3NpZ25lZUVtYWlsIjoiIiwibGljZW5zZVJlc3RyaWN0aW9uIjoiRm9yIGVkdWNhdGlvbmFsIHVzZSBvbmx5IiwiY2hlY2tDb25jdXJyZW50VXNlIjpmYWxzZSwicHJvZHVjdHMiOlt7ImNvZGUiOiJJSSIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9LHsiY29kZSI6IkFDIiwicGFpZFVwVG8iOiIyMDIwLTAzLTEwIn0seyJjb2RlIjoiRFBOIiwicGFpZFVwVG8iOiIyMDIwLTAzLTEwIn0seyJjb2RlIjoiUFMiLCJwYWlkVXBUbyI6IjIwMjAtMDMtMTAifSx7ImNvZGUiOiJHTyIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9LHsiY29kZSI6IkRNIiwicGFpZFVwVG8iOiIyMDIwLTAzLTEwIn0seyJjb2RlIjoiQ0wiLCJwYWlkVXBUbyI6IjIwMjAtMDMtMTAifSx7ImNvZGUiOiJSUzAiLCJwYWlkVXBUbyI6IjIwMjAtMDMtMTAifSx7ImNvZGUiOiJSQyIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9LHsiY29kZSI6IlJEIiwicGFpZFVwVG8iOiIyMDIwLTAzLTEwIn0seyJjb2RlIjoiUEMiLCJwYWlkVXBUbyI6IjIwMjAtMDMtMTAifSx7ImNvZGUiOiJSTSIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9LHsiY29kZSI6IldTIiwicGFpZFVwVG8iOiIyMDIwLTAzLTEwIn0seyJjb2RlIjoiREIiLCJwYWlkVXBUbyI6IjIwMjAtMDMtMTAifSx7ImNvZGUiOiJEQyIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9LHsiY29kZSI6IlJTVSIsInBhaWRVcFRvIjoiMjAyMC0wMy0xMCJ9XSwiaGFzaCI6IjEyMjkxNDk4LzAiLCJncmFjZVBlcmlvZERheXMiOjAsImF1dG9Qcm9sb25nYXRlZCI6ZmFsc2UsImlzQXV0b1Byb2xvbmdhdGVkIjpmYWxzZX0=-SYSsDcgL1WJmHnsiGaHUWbaZLPIe2oI3QiIneDtaIbh/SZOqu63G7RGudSjf3ssPb1zxroMti/bK9II1ugHz/nTjw31Uah7D0HqeaCO7Zc0q9BeHysiWmBZ+8bABs5vr25GgIa5pO7CJhL7RitXQbWpAajrMBAeZ2En3wCgNwT6D6hNmiMlhXsWgwkw2OKnyHZ2dl8yEL+oV5SW14t7bdjYGKQrYjSd4+2zc4FnaX88yLnGNO9B3U6G+BuM37pxS5MjHrkHqMTK8W3I66mIj6IB6dYXD5nvKKO1OZREBAr6LV0BqRYSbuJKFhZ8nd6YDG20GvW6leimv0rHVBFmA0w==-MIIElTCCAn2gAwIBAgIBCTANBgkqhkiG9w0BAQsFADAYMRYwFAYDVQQDDA1KZXRQcm9maWxlIENBMB4XDTE4MTEwMTEyMjk0NloXDTIwMTEwMjEyMjk0NlowaDELMAkGA1UEBhMCQ1oxDjAMBgNVBAgMBU51c2xlMQ8wDQYDVQQHDAZQcmFndWUxGTAXBgNVBAoMEEpldEJyYWlucyBzLnIuby4xHTAbBgNVBAMMFHByb2QzeS1mcm9tLTIwMTgxMTAxMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxcQkq+zdxlR2mmRYBPzGbUNdMN6OaXiXzxIWtMEkrJMO/5oUfQJbLLuMSMK0QHFmaI37WShyxZcfRCidwXjot4zmNBKnlyHodDij/78TmVqFl8nOeD5+07B8VEaIu7c3E1N+e1doC6wht4I4+IEmtsPAdoaj5WCQVQbrI8KeT8M9VcBIWX7fD0fhexfg3ZRt0xqwMcXGNp3DdJHiO0rCdU+Itv7EmtnSVq9jBG1usMSFvMowR25mju2JcPFp1+I4ZI+FqgR8gyG8oiNDyNEoAbsR3lOpI7grUYSvkB/xVy/VoklPCK2h0f0GJxFjnye8NT1PAywoyl7RmiAVRE/EKwIDAQABo4GZMIGWMAkGA1UdEwQCMAAwHQYDVR0OBBYEFGEpG9oZGcfLMGNBkY7SgHiMGgTcMEgGA1UdIwRBMD+AFKOetkhnQhI2Qb1t4Lm0oFKLl/GzoRykGjAYMRYwFAYDVQQDDA1KZXRQcm9maWxlIENBggkA0myxg7KDeeEwEwYDVR0lBAwwCgYIKwYBBQUHAwEwCwYDVR0PBAQDAgWgMA0GCSqGSIb3DQEBCwUAA4ICAQAF8uc+YJOHHwOFcPzmbjcxNDuGoOUIP+2h1R75Lecswb7ru2LWWSUMtXVKQzChLNPn/72W0k+oI056tgiwuG7M49LXp4zQVlQnFmWU1wwGvVhq5R63Rpjx1zjGUhcXgayu7+9zMUW596Lbomsg8qVve6euqsrFicYkIIuUu4zYPndJwfe0YkS5nY72SHnNdbPhEnN8wcB2Kz+OIG0lih3yz5EqFhld03bGp222ZQCIghCTVL6QBNadGsiN/lWLl4JdR3lJkZzlpFdiHijoVRdWeSWqM4y0t23c92HXKrgppoSV18XMxrWVdoSM3nuMHwxGhFyde05OdDtLpCv+jlWf5REAHHA201pAU6bJSZINyHDUTB+Beo28rRXSwSh3OUIvYwKNVeoBY+KwOJ7WnuTCUq1meE6GkKc4D/cXmgpOyW/1SmBz3XjVIi/zprZ0zf3qH5mkphtg6ksjKgKjmx1cXfZAAX6wcDBNaCL+Ortep1Dh8xDUbqbBVNBL4jbiL3i3xsfNiyJgaZ5sX7i8tmStEpLbPwvHcByuf59qJhV/bZOl8KqJBETCDJcY6O2aqhTUy+9x93ThKs1GKrRPePrWPluud7ttlgtRveit/pcBrnQcXOl1rHq7ByB8CFAxNotRUYL9IF5n3wJOgkPojMy6jetQA5Ogc8Sm7RG6vg1yow==
+
+
+excel的十字光标
+Private Sub Workbook_SheetSelectionChange(ByVal Sh As Object, ByVal Target As Range)
+Cells.Interior.ColorIndex = xlNone
+Rows(Target.Row).Interior.Color = RGB(0,255,255)
+Columns(Target.Column).Interior.Color = RGB(0,255,255)
+End Sub
+
+ODBC连接字符串
+Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
+
+
+
+
+<property>
+<name>hadoop.proxyuser.hadoop.hosts</name>
+<value>*</value>
+</property>
+<property>
+<name>hadoop.proxyuser.hadoop.groups</name>
+<value>*</value>
+</property>
+
+
+vim ~/hadoop-2.7.7/etc/hadoop/core-site.xml
+
+export JAVA_HOME='/usr/local/java/jdk1.8.0_131'
+./zk/zookeeper-3.4.13/bin/zkServer.sh start
+./zk/zookeeper-3.4.13/bin/zkServer.sh status
+./hadoop-2.7.7/sbin/start-dfs.sh
+./hadoop-2.7.7/sbin/start-yarn.sh
+
+生产
+etl
+
+
+spark
+
+
+master
+NodeManager
+DFSZKFailoverController
+NameNode
+ResourceManager
+zookeeper
+JournalNode
+
+
+slavemaster
+NodeManager
+DFSZKFailoverController
+NameNode
+ResourceManager
+zookeeper
+JournalNode
+
+
+slave1
+JournalNode
+DataNode
+NodeManager
+QuorumPeerMain
+
+
+slave2
+NodeManager
+DataNode
+
+
+slave3
+NodeManager
+DataNode
+
+
+
+UAT
+etl
+AzkabanExecutorServer
+AzkabanWebServer
+
+spark
+java -jar /home/hadoop/test/service/zuul/zuul-0.0.1-SNAPSHOT.jar
+nohup hive --service hiveserver2 &>/dev/null &
+spark HistoryServer
+
+master
+DFSZKFailoverController
+NameNode
+ResourceManager
+zookeeper
+JournalNode
+
+masterslave
+NameNode
+ResourceManager
+zookeeper
+DFSZKFailoverController
+JournalNode
+
+slave1
+DataNode
+NodeManager
+zookeeper
+JournalNode
+
+slave2
+DataNode
+NodeManager
+
+slave3
+DataNode
+NodeManager
