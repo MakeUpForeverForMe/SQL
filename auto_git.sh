@@ -8,7 +8,7 @@ dir_home=/d/Users/ximing.wei/Desktop/code
 
 log=$dir_home/auto_git.log
 
-dirs=.,starsource,Project
+dirs=.,Project
 
 n_prt '-' '120' &>> $log
 
