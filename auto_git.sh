@@ -1,9 +1,8 @@
 #!/bin/bash -e
 
-n_prt(){ printf "\n\n%${2:-30}s\n" | sed "s/ /$1/g"; }
-prt_n(){ printf "\n%${2:-30}s\n\n" | sed "s/ /$1/g"; }
+prt(){ printf "\n\n%${2:-30}s\n" | sed "s/ /$1/g"; }
 
-succ_erro(){ [[ $? == 0 ]] && prt_n '成功' &>> $log || { prt_n '错误'; continue; } &>> $log; }
+succ_erro(){ ( [[ $? == 0 ]] && prt '成功' || { prt '错误'; continue; } ) &>> $log; }
 
 curr_date=$(date +%F)
 dir_home=/d/Users/ximing.wei/Desktop/code
@@ -12,7 +11,7 @@ log=$dir_home/auto_git.log
 
 dirs=.,Project
 
-n_prt '-' '120' &>> $log
+prt '-' '120' &>> $log
 
 date +'%F %T' &>> $log
 
