@@ -27,11 +27,11 @@ for dir in ${dirs//,/ }; do
 
   echo "git commit -m '$curr_date 系统自动提交'" &>> $log
   git commit -m "$curr_date 系统自动提交" >&2 &>> $log
-  [[ $? == 0 ]] && prt_n '成功' '30' &>> $log || { prt_n '错误' '30'; continue; } &>> $log
+  succ_erro
 
   echo 'git push' &>> $log
   git push >&2 &>> $log
-  [[ $? == 0 ]] && prt_n '成功' '30' &>> $log || { prt_n '错误' '30'; continue; } &>> $log
+  succ_erro
 done
 
 
