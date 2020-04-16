@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-prt(){ printf "\n%${2:-20}s\n" $dt | sed "s/ /$1/g"; }
+prt(){ echo -en ${dt}$(printf "\n%-${2:-20}s\n" | sed "s/ /$1/g"); }
 
 succ_erro(){ ( [[ $? == 0 ]] && prt '成功' || { prt '错误'; continue; } ) &>> $log; }
 
