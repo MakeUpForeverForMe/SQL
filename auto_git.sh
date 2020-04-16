@@ -29,10 +29,6 @@ for dir in ${dirs//,/ }; do
   git push >&2 &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
-
-  printf '\n\n' &>> $log
 done
 
-
-# sleep 5
-
+printf '\n\n' &>> $log
