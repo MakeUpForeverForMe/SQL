@@ -1238,6 +1238,8 @@ select is_credit_success,count(is_credit_success) from dm.dm_watch_credit_detail
 
 
 
+select distinct settlement_status from dm.dm_watch_repayment_schedule limit 10;
+
 
 
 
