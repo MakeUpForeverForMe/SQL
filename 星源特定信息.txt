@@ -962,7 +962,7 @@ recommend_recon中的recommend_rec
 300056  蜘蛛
 
 
-老星源系统前端H5产品业务逻辑及后台写表次序-
+老星源系统前端H5产品业务逻辑及后台写表次序
 
 0. 如果流量方调用Weshare API，向ads_inbound table里面写入一条记录；如果流量方代投放Weshare页面，则不向该表写入数据（目前只有 因特利1 这个渠道会向ads_inbound table写数据，其它的流量渠道不会）
 
