@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-prt(){ printf "\n\n%${2:-30}s\n" | sed "s/ /$1/g"; }
+prt(){ printf "\n%${2:-20}s\n" $dt | sed "s/ /$1/g"; }
 
 succ_erro(){ ( [[ $? == 0 ]] && prt '成功' || { prt '错误'; continue; } ) &>> $log; }
 
@@ -11,9 +11,10 @@ log=$dir_home/auto_git.log
 
 dirs=.,Project
 
-prt '-' '120' &>> $log
+dt=$(date +'%F %T')
 
-date +'%F %T' &>> $log
+prt '-' '80' &>> $log
+
 
 for dir in ${dirs//,/ }; do
   cd $dir_home/$dir
