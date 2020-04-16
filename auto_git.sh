@@ -1,7 +1,9 @@
 #!/bin/bash -e
 
-n_prt(){ printf "\n\n%$2s\n" | sed "s/ /$1/g"; }
-prt_n(){ printf "\n%$2s\n\n" | sed "s/ /$1/g"; }
+n_prt(){ printf "\n\n%${2:-30}s\n" | sed "s/ /$1/g"; }
+prt_n(){ printf "\n%${2:-30}s\n\n" | sed "s/ /$1/g"; }
+
+succ_erro(){ [[ $? == 0 ]] && prt_n '成功' &>> $log || { prt_n '错误'; continue; } &>> $log; }
 
 curr_date=$(date +%F)
 dir_home=/d/Users/ximing.wei/Desktop/code
@@ -21,7 +23,7 @@ for dir in ${dirs//,/ }; do
 
   echo 'git add -u' &>> $log
   git add -u >&2 &>> $log
-  [[ $? == 0 ]] && prt_n '成功' '30' &>> $log || { prt_n '错误' '30'; continue; } &>> $log
+  succ_erro
 
   echo "git commit -m '$curr_date 系统自动提交'" &>> $log
   git commit -m "$curr_date 系统自动提交" >&2 &>> $log

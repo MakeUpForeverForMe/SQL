@@ -1229,5 +1229,17 @@ dwb.dwb_repay_hst
 
 
 
+select distinct rate_type from dm.dm_watch_bill_snapshot limit 10;
+select distinct current_risk_control_status from dm.dm_watch_bill_snapshot limit 10; -- yes 写死了 字段未用
+
+select distinct ecif_no,channel_code,product_code,is_credit_success,failure_msg,approval_time,approval_amount,apply_amount,apply_time,credit_id,credit_validity from dm.dm_watch_credit_detail limit 10;
+
+select is_credit_success,count(is_credit_success) from dm.dm_watch_credit_detail group by is_credit_success limit 10;
+
+
+
+
+
+
 
 
