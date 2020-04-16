@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-prt(){ echo -en ${dt}$(printf "\n%-${2:-20}s\n" | sed "s/ /$1/g"); }
+prt(){ echo -en "\n$(date +'%F %T')$(printf "%${2:-20}s" | sed "s/ /$1/g")\n"; }
 
 succ_erro(){ ( [[ $? == 0 ]] && prt '成功' || { prt '错误'; continue; } ) &>> $log; }
 
