@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-prt(){ echo -en "\n$(date +'%F %T')$(printf "%${2:-20}s" | sed "s/ /$1/g")\n"; }
+prt(){ echo -en "\n$(date +'%F %T') $(printf "%${2:-10}s" | sed "s/ /$1/g")\n"; }
 
 succ_erro(){ ( [[ $? == 0 ]] && prt '成功' || { prt '错误'; continue; } ) &>> $log; }
 
@@ -13,7 +13,7 @@ dirs=.,Project
 
 dt=$(date +'%F %T')
 
-prt '-' '80' &>> $log
+prt '-' '50' &>> $log
 
 
 for dir in ${dirs//,/ }; do
