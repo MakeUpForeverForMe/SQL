@@ -1245,3 +1245,6 @@ select distinct settlement_status from dm.dm_watch_repayment_schedule limit 10;
 
 
 
+
+
+
