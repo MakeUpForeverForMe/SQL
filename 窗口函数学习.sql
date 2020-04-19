@@ -14,7 +14,7 @@ Hive 数据类型
 日期/时间类型 （使用 timestamp.formats 来支持其他时间戳格式。例如，yyyy-MM-dd'T'HH:mm:ss.SSS，yyyy-MM-dd'T'HH:mm:ss）
   TIMESTAMP (Note: Only available starting with Hive 0.8.0)  -- yyyy-mm-dd hh:mm:ss
   DATE      (Note: Only available starting with Hive 0.12.0) -- yyyy­mm­dd
-  INTERVAL  (Note: Only available starting with Hive 1.2.0)  -- 间隔
+  INTERVAL  (Note: Only available starting with Hive 1.2.0)  -- 间隔，与NUMERIC不一样。不明白怎么用
 String 类型
   STRING  (单引号或双引号引起来的值)
   VARCHAR (Note: Only available starting with Hive 0.12.0) -- 可变长度(1和65535)，如：指定10，不足10为本身，超过截前10
