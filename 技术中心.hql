@@ -1247,6 +1247,43 @@ select distinct risk_control_type,risk_control_result from dm.dm_watch_credit_re
 
 select distinct bill_status from dm.dm_watch_bill_snapshot limit 10;
 
+select distinct guaranties,carJson,houseJson,humanjson from dwb.dwb_fj_log_detail limit 10;
+
+select distinct guaranties from dwb.dwb_ht_log_detail limit 10;
+
+select * from ods.ecas_customer limit 10;
+
+select * from ods.ccs_customer limit 50;
+
+select from_unixtime(cast(1574409386000/1000 as bigint), 'yyyy-MM-dd HH:mm:ss') as tt from ods.ecas_customer limit 10;
+
+select distinct id_type from ods.ecas_customer limit 10;
+select distinct cust_lmt_id from ods.ecas_customer limit 10;
+select distinct overflow_amt from ods.ecas_customer limit 10;
+select distinct gender from ods.ecas_customer limit 10;
+select distinct apply_no from ods.ecas_customer limit 10;
+
+select distinct
+  gender,bir_date,marital_status,permanent_address,now_address,bank_no,apply_no,city,job_type,province,country
+from ods.ecas_customer
+where bank_no != '' or bank_no is not null
+-- and marital_status is not null
+limit 10;
+
+
+select * from ods.ecas_msg_log limit 10;
+
+-- LOAN_RESULT
+-- LOAN_APPLY
+-- BIND_BANK_CARD_CHANGE
+-- CREDIT_APPLY
+-- REPAY_RESULT
+-- BIND_BANK_CARD
+-- CREDIT_CHANGE
+select distinct msg_type from ods.ecas_msg_log;
+
+select distinct p_type from dwb.dwb_loan_apply;
+
 
 
 

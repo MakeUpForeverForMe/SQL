@@ -21,6 +21,20 @@ String 类型
   CHAR    (Note: Only available starting with Hive 0.13.0) -- 固定长度值，最长 255
 其他
 
+-- 排序测试
+DROP TABLE IF EXISTS base_order_number;
+CREATE TEMPORARY TABLE IF NOT EXISTS base_order_number as
+select cast(1     as int) as num union all
+select cast(11    as int) as num union all
+select cast(456   as int) as num union all
+select cast(64    as int) as num union all
+select cast(765   as int) as num union all
+select cast(42    as int) as num union all
+select cast(5235  as int) as num union all
+select cast(53    as int) as num union all
+select cast(523   as int) as num union all
+select cast(549   as int) as num;
+select num from base_order_number order by num;
 
 
 DROP TABLE IF EXISTS base;
