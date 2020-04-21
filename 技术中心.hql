@@ -1284,10 +1284,24 @@ select distinct msg_type from ods.ecas_msg_log;
 
 select distinct p_type from dwb.dwb_loan_apply;
 
+select distinct bir_date from dwb.dwb_bussiness_customer_info limit 10;
+
+select distinct bank_no from dwb.dwb_bussiness_customer_info limit 10;
+
+select distinct cutomer_type from dwb.dwb_customer_info limit 10;
 
 
+select distinct start_date,end_date from dwb.dwb_credit_apply limit 10;
+select distinct resp_code from dwb.dwb_credit_apply limit 10;
+select distinct resp_msg from dwb.dwb_credit_apply limit 10;
 
 
+select distinct cutomer_type from dwb.dwb_dd_log_detail limit 10;
 
+select distinct loan_id,due_bill_no from ods.ecas_loan limit 10;
+
+select distinct payment_id from dwb.dwb_repay_hst limit 10;
+
+desc dwb.dwb_dd_log_detail;
 
 
