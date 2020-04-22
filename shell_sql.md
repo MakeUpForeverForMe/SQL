@@ -138,8 +138,8 @@ ALTER TABLE ods_starconnect.07_distiinct_starconnect_actual_repayment_info RENAM
 ## 3.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
-show functions like '*time*';
-desc function extended from_unixtime;
+show functions like '*add*';
+desc function extended date_add;
 
 drop function encrypt_aes;
 drop function decrypt_aes;
@@ -182,10 +182,13 @@ from tmp_test_hivemap;
 
 
 -- 使用 Hive 连接 MySQL 的表
-CREATE TEMPORARY EXTERNAL TABLE student_jdbc(
-  name string,
-  age int,
-  gpa double
+add jar hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
+CREATE TEMPORARY EXTERNAL TABLE hive_meta(
+  `CD_ID`       decimal(20,0),
+  `COMMENT`     string,
+  `COLUMN_NAME` string,
+  `TYPE_NAME`   string,
+  `integer_idx` decimal(11,0)
 )
 -- STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
 -- STORED BY 'org.apache.hadoop.hive.jdbc.storagehandler.JDBCStorageHandler'
@@ -193,13 +196,12 @@ STORED BY 'org.apache.hadoop.hive.jdbc.storagehandler.JdbcStorageHandler'
 TBLPROPERTIES (
   "hive.sql.database.type"  = "MYSQL",
   "hive.sql.jdbc.driver"    = "com.mysql.jdbc.Driver",
-  "hive.sql.jdbc.url"       = "jdbc:mysql://127.0.0.1/test",
-  "hive.sql.dbcp.username"  = "root",
-  "hive.sql.dbcp.password"  = "password",
-  "hive.sql.table"          = "student_jdbc",
+  "hive.sql.jdbc.url"       = "jdbc:mysql://10.80.16.75/test",
+  "hive.sql.dbcp.username"  = "bgp_admin",
+  "hive.sql.dbcp.password"  = "3Mt%JjE#WJIt",
+  "hive.sql.table"          = "cm_hive",
   "hive.sql.dbcp.maxActive" = "1"
 );
-
 
 ```
 
