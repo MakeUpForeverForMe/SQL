@@ -11,6 +11,7 @@ dir2=/d/Users/ximing.wei/Desktop/技术中心
 
 dirs=$dir1,$dir1/Project,$dir2/数仓表结构
 log=$dir1/auto_git.log
+
 prt '-' '50' &>> $log
 
 for dir in ${dirs//,/ }; do
