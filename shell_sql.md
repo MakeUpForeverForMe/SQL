@@ -211,7 +211,7 @@ shift 5 左移5个参数
 grep -wq file_name # 完全匹配字符所在行并不输出任何信息，只输出匹配结果
 ```
 
-### 2.1.8 Shell 中 tr （translating）的用法
+### 2.1.8 Shell 中 tr 的用法（translating）
 ```shell
 # 匹配替换
 echo tableName | tr '[A-Z]' '[a-z]' # 将小写变为大写 TABLENAME
@@ -558,6 +558,47 @@ mongoimport --csv -d "baiduled" -c "dataCollection" -o aaa.csv
 ```
 
 
+## 2.8 Sqoop 操作
+```shell
+# 执行SQL语句
+sqoop eval \
+--connect jdbc:mysql://10.80.16.7:3306/starsource \
+--username BDUser_R --password xy@Eh93AmnCkMbiU \
+-e 'select * from ORG_INFO'
+
+# 获取数据库名
+sqoop list-databases \
+--connect jdbc:mysql://10.83.16.32:3306 \
+--username bgp_admin --password 3Mt%JjE#WJIt
+
+# 复制表结构到 Hive 中
+sqoop create-hive-table \
+--connect jdbc:mysql://10.80.16.7:3306/starsource \
+--table ORG_INFO \
+--username BDUser_R --password xy@Eh93AmnCkMbiU \
+--hive-database ods_source_old \
+--hive-table ORG_INFO
+
+# 向 Hive 中导数据
+sqoop import \
+-m 1 \
+--connect jdbc:mysql://10.80.16.7:3306/starsource \
+--table ORG_INFO \
+--username BDUser_R --password xy@Eh93AmnCkMbiU \
+--hive-import \
+--hive-database ods_source_old \
+--hive-table ORG_INFO \
+--hive-partition-key \
+--hive-partition-value \
+--hive-overwrite \
+--as-parquetfile \
+--compression-codec org.apache.hadoop.io.compress.SnappyCodec \
+-z \
+--direct \
+--fields-terminated-by '\t'
+```
+
+
 ## 2. Excel 操作
 ```shell
 # excel的十字光标
@@ -683,7 +724,7 @@ create function decrypt_aes(string, string) returns string location '/opt/cloude
 
 | 操作名称 |                    快捷键                     |                                                  代码                                                  |                                                 结果                                                 |
 |----------|-----------------------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| 插入图片 | Shift + Win + K                               | `<img src="file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg" alt="图片" style="zoom:10%;"/>` | <img src="file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg" alt="图片" style="zoom:10%;"/> |
+| 插入图片 | Shift + Win + K                               | `<img src="file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg" alt="图片" style="zoom:10%;"/>` | <img src="file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg" alt="图片" style="zoom:15%;"/> |
 | 超链接   | Ctrl + Alt + V                                | `[链接](http://www.baidu.com)`                                                                         | [链接](http://www.baidu.com)                                                                         |
 | 引用     | Ctrl + Alt + R 点击快捷键后，直接输入文字即可 | `[引用][引用]  [引用]:http://www.baidu.com`                                                            | [引用][引用]  [引用]:http://www.baidu.com                                                            |
 | 插入注释 | Alt + Shift + 6                               | `注释引用[^1]  [^1]: http://www.baidu.com`                                                             | 注释引用[^1]  [^1]: http://www.baidu.com                                                             |
@@ -693,9 +734,3 @@ create function decrypt_aes(string, string) returns string location '/opt/cloude
 | 引用文本 |                                               | `> 引用文本`                                                                                           | > 引用文本                                                                                           |
 | 下标     |                                               | `H~2~O is是液体。`                                                                                     | H~2~O is是液体。                                                                                     |
 | 幂运算   |                                               | `2^10^ 运算结果是 1024`                                                                                | 2^10^ 运算结果是 1024                                                                                |
-
-
-![图片](file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg)
-<img src="file://D:\soft\desktop\8512a353f8a72ff0565d187592880ef.jpg" alt="图片" style="zoom:10%;"/>
-<!-- <img src="https://www.google.com/doodles/kamma-rahbeks-241st-birthday" width="200px" /> -->
-<!-- <img src="https://www.google.com/doodles/kamma-rahbeks-241st-birthday" style="height:200px" /> -->
