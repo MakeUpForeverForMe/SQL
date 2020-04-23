@@ -1162,6 +1162,7 @@ TBLPROPERTIES (
   "hive.sql.table"          = "cm_hive",
   "hive.sql.dbcp.maxActive" = "1"
 );
+
 ```
 
 
@@ -1169,8 +1170,8 @@ TBLPROPERTIES (
 ### 3.2.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
-show functions like '*add*';
-desc function extended date_add;
+show functions like '*conv*';
+desc function extended conv;
 
 drop function encrypt_aes;
 drop function decrypt_aes;
@@ -1207,6 +1208,24 @@ create function encrypt_aes(string, string) returns string location '/opt/cloude
 
 create function decrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function decrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Decrypt';
+```
+
+## 3.4 SQL 函数
+```sql
+-- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
+-- space(Int n) 空格字符串函数：返回长度为 n 的字符串
+select regexp_replace(space(10),' ','0');
+-- 与上个语句等价 repeat(String str, Int n) 重复字符串函数：返回长度为 n 的字符串
+select repeat('a',10);
+
+-- 进制转换测试
+select
+  '中国'                                        as  a1,
+  hex('中国')                                   as  a2,
+  conv(hex('中国'),16,2)                        as  a3,
+  conv(conv(hex('中国'),16,2),2,16)             as  a4,
+  unhex(conv(conv(hex('中国'),16,2),2,16))      as  a5
+;
 ```
 
 

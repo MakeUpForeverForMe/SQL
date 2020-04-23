@@ -1307,7 +1307,13 @@ desc dwb.dwb_dd_log_detail;
 
 
 
-
+select
+  '中国'                                        as  a1,
+  hex('中国')                                   as  a2,
+  conv(hex('中国'),16,2)                        as  a3,
+  conv(conv(hex('中国'),16,2),2,16)             as  a4,
+  unhex(conv(conv(hex('中国'),16,2),2,16))      as  a5
+;
 
 
 
