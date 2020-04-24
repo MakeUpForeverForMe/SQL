@@ -103,6 +103,7 @@ du -sh *
 export TIME_STYLE='+%F %T'      # 设置系统默认时间格式为：yyyy-MM-dd HH:mm:ss
 alias ll='ls -lh --color=auto'  # 修改 ll 命令带有文件大小
 alias la='ll -A'                # 设置 la 命令可以查看到隐藏文件
+
 ```
 
 ### 2.1.2 Shell 命令的练习
