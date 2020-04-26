@@ -1305,6 +1305,6 @@ select distinct payment_id from dwb.dwb_repay_hst limit 10;
 desc dwb.dwb_dd_log_detail;
 
 
-select distinct current_overdue_stage from  dm.dm_watch_bill_snapshot limit 10;
+select distinct current_overdue_stage from dm.dm_watch_bill_snapshot limit 10;
 
 
