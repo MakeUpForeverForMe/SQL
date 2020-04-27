@@ -1,80 +1,74 @@
 [TOC]
-# 1、服务器信息
-## 1.1 新集群
+# 1、服务账密相关
+## 1.1 服务器
 ### 1.1.1 生产
-|    系统    |  作用 |                    ip或网址                    |    用户   |       密码       |    备注   |
-|------------|-------|------------------------------------------------|-----------|------------------|-----------|
-| linux      | ftp   | 10.90.0.5                                      |           |                  |           |
-| node47     | linux | 10.80.1.47                                     | root      | CQBP53G(Lv82     |           |
-| node148    | linux | 10.80.1.148                                    | root      | CQBP53G(Lv82     |           |
-| node172    | linux | 10.80.1.172                                    | root      | CQBP53G(Lv82     |           |
-| System     | linux | 10.83.0.10                                     | root      | Ig793&0ni1lFepYW | 系统      |
-| SYSMySQL   | mysql | 10.80.16.9                                     | root      | !mAkJTMI%lH5ONDw | 核心 旧   |
-| SYSMySQL   | mysql | 10.80.16.10                                    | root      | LZWkT2lxze6x%1V( | 核心 新   |
-| SYSMySQL   | mysql | 10.80.16.25                                    | root      | LZWkT2lxze6x%1V( | 核心 回放 |
-| SYSMySQL   | mysql | 10.80.16.87                                    | root      | wH7Emvsrg&V5     | 催收      |
-| CMDB       | mysql | 10.80.16.75                                    | bgp_admin | U3$AHfp*a8M&     | CM        |
-| cm         | web   | http://10.80.1.47:7180/cmf/home                | admin     | admin            |           |
-| hue        | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin     | dFGYXpxifv       |           |
-| streamsets | web   | http://10.80.1.172:18630/                      | admin     | admin            |           |
+|      系统     |  服务 |                    ip或网址                    |  用户 |     密码     |    备注   |
+|---------------|-------|------------------------------------------------|-------|--------------|-----------|
+| linux         | ftp   | 10.90.0.5                                      |       |              |           |
+| node47        | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82 | 大数据 新 |
+| node148       | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82 | 大数据 新 |
+| node172       | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82 | 大数据 新 |
+| bsprd-hadoop1 | linux | 10.80.0.20                                     | root  | Xfx2018@)!*  | 大数据 旧 |
+| bsprd-hadoop2 | linux | 10.80.0.23                                     | root  | Xfx2018@)!*  | 大数据 旧 |
+| bsprd-hadoop3 | linux | 10.80.0.29                                     | root  | Xfx2018@)!*  | 大数据 旧 |
+| cm6           | web   | http://10.80.1.47:7180/cmf/home                | admin | admin        |           |
+| cm5           | web   | http://10.80.0.20:7180/cmf/home                | admin | admin        |           |
+| hue6          | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |           |
+| hue5          | web   | http://10.80.0.20:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |           |
+| streamsets    | web   | http://10.80.1.172:18630/                      | admin | admin        |           |
 
 ### 1.1.2 测试
-|    系统    |  作用 |                    ip或网址                     |    用户   |       密码       |   备注  |
-|------------|-------|-------------------------------------------------|-----------|------------------|---------|
-| linux      | ftp   | 10.83.0.32                                      | it-dev    | 058417gv         |         |
-| node47     | linux | 10.83.0.47                                      | root      | (Ob!)Y#G3Anf     |         |
-| node123    | linux | 10.83.0.123                                     | root      | (Ob!)Y#G3Anf     |         |
-| node129    | linux | 10.83.0.129                                     | root      | (Ob!)Y#G3Anf     |         |
-| System     | linux | 10.83.0.10                                      | root      | tf$Ke^HB5lm&     |         |
-| SYSMySQL   | mysql | 10.83.16.43                                     | root      | zU!ykpx3EG)$$1e6 | 抵消 $$ |
-| mariaDB    | mysql | 10.83.16.32                                     | bgp_admin | 3Mt%JjE#WJIt     |         |
-| cm         | web   | http://10.83.0.47:7180/cmf/home                 | admin     | admin            |         |
-| hue        | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin     | admin            |         |
-| streamsets | web   | http://10.83.0.129:18630                        | admin     | admin            |         |
+|     系统    |  作用 |                    ip或网址                     |  用户  |       密码       |    备注   |
+|-------------|-------|-------------------------------------------------|--------|------------------|-----------|
+| linux       | ftp   | 10.83.0.32                                      | it-dev | 058417gv         |           |
+| node47      | linux | 10.83.0.47                                      | root   | (Ob!)Y#G3Anf     | 大数据 新 |
+| node123     | linux | 10.83.0.123                                     | root   | (Ob!)Y#G3Anf     | 大数据 新 |
+| node129     | linux | 10.83.0.129                                     | root   | (Ob!)Y#G3Anf     | 大数据 新 |
+| bssit-cdh-1 | linux | 10.83.80.5                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
+| bssit-cdh-2 | linux | 10.83.80.7                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
+| bssit-cdh-3 | linux | 10.83.80.14                                     | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
+| bssit-cdh-4 | linux | 10.83.80.2                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
+| cm6         | web   | http://10.83.0.47:7180/cmf/home                 | admin  | admin            |           |
+| cm5         | web   | http://10.83.80.5:7180/cmf/home                 | admin  | admin            |           |
+| hue6        | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin  | admin            |           |
+| hue5        | web   | http://10.83.80.5:8889/hue/editor/?type=impala  | admin  | admin            |           |
+| streamsets  | web   | http://10.83.0.129:18630                        | admin  | admin            |           |
 
-## 1.2 旧集群
+
+## 1.2 数据库配置
 ### 1.2.1 生产
-|    hostname   |  ip或网址  | 用户 |     密码    | 备注 |
-|---------------|------------|------|-------------|------|
-| BSPRD-Hadoop1 | 10.80.0.20 | root | Xfx2018@)!* |      |
-| BSPRD-Hadoop2 | 10.80.0.23 | root | Xfx2018@)!* |      |
-| BSPRD-Hadoop3 | 10.80.0.29 | root | Xfx2018@)!* |      |
-| 数据库mysql   | 10.80.16.3 | root | Xfx2018@)!* |      |
+| 系统 |      ip     |   username  |     password     |   备注  |
+|------|-------------|-------------|------------------|---------|
+| 星连 | 10.80.16.5  | root        | Xfx2018@)!*      |         |
+| 星云 | 10.80.16.21 | root        | EXYeaGVQZpsr@CR& |         |
+| 风控 | 10.80.16.42 | root        | 8x3V1lrbkS       | 旧      |
+| 风控 | 10.80.16.65 | root        | Risk_Reader001   | 新      |
+| 核心 | 10.80.16.9  | root        | !mAkJTMI%lH5ONDw | 旧      |
+| 核心 | 10.80.16.10 | root        | LZWkT2lxze6x%1V( | 新      |
+| 核心 | 10.80.16.25 | root        | LZWkT2lxze6x%1V( | 回放    |
+| 催收 | 10.80.16.87 | root        | wH7Emvsrg&V5     |         |
+| H5   | 10.80.16.73 | UeserReader | Ws2019!@         |         |
+| CM5  | 10.80.16.3  | root        | Xfx2018@)!*      |         |
+| CM6  | 10.80.16.75 | bgp_admin   | U3$AHfp*a8M&     | MariaDB |
 
 ### 1.2.2 测试
-|   hostname  |  ip或网址   | 用户 |       密码       | 备注 |
-|-------------|-------------|------|------------------|------|
-| bssit-cdh-1 | 10.83.80.5  | root | !W$WdwY7U%pe)YkQ |      |
-| bssit-cdh-2 | 10.83.80.7  | root | !W$WdwY7U%pe)YkQ |      |
-| bssit-cdh-3 | 10.83.80.14 | root | !W$WdwY7U%pe)YkQ |      |
-| bssit-cdh-4 | 10.83.80.2  | root | !W$WdwY7U%pe)YkQ |      |
-| 数据库mysql | 10.83.96.10 | root | !W$WdwY7U%pe)YkQ |      |
+| 系统 |      ip     |   username  |     password     |   备注  |
+|------|-------------|-------------|------------------|---------|
+| 星连 | 10.83.16.10 | root        | Xfxcj2018@)!*    |         |
+| 星云 | 10.83.16.15 | root        | Ws2018!07@       |         |
+| 风控 | 10.83.16.9  | root        | Xfx2018@)!*      |         |
+| 核心 | 10.83.16.16 | root        | Zn9nvRr9gw1pugP  | 旧1     |
+| 核心 | 10.83.16.42 | root        | 7H*qb0etoNEfvAtM | 旧2     |
+| 催收 | 10.83.16.23 | root        | Ws2018!07@       | 旧      |
+| 核心 | 10.83.16.43 | root        | zU!ykpx3EG)$$1e6 | 新$$    |
+| H5   | 10.83.16.33 | UeserReader | Ws2019!@         |         |
+| CM5  | 10.83.96.10 | root        | !W$WdwY7U%pe)YkQ |         |
+| CM6  | 10.83.16.32 | bgp_admin   | 3Mt%JjE#WJIt     | MariaDB |
 
-
-
-## 1.3 数据库配置
-### 1.3.1 生产
-|   系统   |      ip     | username |     password     | 备注 |
-|----------|-------------|----------|------------------|------|
-| 星连     | 10.80.16.5  | root     | Xfx2018@)!*      |      |
-| 星云     | 10.80.16.21 | root     | EXYeaGVQZpsr@CR& |      |
-| 风控     | 10.80.16.42 | root     | 8x3V1lrbkS       | 旧   |
-| 风控     | 10.80.16.65 | root     | Risk_Reader001   | 新   |
-| 账务核心 | 10.80.16.9  | root     | !mAkJTMI%lH5ONDw |      |
-
-### 1.3.2 测试
-|   系统   |      ip     | username |     password    | 备注 |
-|----------|-------------|----------|-----------------|------|
-| 星连     | 10.83.16.10 | root     | Xfxcj2018@)!*   |      |
-| 星云     | 10.83.16.15 | root     | Ws2018!07@      |      |
-| 风控     | 10.83.16.9  | root     | Xfx2018@)!*     |      |
-| 账务核心 | 10.83.16.16 | root     | Zn9nvRr9gw1pugP |      |
-| 核心催收 | 10.83.16.23 | root     | Ws2018!07@      |      |
-
-### 1.3.3 UAT
+### 1.2.3 UAT
 | 系统 |      ip     | username |     password     | 备注 |
 |------|-------------|----------|------------------|------|
-|      | 10.83.16.18 | root     | fzh6M#fmu3Rr7MTi |      |
+| 核心 | 10.83.16.18 | root     | fzh6M#fmu3Rr7MTi |      |
 
 
 
@@ -602,7 +596,7 @@ sqoop create-hive-table \
 --hive-database ods_source_old \
 --hive-table ORG_INFO
 
-# 向 Hive 中导数据
+# 向 Hive 中导数据    -m 指定 maptask 任务数
 sqoop import \
 -m 1 \
 --connect jdbc:mysql://10.80.16.7:3306/starsource \

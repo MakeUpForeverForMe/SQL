@@ -1284,6 +1284,8 @@ select distinct msg_type from ods.ecas_msg_log;
 
 select distinct p_type from dwb.dwb_loan_apply;
 
+select distinct d_date from dwb.dwb_bussiness_customer_info limit 5;
+
 select distinct bir_date from dwb.dwb_bussiness_customer_info limit 10;
 
 select distinct bank_no from dwb.dwb_bussiness_customer_info limit 10;
