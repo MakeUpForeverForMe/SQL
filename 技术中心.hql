@@ -5,7 +5,8 @@ set var:deal_date=2020-01-01;
 /**
  * 对比ecif_id
  */
-select ecif_no,id_no,if(decrypt_aes(id_no) = '422322196111160018','yes','no') as truefalse from ecif_core.ecif_customer where id_no = encrypt_aes('422322196111160018') limit 1;
+select ecif_no,id_no,if(decrypt_aes(id_no) = '422322196111160018','yes','no') as truefalse
+from ecif_core.ecif_customer where id_no = encrypt_aes('422322196111160018') limit 1;
 
 
 /**
@@ -44,9 +45,25 @@ dd_credit_apply as (
   from (
     -- 必须使用 regexp_replace ，因为源数据中有 '\' 。
     -- hive
-    -- select org,deal_date,create_time,update_time,regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+    -- select
+    --   org,deal_date,create_time,update_time,
+    --   regexp_replace(
+    --     regexp_replace(
+    --       regexp_replace(
+    --         original_msg,'\\\\',''
+    --         ),'\\\"\\\{','\\\{'
+    --       ),'\\\}\\\"','\\\}'
+    --     ) as original_msg
     -- impala
-    select org,deal_date,create_time,update_time,regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}') as original_msg
+    select
+      org,deal_date,create_time,update_time,
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(
+            original_msg,'\\\\',''
+            ),'\"\{','\{'
+          ),'\}\"','\}'
+        ) as original_msg
     from ods.ecas_msg_log
     where msg_type = 'CREDIT_APPLY'
     -- and deal_date <= '${VAR:deal_date}'
@@ -486,11 +503,15 @@ select
   '${VAR:deal_date}'  as d_date,
   'ccs'               as p_type
 from (
-  select order_id,command_type,order_status,order_time,txn_amt,purpose,code,message,due_bill_no,business_date,loan_usage,memo,contr_nbr,service_id,term
+  select
+    order_id,command_type,order_status,order_time,txn_amt,purpose,code,
+    message,due_bill_no,business_date,loan_usage,memo,contr_nbr,service_id,term
   from ods.ccs_order
   -- where d_date = '${VAR:deal_date}'
   union
-  select order_id,command_type,order_status,order_time,txn_amt,purpose,code,message,due_bill_no,business_date,loan_usage,memo,contr_nbr,service_id,term
+  select
+    order_id,command_type,order_status,order_time,txn_amt,purpose,code,
+    message,due_bill_no,business_date,loan_usage,memo,contr_nbr,service_id,term
   from ods.ccs_order_hst
   -- where d_date = '${VAR:deal_date}'
 ) as ccs_order
@@ -686,7 +707,9 @@ from (
     remain_interest,
     loan_principal,
     loan_interest,
-    repay_part.paid_penalty + if(ccsplandataset.ctd_penalty is null,0,ccsplandataset.ctd_penalty) + if(ccsplandataset.past_penalty is null,0,ccsplandataset.past_penalty) as loan_penalty,
+    repay_part.paid_penalty
+    + if(ccsplandataset.ctd_penalty is null,0,ccsplandataset.ctd_penalty)
+    + if(ccsplandataset.past_penalty is null,0,ccsplandataset.past_penalty) as loan_penalty,
     loan_fee,
     paid_principal,
     paid_interest,
@@ -1077,7 +1100,11 @@ select
   credit_apply.process_date,
   credit_apply.apply_no,
   loan.loan_id,
-  credit_apply.limit_amt - sum(if(loan.remain_principal is NULL,0,if(repay_schedule.loan_id is NULL,loan.remain_principal,repay_schedule.current_remaining_principal))) as remain_principal
+  credit_apply.limit_amt - sum(
+    if(loan.remain_principal is NULL,0,
+      if(repay_schedule.loan_id is NULL,loan.remain_principal,repay_schedule.current_remaining_principal)
+      )
+    ) as remain_principal
 from (
   select apply_no,limit_amt,process_date from dwb.dwb_credit_apply
   -- where process_date <= '${VAR:deal_date}'
@@ -1102,7 +1129,9 @@ limit 100;
 
 select
 credit_apply.apply_no,
-cast(if((loan.accu_used_amt / credit_apply.limit_amt) * 100 is null,0,(loan.accu_used_amt / credit_apply.limit_amt) * 100) as decimal(10,2)) as accumulate_credit_amount_utilization_rate
+cast(
+  if((loan.accu_used_amt / credit_apply.limit_amt) * 100 is null,0,(loan.accu_used_amt / credit_apply.limit_amt) * 100)
+  as decimal(10,2)) as accumulate_credit_amount_utilization_rate
 from (
   select apply_no,limit_amt from dwb.dwb_credit_apply
   -- where process_date <= '${VAR:deal_date}'
@@ -1232,7 +1261,10 @@ dwb.dwb_repay_hst
 select distinct rate_type from dm.dm_watch_bill_snapshot limit 10;
 select distinct current_risk_control_status from dm.dm_watch_bill_snapshot limit 10; -- yes 写死了 字段未用
 
-select distinct ecif_no,channel_code,product_code,is_credit_success,failure_msg,approval_time,approval_amount,apply_amount,apply_time,credit_id,credit_validity from dm.dm_watch_credit_detail limit 10;
+select distinct
+ecif_no,channel_code,product_code,is_credit_success,failure_msg,approval_time,
+approval_amount,apply_amount,apply_time,credit_id,credit_validity
+from dm.dm_watch_credit_detail limit 10;
 
 select is_credit_success,count(is_credit_success) from dm.dm_watch_credit_detail group by is_credit_success limit 10;
 
@@ -1308,5 +1340,294 @@ desc dwb.dwb_dd_log_detail;
 
 
 select distinct current_overdue_stage from dm.dm_watch_bill_snapshot limit 10;
+
+select * from ods.ecas_bind_card limit 20;
+
+
+select distinct card_id,cust_id,org from ods.ecas_bind_card limit 20;
+
+
+select * from ods.ecas_customer limit 20;
+select * from ods.ecas_customer where
+gender is not null
+or bir_date is not null
+or marital_status is not null
+or permanent_address is not null
+or now_address is not null
+or bank_no is not null
+or apply_no is not null
+or city is not null
+or job_type is not null
+or province is not null
+or country is not null limit 20;
+
+
+-- org 15601  channel 10043、10000
+select distinct org,channel from ods.ecas_customer limit 20;
+
+select distinct channel_id,capital_id,product_code,due_bill_no from dwb.dwb_loan limit 20;
+
+select distinct org,cust_id,apply_no,org,capital_type from ods.ecas_loan limit 20;
+
+
+
+select count(1) from ods.ecas_bind_card;
+
+select create_time,lst_upd_time from ods.ecas_bind_card limit 20;
+
+
+
+
+select * from ods.ecas_msg_log limit 10;
+select * from ods.nms_interface_resp_log limit 10;
+select * from ods.t_real_param limit 10;
+
+
+show create table ods.ecas_msg_log;
+
+show functions like '*timestamp*';
+desc function extended unix_timestamp;
+
+select
+  deal_date,
+  from_unixtime(cast(create_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as create_time,
+  from_unixtime(cast(update_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as update_time
+from ods.ecas_msg_log limit 50;
+
+
+
+
+select *
+from ods.ecas_msg_log
+where (msg_type = 'CREDIT_APPLY' or msg_type = 'LOAN_APPLY')
+or from_unixtime(cast(create_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') <= '"+partitionDate_str+"'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+select
+  as capital_id,           -- string        COMMENT '资金方编号',
+  as channel_id,           -- string        COMMENT '渠道方编号',
+  as project_id,           -- string        COMMENT '项目编号',
+  as product_id,           -- string        COMMENT '产品编号',
+  as cust_id,              -- string        COMMENT '客户编号（渠道方编号—用户编号）',
+  as user_hash_no,         -- string        COMMENT '用户编号',
+  as ecif_id,              -- string        COMMENT 'ecif_id',
+  as apply_id,             -- string        COMMENT '授信申请编号',
+  as credit_apply_time,    -- timestamp     COMMENT '授信申请时间（yyyy—MM—dd HH:mm:ss）',
+  as apply_amount,         -- decimal(15,4) COMMENT '申请金额',
+  as rc_assessment_time,   -- timestamp     COMMENT '风控评估时间（yyyy—MM—dd HH:mm:ss）',
+  as rc_type,              -- string        COMMENT '风控类型（用信风控、二次风控）',
+  as apply_status,         -- string        COMMENT '授信申请结果',
+  as rc_result_validity,   -- timestamp     COMMENT '风控结果有效期（yyyy—MM—dd HH:mm:ss）',
+  as resp_code,            -- string        COMMENT '授信结果码',
+  as resp_msg,             -- string        COMMENT '结果描述',
+  as credit_amount,        -- decimal(15,4) COMMENT '授信额度',
+  as credit_interest_rate, -- decimal(15,8) COMMENT '授信利率',
+  as risk_level,           -- string        COMMENT '风控等级',
+  as risk_score,           -- string        COMMENT '风控评分',
+  as ori_request,          -- string        COMMENT '原始请求',
+  as ori_response,         -- string        COMMENT '原始应答',
+  as credit_expire_date    -- timestamp     COMMENT '授信截止时间（yyyy—MM—dd HH:mm:ss）'
+from
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+select
+  as  capital_id,        -- '资金方编号',
+  as  channel_id,        -- '渠道方编号',
+  as  project_id,        -- '项目编号',
+  as  product_id,        -- '产品编号',
+  as  cust_id,           -- '客户编号（渠道方编号—用户编号）',
+  as  user_hash_no,      -- '用户编号',
+  as  ecif_id,           -- 'ecif_id',
+  as  outer_cust_id,     -- '外部客户号',
+  as  idcard_type,       -- '证件类型（身份证等）',
+  as  idcard_no,         -- '证件号码',
+  as  name,              -- '客户姓名',
+  as  mobie,             -- '客户电话',
+  as  gender,            -- '客户性别',
+  as  birthday,          -- '出生日期',
+  as  age,               -- '年龄',
+  as  age_range,         -- '年龄区间（0—20、21—25、26—30、31—35、36—40、41+）',
+  as  marriage_status,   -- '婚姻状态',
+  as  education,         -- '学历',
+  as  education_range,   -- '学历区间（大专及以下、本科、硕士、博士及以上）',
+  as  overflow_amt,      -- '溢缴款',
+  as  id_card_address,   -- '身份证地址',
+  as  id_card_area,      -- '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  as  id_card_province,  -- '身份证省级（省/直辖市/特别行政区）',
+  as  id_card_city,      -- '身份证地级（城市）',
+  as  id_card_county,    -- '身份证县级（区县）',
+  as  id_card_township,  -- '身份证乡级（乡/镇/街）（预留）',
+  as  resident_address,  -- '常住地地址',
+  as  resident_area,     -- '常住地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  as  resident_province, -- '常住地省级（省/直辖市/特别行政区）',
+  as  resident_city,     -- '常住地地级（城市）',
+  as  resident_county,   -- '常住地县级（区县）',
+  as  resident_township, -- '常住地乡级（乡/镇/街）（预留）',
+  as  job_type,          -- '工作类型',
+  as  job_year,          -- '工作年限',
+  as  income_month,      -- '月收入',
+  as  income_year,       -- '年收入',
+  as  income_year_range, -- '年收入区间（10万（不含）到15万（含））', -- ？？？
+  as  cutomer_type,      -- '客戶类型（个人或企业）',
+  as  create_time,       -- '创建时间（yyyy—MM—dd HH:mm:ss）',
+  as  update_time        -- '更新时间（yyyy—MM—dd HH:mm:ss）'
+from (
+with column_common as (
+  select 'a' as channel_id,'b' as capital_id union all
+  select 'c' as channel_id,'d' as capital_id
+)
+select
+  column_common.capital_id  as  capital_id,        -- '资金方编号',
+  ecas_customer.channel_id  as  channel_id,        -- '渠道方编号',
+  'DIDI201908161538'        as  project_id,        -- '项目编号',
+  'DIDI201908161538'        as  product_id,        -- '产品编号',
+  as  cust_id,           -- '客户编号（渠道方编号—用户编号）',
+  as  user_hash_no,      -- '用户编号',
+  as  ecif_id,           -- 'ecif_id',
+  as  outer_cust_id,     -- '外部客户号',
+  as  idcard_type,       -- '证件类型（身份证等）',
+  as  idcard_no,         -- '证件号码',
+  as  name,              -- '客户姓名',
+  as  mobie,             -- '客户电话',
+  as  gender,            -- '客户性别',
+  as  birthday,          -- '出生日期',
+  as  age,               -- '年龄',
+  as  age_range,         -- '年龄区间（0—20、21—25、26—30、31—35、36—40、41+）',
+  as  marriage_status,   -- '婚姻状态',
+  as  education,         -- '学历',
+  as  education_range,   -- '学历区间（大专及以下、本科、硕士、博士及以上）',
+  as  overflow_amt,      -- '溢缴款',
+  as  id_card_address,   -- '身份证地址',
+  as  id_card_area,      -- '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  as  id_card_province,  -- '身份证省级（省/直辖市/特别行政区）',
+  as  id_card_city,      -- '身份证地级（城市）',
+  as  id_card_county,    -- '身份证县级（区县）',
+  as  id_card_township,  -- '身份证乡级（乡/镇/街）（预留）',
+  as  resident_address,  -- '常住地地址',
+  as  resident_area,     -- '常住地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  as  resident_province, -- '常住地省级（省/直辖市/特别行政区）',
+  as  resident_city,     -- '常住地地级（城市）',
+  as  resident_county,   -- '常住地县级（区县）',
+  as  resident_township, -- '常住地乡级（乡/镇/街）（预留）',
+  as  job_type,          -- '工作类型',
+  as  job_year,          -- '工作年限',
+  as  income_month,      -- '月收入',
+  as  income_year,       -- '年收入',
+  as  income_year_range, -- '年收入区间（10万（不含）到15万（含））', -- ？？？
+  as  cutomer_type,      -- '客戶类型（个人或企业）',
+  as  create_time,       -- '创建时间（yyyy—MM—dd HH:mm:ss）',
+  as  update_time        -- '更新时间（yyyy—MM—dd HH:mm:ss）'
+from ods.ecas_customer
+left join column_common on ecas_customer.channel_id = column_common.channel_id
+union all
+select
+*
+from ods.ccs_customer
+)
+
+
+-- /**
+--  * 用户信息表
+--  *
+--  * 数据库主键 user_hash_no
+--  */
+DROP TABLE IF EXISTS `ods_new_s.user_info`;
+CREATE TABLE IF NOT EXISTS `ods_new_s.user_info`(
+  `user_hash_no`                  string        COMMENT '用户编号（暂时取ecif_id）',
+  `idcard_type`                   string        COMMENT '证件类型（身份证等）',
+  `idcard_no`                     string        COMMENT '证件号码',
+  `name`                          string        COMMENT '客户姓名',
+  `mobie`                         string        COMMENT '客户电话',
+  `gender`                        string        COMMENT '客户性别',
+  `birthday`                      date          COMMENT '出生日期',
+  `marriage_status`               string        COMMENT '婚姻状态',
+  `education`                     string        COMMENT '学历',
+  `id_card_address`               string        COMMENT '身份证地址',
+  `id_card_area`                  string        COMMENT '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  `id_card_province`              string        COMMENT '身份证省级（省/直辖市/特别行政区）',
+  `id_card_city`                  string        COMMENT '身份证地级（城市）',
+  `id_card_county`                string        COMMENT '身份证县级（区县）',
+  `id_card_township`              string        COMMENT '身份证乡级（乡/镇/街）（预留）',
+  `apply_address`                 string        COMMENT '申请地地址',
+  `apply_area`                    string        COMMENT '申请地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
+  `apply_province`                string        COMMENT '申请地省级（省/直辖市/特别行政区）',
+  `apply_city`                    string        COMMENT '申请地地级（城市）',
+  `apply_county`                  string        COMMENT '申请地县级（区县）',
+  `apply_township`                string        COMMENT '申请地乡级（乡/镇/街）（预留）'
+) COMMENT '用户信息表'
+STORED AS PARQUET;
+
+
+
+
+
+
+
+
+select
+    as  capital_id,       --  '资金方编号',
+    as  channel_id,       --  '渠道方编号',
+    as  project_id,       --  '项目编号',
+    as  product_id,       --  '产品编号',
+    as  cust_id,          --  '客户编号（渠道方编号—用户编号）',
+    as  user_hash_no,     --  '用户编号',
+    as  ecif_id,          --  'ecif_id',
+    as  due_bill_no,      --  '借据编号',
+    as  card_id,          --  '绑卡编号',
+    as  bank_card_flag,   --  '绑卡标志（N：正常，F：非客户本人、共同借款人、配偶）',
+    as  bank_card_id_no,  --  '证件号码',
+    as  bank_card_name,   --  '姓名',
+    as  bank_card_phone,  --  '手机号',
+    as  bank_card_no,     --  '银行卡号',
+    as  pay_channel,      --  '支付渠道（1：宝付，2：通联）',
+    as  agreement_no,     --  '绑卡协议编号',
+    as  is_valid,         --  '是否生效',
+    as  is_default,       --  '是否默认卡',
+    as  effective_time,   --  '生效时间（yyyy—MM—dd HH:mm:ss）',
+    as  expire_time       --  '失效时间（yyyy—MM—dd HH:mm:ss）'
+from ods.ecas_bind_card as bind_card
+left join ods.ecas_bind_card_change as bind_card_change
+on bind_card. = bind_card_change.
+
+
+
+
+
+
+
+
 
 
