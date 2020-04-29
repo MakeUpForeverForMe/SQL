@@ -1305,14 +1305,7 @@ limit 10;
 
 select * from ods.ecas_msg_log limit 10;
 
--- LOAN_RESULT
--- LOAN_APPLY
--- BIND_BANK_CARD_CHANGE
--- CREDIT_APPLY
--- REPAY_RESULT
--- BIND_BANK_CARD
--- CREDIT_CHANGE
-select distinct msg_type from ods.ecas_msg_log;
+
 
 select distinct p_type from dwb.dwb_loan_apply;
 
@@ -1388,19 +1381,177 @@ show create table ods.ecas_msg_log;
 show functions like '*timestamp*';
 desc function extended unix_timestamp;
 
+
 select
   deal_date,
   from_unixtime(cast(create_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as create_time,
   from_unixtime(cast(update_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as update_time
 from ods.ecas_msg_log limit 50;
 
+-- ecas_msg_log 的 msg_type 值
+-- LOAN_RESULT，LOAN_APPLY，BIND_BANK_CARD_CHANGE，CREDIT_APPLY，REPAY_RESULT，BIND_BANK_CARD，CREDIT_CHANGE
+-- 未上线
+-- ecas_msg_log 瓜子 msg_type = GZ_CREDIT_APPLY,GZ_CREDIT_RESULT
+-- ecas_msg_log 乐信 msg_type = WIND_CONTROL_CREDIT
+-- 已上线
+-- ecas_msg_log 滴滴 msg_type = CREDIT_APPLY,LOAN_APPLY
+-- t_real_param 凤金 interface_name = LOAN_INFO_PER_APPLY
+-- nms_interface_resp_log 汇通 sta_service_method_name = setupCustCredit
 
 
+refresh ods.ecas_msg_log;
+select distinct msg_type from ods.ecas_msg_log;
 
-select *
+select
+ *
 from ods.ecas_msg_log
 where (msg_type = 'CREDIT_APPLY' or msg_type = 'LOAN_APPLY')
 or from_unixtime(cast(create_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') <= '"+partitionDate_str+"'
+
+
+
+
+
+
+
+
+
+
+-- dwb.dwb_dd_log_detail
+select
+  ecif_no                                                          as ecif_id,
+  get_json_object(original_msg,'$.userInfo.name')                  as name,
+  get_json_object(original_msg,'$.userInfo.cardNo')                as cardno,
+  null                                                             as idtype,
+  get_json_object(original_msg,'$.userInfo.phone')                 as phone,
+  get_json_object(original_msg,'$.userInfo.telephone')             as telephone,
+  get_json_object(original_msg,'$.userInfo.bankCardNo')            as bankcardno,
+  get_json_object(original_msg,'$.userInfo.userRole')              as userrole,
+  get_json_object(original_msg,'$.userInfo.idCardValidDate')       as idcardvaliddate,
+  get_json_object(original_msg,'$.userInfo.address')               as address,
+  get_json_object(original_msg,'$.userInfo.ocrInfo')               as ocrinfo,
+  get_json_object(original_msg,'$.userInfo.idCardBackInfo')        as idcardbackinfo,
+  get_json_object(original_msg,'$.userInfo.imageType')             as imagetype,
+  null                                                             as imagestatus,
+  null                                                             as imageurl,
+  get_json_object(original_msg,'$.userInfo.livingImageInfo')       as livingimageinfo,
+  get_json_object(original_msg,'$.userInfo.sftpDir')               as sftpdir,
+  null                                                             as sftp,
+  get_json_object(original_msg,'$.creditInfo.amount')              as amount,
+  get_json_object(original_msg,'$.creditInfo.interestRate')        as interestrate,
+  get_json_object(original_msg,'$.creditInfo.interestPenaltyRate') as interestpenaltyrate,
+  get_json_object(original_msg,'$.creditInfo.startDate')           as startdate,
+  get_json_object(original_msg,'$.creditInfo.endDate')             as enddate,
+  get_json_object(original_msg,'$.creditInfo.lockDownEndTime')     as lockdownendtime,
+  get_json_object(original_msg,'$.didiRcFeature')                  as didircfeature,
+  get_json_object(original_msg,'$.flowNo')                         as flowno,
+  get_json_object(original_msg,'$.signType')                       as signtype,
+  get_json_object(original_msg,'$.applicationId')                  as applicationid,
+  get_json_object(original_msg,'$.creditResultStatus')             as creditresultstatus, -- Yes,No
+  get_json_object(original_msg,'$.applySource')                    as applysource,
+  deal_date                                                        as deal_date,
+  create_time                                                      as create_time,
+  update_time                                                      as update_time,
+  withdrawcontactinfo                                              as linkman_info,
+  'DIDI201908161538'                                               as product_code,
+  org                                                              as org
+from (
+  select original_msg,deal_date,create_time,update_time,org
+  from ods.ecas_msg_log
+  where msg_type = 'CREDIT_APPLY'
+  and original_msg is not null
+  and (
+    get_json_object(original_msg,'$.applicationId') is null
+    or length(get_json_object(original_msg,'$.applicationId')) >= 20
+  )
+) as msg_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer
+) as ecif_customer
+on encrypt_aes(get_json_object(msg_log.original_msg,'$.userInfo.cardNo'),'weshare666') = ecif_customer.id_no
+left join (
+  select
+  get_json_object(original_msg,'$.creditId') as creditid,
+  get_json_object(original_msg,'$.withdrawContactInfo') as withdrawcontactinfo
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+) as link_info
+on get_json_object(msg_log.original_msg,'$.applicationId') = link_info.creditid
+limit 10;
+
+
+
+
+
+
+select
+  org           as org,
+  applicationid as apply_id,
+  -- ecif_id as ecif_id,
+  ecif as ecif_id,
+  dwb_dd_log_detail.product_code as product_code,
+  dim_product.channel_id as channel_id,
+  applicationid as apply_no,
+  substring(applicationid,11,8) as apply_date,
+  datefmt(substring(applicationid,11,12),'yyyyMMddHHmm','yyyy-MM-dd HH:mm:ss') as apply_time,
+  amount as apply_amt,
+  null as contr_no,
+  datefmt(substring(applicationid,11,12),'yyyyMMddHHmm','yyyy-MM-dd HH:mm:ss') as credit_time,
+  amount as limit_amt,
+  startdate as start_date,
+  enddate as end_date,
+  substring(applicationid,11,8) as process_date,
+  if(creditresultstatus = 'Yes','Y','N') as apply_status,
+  if(creditresultstatus = 'Yes','Y','N') as resp_msg,
+  null as apply_type,
+  null as resp_code,
+from
+-- dwb.dwb_dd_log_detail
+(select *,'DIDI201908161538' as product_code from dwb.dwb_dd_log_detail) as dwb_dd_log_detail
+left join (
+  select product_code,channel_id from dim.dim_product
+) as dim_product
+on dwb_dd_log_detail.product_code = dim_product.product_code
+limit 10;
+
+
+
+
+
+
+
+desc dwb.dwb_credit_apply;
+
+select distinct resp_msg from dwb.dwb_credit_apply;
+
+select apply_time from dwb.dwb_credit_apply limit 10;
+
+
+desc dim.dim_account_info;
+desc dim.dim_bank_card_info;
+desc dim.dim_budget_plan;
+desc dim.dim_card_area;
+desc dim.dim_channel;
+select * from dim.dim_channel;
+desc dim.dim_customer_info;
+desc dim.dim_customer_info_bank;
+desc dim.dim_customer_linkman_info;
+desc dim.dim_customer_travel;
+desc dim.dim_guarantees_info;
+desc dim.dim_natural_days;
+desc dim.dim_phone_area;
+desc dim.dim_product;
+desc dim.dim_scene_channel;
+select * from dim.dim_scene_channel;
+desc dim.dim_scene_product;
+select * from dim.dim_scene_product;
+
+
+
+
+
+
+
 
 
 

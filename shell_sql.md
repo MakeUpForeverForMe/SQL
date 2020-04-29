@@ -1187,19 +1187,19 @@ TBLPROPERTIES (
 ### 3.2.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
-show functions like '*conv*';
-desc function extended conv;
+show functions like '*date*';
+desc function extended datefmt;
 
-drop function encrypt_aes;
-drop function decrypt_aes;
+drop function datefmt;
 
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
 add jar hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
+add jar hdfs:///user/hive/auxlib/HiveUDF-1.0.jar;
 
 create function encrypt_aes as 'com.weshare.udf.Aes_Encrypt' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
 create function decrypt_aes as 'com.weshare.udf.Aes_Decrypt' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-
+create function datefmt as 'com.weshare.udf.DateFormat' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
 ```
 
 
