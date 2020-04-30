@@ -1187,7 +1187,7 @@ TBLPROPERTIES (
 ### 3.2.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
-show functions like '*date*';
+show functions like '*key*';
 desc function extended datefmt;
 
 drop function datefmt;

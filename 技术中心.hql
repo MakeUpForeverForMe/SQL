@@ -1389,13 +1389,22 @@ select
 from ods.ecas_msg_log limit 50;
 
 -- ecas_msg_log 的 msg_type 值
--- LOAN_RESULT，LOAN_APPLY，BIND_BANK_CARD_CHANGE，CREDIT_APPLY，REPAY_RESULT，BIND_BANK_CARD，CREDIT_CHANGE
+-- LOAN_RESULT
+-- LOAN_APPLY
+-- BIND_BANK_CARD_CHANGE
+-- CREDIT_APPLY
+-- REPAY_RESULT
+-- BIND_BANK_CARD
+-- CREDIT_CHANGE
+
 -- 未上线
 -- ecas_msg_log 瓜子 msg_type = GZ_CREDIT_APPLY,GZ_CREDIT_RESULT
 -- ecas_msg_log 乐信 msg_type = WIND_CONTROL_CREDIT
 -- 已上线
 -- ecas_msg_log 滴滴 msg_type = CREDIT_APPLY,LOAN_APPLY
+
 -- t_real_param 凤金 interface_name = LOAN_INFO_PER_APPLY
+
 -- nms_interface_resp_log 汇通 sta_service_method_name = setupCustCredit
 
 
@@ -1484,27 +1493,31 @@ limit 10;
 
 
 
+
+-- dwb.dwb_credit_apply
 select
-  org           as org,
+  org as org,
   applicationid as apply_id,
+  dim_product.channel_id as channel_id,
   -- ecif_id as ecif_id,
   ecif as ecif_id,
   dwb_dd_log_detail.product_code as product_code,
-  dim_product.channel_id as channel_id,
   applicationid as apply_no,
   substring(applicationid,11,8) as apply_date,
   datefmt(substring(applicationid,11,12),'yyyyMMddHHmm','yyyy-MM-dd HH:mm:ss') as apply_time,
   amount as apply_amt,
+  if(creditresultstatus = 'Yes','Y','N') as apply_status,
+  null as apply_type,
   null as contr_no,
+  null as resp_code,
+  if(creditresultstatus = 'Yes','Y',creditresultstatus) as resp_msg,
   datefmt(substring(applicationid,11,12),'yyyyMMddHHmm','yyyy-MM-dd HH:mm:ss') as credit_time,
-  amount as limit_amt,
+  substring(applicationid,11,8) as process_date,
   startdate as start_date,
   enddate as end_date,
-  substring(applicationid,11,8) as process_date,
-  if(creditresultstatus = 'Yes','Y','N') as apply_status,
-  if(creditresultstatus = 'Yes','Y','N') as resp_msg,
-  null as apply_type,
-  null as resp_code,
+  amount as limit_amt,
+  row_number() over(partition by applicationid,dim_product.channel_id,ecif as ecif_id order by cast(substring(applicationid,11,12) as bigint)) as rn,
+  'DD' as p_type
 from
 -- dwb.dwb_dd_log_detail
 (select *,'DIDI201908161538' as product_code from dwb.dwb_dd_log_detail) as dwb_dd_log_detail
@@ -1512,17 +1525,195 @@ left join (
   select product_code,channel_id from dim.dim_product
 ) as dim_product
 on dwb_dd_log_detail.product_code = dim_product.product_code
+where rn = 1
 limit 10;
 
 
 
+-- dwb.dwb_credit_result
+select
+  org,
+  credit_result,
+  credit_id,
+  apply_id,
+  ecif_id,
+  product_code,
+  amount,
+  interest_rate,
+  interest_penalty_rate,
+  start_date,
+  end_date,
+  lockdownendtime,
+  reject_reason,
+  reject_code,
+  credit_time,
+  p_type
+from (
+  select
+    org                                                                                                        as org,
+    if(creditresultstatus = 'Yes','1','0')                                                                     as credit_result,
+    applicationid                                                                                              as credit_id,
+    applicationid                                                                                              as apply_id,
+    -- ecif_id                                                                                                    as ecif_id,
+    ecif                                                                                                       as ecif_id,
+    dwb_dd_log_detail.product_code                                                                             as product_code,
+    amount                                                                                                     as amount,
+    interestrate                                                                                               as interest_rate,
+    interestpenaltyrate                                                                                        as interest_penalty_rate,
+    startdate                                                                                                  as start_date,
+    enddate                                                                                                    as end_date,
+    lockdownendtime                                                                                            as lockdownendtime,
+    if(creditresultstatus = 'Yes','',creditresultstatus)                                                       as reject_reason,
+    if(creditresultstatus = 'Yes','',"N")                                                                      as reject_code,
+    datefmt(substring(applicationid,11,12),'yyyyMMddHHmm','yyyy-MM-dd HH:mm:ss')                               as credit_time,
+    row_number() over(partition by applicationid,ecif order by cast(substring(applicationid,11,12) as bigint)) as rn,
+    'DD'                                                                                                       as p_type
+  from
+  -- dwb.dwb_dd_log_detail
+  (select *,'DIDI201908161538' as product_code from dwb.dwb_dd_log_detail) as dwb_dd_log_detail
+) as tmp
+where rn = 1
+limit 10;
+
+
+
+-- INSERT OVERWRITE TABLE ods_new_s.credit_apply PARTITION(biz_date)
+select
+  null                                                            as capital_id,           -- '资金方编号'
+  null                                                            as channel_id,           -- '渠道方编号'
+  null                                                            as project_id,           -- '项目编号'
+  product_id                                                      as product_id,           -- '产品编号'
+  null                                                            as cust_id,              -- '客户编号（渠道方编号—用户编号）'
+  get_json_object(original_msg,'$.userInfo.cardNo')               as user_hash_no,         -- '用户编号'
+  ecif_no                                                         as ecif_id,              -- 'ecif_id'
+  get_json_object(original_msg,'$.applicationId')                 as apply_id,             -- '授信申请编号'
+  get_json_object(original_msg,'$.creditInfo.startDate')          as credit_apply_time,    -- '授信申请时间（yyyy—MM—dd HH:mm:ss）'
+  get_json_object(original_msg,'$.creditInfo.amount')             as apply_amount,         -- '申请金额'
+  null                                                            as risk_assessment_time, -- '风控评估时间（yyyy—MM—dd HH:mm:ss）'
+  null                                                            as risk_type,            -- '风控类型（用信风控、二次风控）'
+  get_json_object(original_msg,'$.creditResultStatus')            as resp_code,            -- '授信申请结果'
+  get_json_object(original_msg,'$.creditResultMessage')           as resp_msg,             -- '风控结果有效期（yyyy—MM—dd HH:mm:ss）'
+  null                                                            as risk_result_validity, -- '授信结果码'
+  get_json_object(original_msg,'$.creditInfo.amount')             as credit_amount,        -- '结果描述'
+  get_json_object(original_msg,'$.creditInfo.interestRate')       as credit_interest_rate, -- '授信额度'
+  null                                                            as risk_level,           -- '授信利率'
+  null                                                            as risk_score,           -- '风控等级'
+  original_msg                                                    as ori_request,          -- '风控评分'
+  null                                                            as ori_response,         -- '原始请求'
+  get_json_object(original_msg,'$.creditInfo.endDate')            as credit_expire_date,   -- '原始应答'
+  to_date(get_json_object(original_msg,'$.creditInfo.startDate')) as biz_date              -- '授信截止时间（yyyy—MM—dd HH:mm:ss）'
+from (
+  select original_msg,'DIDI201908161538' as product_id
+  from ods.ecas_msg_log
+  where msg_type = 'CREDIT_APPLY'
+  and original_msg is not null
+  and to_date(get_json_object(original_msg,'$.creditInfo.startDate')) = '2020-04-28'
+) as msg_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer
+) as ecif_customer
+on encrypt_aes(get_json_object(msg_log.original_msg,'$.userInfo.cardNo'),'weshare666') = ecif_customer.id_no;
+
+
+
+
+-- LOAN_RESULT            无身份证号
+-- LOAN_APPLY             无身份证号
+-- BIND_BANK_CARD_CHANGE  无身份证号
+-- CREDIT_APPLY
+-- REPAY_RESULT           无身份证号
+-- BIND_BANK_CARD         无身份证号
+-- CREDIT_CHANGE          无身份证号
+-- 提交借款申请接口 {"loanOrderId":"DD0002303620191008182200eafd91","message":"交易失败","status":2}
+select original_msg,deal_date,create_time,update_time from ods.ecas_msg_log where msg_type = 'CREDIT_APPLY' limit 10;
+
+select distinct get_json_object(original_msg,'$.creditInfo.lockDownEndTime') as lockdownendtime from ods.ecas_msg_log limit 10;
+
+select distinct
+  msg_type,
+  get_json_object(original_msg,'$.userInfo.cardNo') as cardno
+from ods.ecas_msg_log
+where msg_type = 'CREDIT_APPLY'
+and get_json_object(original_msg,'$.userInfo.cardNo') is null
+limit 10;
+
+
+
+select count(1) as cnt from ods.ecas_msg_log;
+
+select
+  get_json_object(original_msg,'$.applicationId') as apply_id,
+  count(get_json_object(original_msg,'$.applicationId')) as cnt,
+  original_msg
+from ods.ecas_msg_log
+-- where get_json_object(original_msg,'$.applicationId') = 'DD0000303620200429131048b766fc'
+group by get_json_object(original_msg,'$.applicationId'),original_msg
+having count(get_json_object(original_msg,'$.applicationId')) > 1
+limit 10;
+
+select distinct
+  get_json_object(original_msg,'$.name') as name,
+  get_json_object(original_msg,'$.idNo') as idno,
+  get_json_object(original_msg,'$.mobile') as mobile,
+  msg_type,
+  original_msg
+from ods.ecas_msg_log
+limit 10;
+
+
+select
+  msg_type,
+  get_json_object(original_msg,'$.creditResult')   as creditResult,
+  get_json_object(original_msg,'$.creditId')       as creditId,
+  get_json_object(original_msg,'$.applicationId')  as applicationId,
+  get_json_object(original_msg,'$.creditInfo')     as creditInfo,
+  get_json_object(original_msg,'$.refusalReasons') as refusalReasons,
+  get_json_object(original_msg,'$.extendsInfo')    as extendsInfo
+from ods.ecas_msg_log
+where get_json_object(original_msg,'$.refusalReasons') is not null
+limit 20;
+
+
+select get_json_object(original_msg,'$.extendsInfo') as extendsinfo from ods.ecas_msg_log where get_json_object(original_msg,'$.extendsInfo') is not null limit 10;
+
+select
+  get_json_object(original_msg,'$.name') as name,
+  get_json_object(original_msg,'$.userInfo.name') as user_name
+from ods.ecas_msg_log limit 100;
+
+select
+  get_json_object(original_msg,'$.creditInfo.startDate') as startDate,
+  get_json_object(original_msg,'$.creditInfo.endDate') as endDate
+from ods.ecas_msg_log
+where msg_type = 'CREDIT_APPLY'
+-- and get_json_object(original_msg,'$.creditInfo.startDate') is null
+and get_json_object(original_msg,'$.creditInfo.endDate') is null
+limit 100;
+
+
+select distinct
+  get_json_object(original_msg,'$.creditInfo.lockDownEndTime') as lockdownendtime
+from ods.ecas_msg_log
+limit 10;
+
+
+select distinct
+  get_json_object(original_msg,'$.creditInfo') as creditinfo
+from ods.ecas_msg_log
+where get_json_object(original_msg,'$.applicationId') = 'DD00003036202002251634942fe94c'
+limit 10;
+
+
+select distinct lockdown_end_time from dwb.dwb_credit_result limit 10;
+
+select distinct * from dwb.dwb_credit_result where lockdown_end_time = 0 limit 10;
 
 
 
 
 desc dwb.dwb_credit_apply;
 
-select distinct resp_msg from dwb.dwb_credit_apply;
+select distinct apply_type,contr_no,resp_code from dwb.dwb_credit_apply;
 
 select apply_time from dwb.dwb_credit_apply limit 10;
 
@@ -1541,12 +1732,21 @@ desc dim.dim_guarantees_info;
 desc dim.dim_natural_days;
 desc dim.dim_phone_area;
 desc dim.dim_product;
+select * from dim.dim_product;
 desc dim.dim_scene_channel;
 select * from dim.dim_scene_channel;
 desc dim.dim_scene_product;
 select * from dim.dim_scene_product;
 
 
+select
+  to_date(get_json_object(original_msg,'$.creditInfo.startDate')) as biz_date,
+  count(1) as cnt
+from ods.ecas_msg_log
+where msg_type = 'CREDIT_APPLY'
+group by to_date(get_json_object(original_msg,'$.creditInfo.startDate'))
+order by biz_date
+;
 
 
 
@@ -1560,225 +1760,111 @@ select * from dim.dim_scene_product;
 
 
 
+-- ecas_msg_log 的 msg_type 值
+-- CREDIT_APPLY
+-- CREDIT_CHANGE
+-- LOAN_APPLY
+-- LOAN_RESULT
+-- BIND_BANK_CARD_CHANGE
+-- BIND_BANK_CARD
+-- REPAY_RESULT
+
+-- 未上线
+-- ecas_msg_log 瓜子 msg_type = GZ_CREDIT_APPLY,GZ_CREDIT_RESULT
+-- ecas_msg_log 乐信 msg_type = WIND_CONTROL_CREDIT
+-- 已上线
+-- ecas_msg_log 滴滴 msg_type = CREDIT_APPLY,LOAN_APPLY
+
+-- t_real_param 凤金 interface_name = LOAN_INFO_PER_APPLY
+
+-- nms_interface_resp_log 汇通 sta_service_method_name = setupCustCredit
+select
+  original_msg
+from ods.ecas_msg_log
+where msg_type = 'CREDIT_CHANGE'
+limit 10;
+
+select
+  deal_date,
+  get_json_object(original_msg,'$.loanOrderId') as loan_order_id,
+  datefmt(create_time,'',''),
+  create_time
+  -- from_unixtime(cast(create_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as create_time,
+  -- from_unixtime(cast(update_time/1000 as bigint),'yyyy-MM-dd hh:mm:ss') as update_time
+from ods.ecas_msg_log
+where msg_type = 'LOAN_RESULT'
+limit 10;
 
 
+select distinct
+  get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}'),'$.withdrawContactInfo.jobType') as jobtype
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+limit 10;
+
+select
+  get_json_object(original_msg,'$.loanOrderId') as loan_order_id,
+  count(get_json_object(original_msg,'$.loanOrderId')) as cnt
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+group by get_json_object(original_msg,'$.loanOrderId')
+having count(get_json_object(original_msg,'$.loanOrderId')) > 1
+limit 10;
 
 
-
-
-
-
+select
+  get_json_object(original_msg,'$.creditId') as creditid,
+  get_json_object(original_msg,'$.loanOrderId') as loanorderid,
+  get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}'),'$.withdrawContactInfo') as withdrawcontactinfo
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+and get_json_object(original_msg,'$.loanOrderId') = 'DD0002303620200217080200e2783e'
+limit 10;
 
 
 
 
 select
-  as capital_id,           -- string        COMMENT '资金方编号',
-  as channel_id,           -- string        COMMENT '渠道方编号',
-  as project_id,           -- string        COMMENT '项目编号',
-  as product_id,           -- string        COMMENT '产品编号',
-  as cust_id,              -- string        COMMENT '客户编号（渠道方编号—用户编号）',
-  as user_hash_no,         -- string        COMMENT '用户编号',
-  as ecif_id,              -- string        COMMENT 'ecif_id',
-  as apply_id,             -- string        COMMENT '授信申请编号',
-  as credit_apply_time,    -- timestamp     COMMENT '授信申请时间（yyyy—MM—dd HH:mm:ss）',
-  as apply_amount,         -- decimal(15,4) COMMENT '申请金额',
-  as rc_assessment_time,   -- timestamp     COMMENT '风控评估时间（yyyy—MM—dd HH:mm:ss）',
-  as rc_type,              -- string        COMMENT '风控类型（用信风控、二次风控）',
-  as apply_status,         -- string        COMMENT '授信申请结果',
-  as rc_result_validity,   -- timestamp     COMMENT '风控结果有效期（yyyy—MM—dd HH:mm:ss）',
-  as resp_code,            -- string        COMMENT '授信结果码',
-  as resp_msg,             -- string        COMMENT '结果描述',
-  as credit_amount,        -- decimal(15,4) COMMENT '授信额度',
-  as credit_interest_rate, -- decimal(15,8) COMMENT '授信利率',
-  as risk_level,           -- string        COMMENT '风控等级',
-  as risk_score,           -- string        COMMENT '风控评分',
-  as ori_request,          -- string        COMMENT '原始请求',
-  as ori_response,         -- string        COMMENT '原始应答',
-  as credit_expire_date    -- timestamp     COMMENT '授信截止时间（yyyy—MM—dd HH:mm:ss）'
-from
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-select
-  as  capital_id,        -- '资金方编号',
-  as  channel_id,        -- '渠道方编号',
-  as  project_id,        -- '项目编号',
-  as  product_id,        -- '产品编号',
-  as  cust_id,           -- '客户编号（渠道方编号—用户编号）',
-  as  user_hash_no,      -- '用户编号',
-  as  ecif_id,           -- 'ecif_id',
-  as  outer_cust_id,     -- '外部客户号',
-  as  idcard_type,       -- '证件类型（身份证等）',
-  as  idcard_no,         -- '证件号码',
-  as  name,              -- '客户姓名',
-  as  mobie,             -- '客户电话',
-  as  gender,            -- '客户性别',
-  as  birthday,          -- '出生日期',
-  as  age,               -- '年龄',
-  as  age_range,         -- '年龄区间（0—20、21—25、26—30、31—35、36—40、41+）',
-  as  marriage_status,   -- '婚姻状态',
-  as  education,         -- '学历',
-  as  education_range,   -- '学历区间（大专及以下、本科、硕士、博士及以上）',
-  as  overflow_amt,      -- '溢缴款',
-  as  id_card_address,   -- '身份证地址',
-  as  id_card_area,      -- '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  as  id_card_province,  -- '身份证省级（省/直辖市/特别行政区）',
-  as  id_card_city,      -- '身份证地级（城市）',
-  as  id_card_county,    -- '身份证县级（区县）',
-  as  id_card_township,  -- '身份证乡级（乡/镇/街）（预留）',
-  as  resident_address,  -- '常住地地址',
-  as  resident_area,     -- '常住地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  as  resident_province, -- '常住地省级（省/直辖市/特别行政区）',
-  as  resident_city,     -- '常住地地级（城市）',
-  as  resident_county,   -- '常住地县级（区县）',
-  as  resident_township, -- '常住地乡级（乡/镇/街）（预留）',
-  as  job_type,          -- '工作类型',
-  as  job_year,          -- '工作年限',
-  as  income_month,      -- '月收入',
-  as  income_year,       -- '年收入',
-  as  income_year_range, -- '年收入区间（10万（不含）到15万（含））', -- ？？？
-  as  cutomer_type,      -- '客戶类型（个人或企业）',
-  as  create_time,       -- '创建时间（yyyy—MM—dd HH:mm:ss）',
-  as  update_time        -- '更新时间（yyyy—MM—dd HH:mm:ss）'
+  null                                                                         as capital_id,
+  null                                                                         as channel_id,
+  null                                                                         as project_id,
+  product_id                                                                   as product_id,
+  null                                                                         as cust_id,
+  get_json_object(original_msg,'$.userInfo.cardNo')                            as user_hash_no,
+  ecif_no                                                                      as ecif_id,
+  get_json_object(original_msg,'$.loanOrderId')                                as due_bill_no,
+  null                                                                         as linkman_id,
+  get_json_object(original_msg,'$.withdrawContactInfo.relationship')           as relationship,
+  null                                                                         as relation_idcard_type,
+  null                                                                         as relation_idcard_no,
+  null                                                                         as relation_birthday,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
+  null                                                                         as relation_gender,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile,
+  null                                                                         as relation_address,
+  null                                                                         as relation_province,
+  null                                                                         as relation_city,
+  null                                                                         as relation_county,
+  null                                                                         as corp_type,
+  null                                                                         as corp_name,
+  null                                                                         as corp_teleph_nbr,
+  null                                                                         as corp_fax,
+  null                                                                         as corp_position
 from (
-with column_common as (
-  select 'a' as channel_id,'b' as capital_id union all
-  select 'c' as channel_id,'d' as capital_id
-)
-select
-  column_common.capital_id  as  capital_id,        -- '资金方编号',
-  ecas_customer.channel_id  as  channel_id,        -- '渠道方编号',
-  'DIDI201908161538'        as  project_id,        -- '项目编号',
-  'DIDI201908161538'        as  product_id,        -- '产品编号',
-  as  cust_id,           -- '客户编号（渠道方编号—用户编号）',
-  as  user_hash_no,      -- '用户编号',
-  as  ecif_id,           -- 'ecif_id',
-  as  outer_cust_id,     -- '外部客户号',
-  as  idcard_type,       -- '证件类型（身份证等）',
-  as  idcard_no,         -- '证件号码',
-  as  name,              -- '客户姓名',
-  as  mobie,             -- '客户电话',
-  as  gender,            -- '客户性别',
-  as  birthday,          -- '出生日期',
-  as  age,               -- '年龄',
-  as  age_range,         -- '年龄区间（0—20、21—25、26—30、31—35、36—40、41+）',
-  as  marriage_status,   -- '婚姻状态',
-  as  education,         -- '学历',
-  as  education_range,   -- '学历区间（大专及以下、本科、硕士、博士及以上）',
-  as  overflow_amt,      -- '溢缴款',
-  as  id_card_address,   -- '身份证地址',
-  as  id_card_area,      -- '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  as  id_card_province,  -- '身份证省级（省/直辖市/特别行政区）',
-  as  id_card_city,      -- '身份证地级（城市）',
-  as  id_card_county,    -- '身份证县级（区县）',
-  as  id_card_township,  -- '身份证乡级（乡/镇/街）（预留）',
-  as  resident_address,  -- '常住地地址',
-  as  resident_area,     -- '常住地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  as  resident_province, -- '常住地省级（省/直辖市/特别行政区）',
-  as  resident_city,     -- '常住地地级（城市）',
-  as  resident_county,   -- '常住地县级（区县）',
-  as  resident_township, -- '常住地乡级（乡/镇/街）（预留）',
-  as  job_type,          -- '工作类型',
-  as  job_year,          -- '工作年限',
-  as  income_month,      -- '月收入',
-  as  income_year,       -- '年收入',
-  as  income_year_range, -- '年收入区间（10万（不含）到15万（含））', -- ？？？
-  as  cutomer_type,      -- '客戶类型（个人或企业）',
-  as  create_time,       -- '创建时间（yyyy—MM—dd HH:mm:ss）',
-  as  update_time        -- '更新时间（yyyy—MM—dd HH:mm:ss）'
-from ods.ecas_customer
-left join column_common on ecas_customer.channel_id = column_common.channel_id
-union all
-select
-*
-from ods.ccs_customer
-)
-
-
--- /**
---  * 用户信息表
---  *
---  * 数据库主键 user_hash_no
---  */
-DROP TABLE IF EXISTS `ods_new_s.user_info`;
-CREATE TABLE IF NOT EXISTS `ods_new_s.user_info`(
-  `user_hash_no`                  string        COMMENT '用户编号（暂时取ecif_id）',
-  `idcard_type`                   string        COMMENT '证件类型（身份证等）',
-  `idcard_no`                     string        COMMENT '证件号码',
-  `name`                          string        COMMENT '客户姓名',
-  `mobie`                         string        COMMENT '客户电话',
-  `gender`                        string        COMMENT '客户性别',
-  `birthday`                      date          COMMENT '出生日期',
-  `marriage_status`               string        COMMENT '婚姻状态',
-  `education`                     string        COMMENT '学历',
-  `id_card_address`               string        COMMENT '身份证地址',
-  `id_card_area`                  string        COMMENT '身份证大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  `id_card_province`              string        COMMENT '身份证省级（省/直辖市/特别行政区）',
-  `id_card_city`                  string        COMMENT '身份证地级（城市）',
-  `id_card_county`                string        COMMENT '身份证县级（区县）',
-  `id_card_township`              string        COMMENT '身份证乡级（乡/镇/街）（预留）',
-  `apply_address`                 string        COMMENT '申请地地址',
-  `apply_area`                    string        COMMENT '申请地大区（东北地区、华北地区、西北地区、西南地区、华南地区、华东地区、华中地区、港澳台地区）',
-  `apply_province`                string        COMMENT '申请地省级（省/直辖市/特别行政区）',
-  `apply_city`                    string        COMMENT '申请地地级（城市）',
-  `apply_county`                  string        COMMENT '申请地县级（区县）',
-  `apply_township`                string        COMMENT '申请地乡级（乡/镇/街）（预留）'
-) COMMENT '用户信息表'
-STORED AS PARQUET;
+  select
+    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}') as original_msg,
+    'DIDI201908161538' as product_id
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+) as msg_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer
+) as ecif_customer
+on encrypt_aes(get_json_object(msg_log.original_msg,'$.idNo'),'weshare666') = ecif_customer.id_no
+limit 10;
 
 
 
 
-
-
-
-
-select
-    as  capital_id,       --  '资金方编号',
-    as  channel_id,       --  '渠道方编号',
-    as  project_id,       --  '项目编号',
-    as  product_id,       --  '产品编号',
-    as  cust_id,          --  '客户编号（渠道方编号—用户编号）',
-    as  user_hash_no,     --  '用户编号',
-    as  ecif_id,          --  'ecif_id',
-    as  due_bill_no,      --  '借据编号',
-    as  card_id,          --  '绑卡编号',
-    as  bank_card_flag,   --  '绑卡标志（N：正常，F：非客户本人、共同借款人、配偶）',
-    as  bank_card_id_no,  --  '证件号码',
-    as  bank_card_name,   --  '姓名',
-    as  bank_card_phone,  --  '手机号',
-    as  bank_card_no,     --  '银行卡号',
-    as  pay_channel,      --  '支付渠道（1：宝付，2：通联）',
-    as  agreement_no,     --  '绑卡协议编号',
-    as  is_valid,         --  '是否生效',
-    as  is_default,       --  '是否默认卡',
-    as  effective_time,   --  '生效时间（yyyy—MM—dd HH:mm:ss）',
-    as  expire_time       --  '失效时间（yyyy—MM—dd HH:mm:ss）'
-from ods.ecas_bind_card as bind_card
-left join ods.ecas_bind_card_change as bind_card_change
-on bind_card. = bind_card_change.
-
-
-
-
-
-
-
-
-
-
+1588240046812
