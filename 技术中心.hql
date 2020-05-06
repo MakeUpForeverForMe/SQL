@@ -1612,7 +1612,7 @@ from (
 left join (
   select id_no,ecif_no from ecif_core.ecif_customer
 ) as ecif_customer
-on encrypt_aes(get_json_object(msg_log.original_msg,'$.userInfo.cardNo'),'weshare666') = ecif_customer.id_no;
+on encrypt_aes(get_json_object(msg_log.original_msg,'$.userInfo.cardNo')) = ecif_customer.id_no;
 
 
 
@@ -1823,7 +1823,8 @@ limit 10;
 
 
 
-
+-- 联系人信息表
+-- 滴滴
 select
   null                                                                         as capital_id,
   null                                                                         as channel_id,
@@ -1861,10 +1862,269 @@ from (
 left join (
   select id_no,ecif_no from ecif_core.ecif_customer
 ) as ecif_customer
-on encrypt_aes(get_json_object(msg_log.original_msg,'$.idNo'),'weshare666') = ecif_customer.id_no
+on encrypt_aes(get_json_object(msg_log.original_msg,'$.idNo')) = ecif_customer.id_no
 limit 10;
 
 
 
 
-1588240046812
+select
+  ecif_no as ecif_id
+  -- get_json_object(requst_data,'$.relational_humans.relational_human_type') as aa,
+  -- case get_json_object(requst_data,'$.relational_humans.relational_human_type')
+  -- when 'RHT01' then '借款人联系人'
+  -- when 'RHT02' then '共同借款人'
+  -- when 'RHT03' then '抵押人'
+  -- when 'RHT04' then '抵押人家庭成员信息'
+  -- when 'RHT05' then '保证人-个人信用保证'
+  -- else get_json_object(requst_data,'$.relational_humans.relational_human_type')
+  -- end as relational_human_type,
+  -- get_json_object(requst_data,'$.relational_humans.relationship') as bb,
+  -- case get_json_object(requst_data,'$.relational_humans.relationship')
+  -- when 'C' then '配偶'
+  -- when 'F' then '父亲'
+  -- when 'M' then '母亲'
+  -- when 'B' then '兄弟'
+  -- when 'S' then '姐妹'
+  -- when 'L' then '亲属'
+  -- when 'W' then '同事'
+  -- when 'D' then '父母'
+  -- when 'H' then '子女'
+  -- when 'X' then '兄弟姐妹'
+  -- when 'T' then '同学'
+  -- when 'Y' then '朋友'
+  -- when 'O' then '其他'
+  -- else get_json_object(requst_data,'$.relational_humans.relationship')
+  -- end as relationship
+from (
+  select
+    get_json_object(requst_data,'$.borrower.id_no') as id_no,
+    -- json_array_to_array(get_json_object(requst_data,'$.relational_humans'))
+    relational_humans
+  from ods.t_real_param
+  lateral view explode(json_array_to_array(get_json_object(requst_data,'$.relational_humans'))) humans as relational_humans
+  where interface_name = 'LOAN_INFO_PER_APPLY'
+  and agency_id = '0004'
+  and requst_data is not null
+) as t_real_param
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer
+) as ecif_customer
+on encrypt_aes(id_no) = ecif_customer.id_no
+limit 10;
+
+
+
+'{"name":"郭飞飞","sequence":1,"mobile_phone":"18620038714","relationship":"C","relational_human_type":"RHT01"}','{"name":"郑智奇","sequence":2,"mobile_phone":"13711248022","relationship":"X","relational_human_type":"RHT01"}','{"name":"马良才","sequence":3,"mobile_phone":"18620079652","relationship":"W","relational_human_type":"RHT01"}'
+
+
+select get_json_object(requst_data,'$.relational_humans') ,relational_humans
+from ods.t_real_param
+lateral view explode(array('{"name":"郭飞飞","sequence":1,"mobile_phone":"18620038714","relationship":"C","relational_human_type":"RHT01"}','{"name":"郑智奇","sequence":2,"mobile_phone":"13711248022","relationship":"X","relational_human_type":"RHT01"}','{"name":"马良才","sequence":3,"mobile_phone":"18620079652","relationship":"W","relational_human_type":"RHT01"}')) humans as relational_humans
+where interface_name = 'LOAN_INFO_PER_APPLY' and agency_id = '0004' limit 1;
+
+
+select json_array_to_array('[{"aa":"bb"},{"aa":"cc"},{"aa":1}]') as arr;
+
+
+
+
+
+
+
+-- 凤金
+select
+  id as id,
+  agency_id as agency_id,
+  project_id as project_id,
+  partition_key as partition_key,
+  create_time as create_time,
+  update_time as update_time,
+  15601 as org,
+  get_json_object(requst_data,'$.product_no') as product_no,
+  get_json_object(requst_data,'$.request_no') as request_no,
+  get_json_object(requst_data,'$.loan_apply_use') as loan_apply_use,
+  get_json_object(requst_data,'$.loan_rate_type') as loan_rate_type,
+  get_json_object(requst_data,'$.currency_type') as currency_type,
+  get_json_object(requst_data,'$.contract_no') as contract_no,
+  get_json_object(requst_data,'$.contract_amount') as contract_amount,
+  get_json_object(requst_data,'$.company_loan_bool') as company_loan_bool,
+  get_json_object(requst_data,'$.guaranties') as guaranties,
+  get_json_object(requst_data,'$.relational_humans') as relational_humans,
+  get_json_object(requst_data,'$.repayment_account') as repayment_account,
+  get_json_object(requst_data,'$.loan_account') as loan_account,
+  get_json_object(requst_data,'$.car') as car,
+  get_json_object(requst_data,'$.borrower.open_id') as open_id,
+  get_json_object(requst_data,'$.borrower.name') as name,
+  get_json_object(requst_data,'$.borrower.id_type') as id_type,
+  get_json_object(requst_data,'$.borrower.id_no') as id_no,
+  ecif_no as ecif_id,
+  if(get_json_object(requst_data,'$.borrower.sex') is null or length(get_json_object(requst_data,'$.borrower.sex')) = 0,
+    sex_idno(get_json_object(requst_data,'$.borrower.id_no')),
+    case get_json_object(requst_data,'$.borrower.sex')
+    when 'F' then '女'
+    when 'M' then '男'
+    else get_json_object(requst_data,'$.borrower.sex')
+    end
+  ) as sex,
+  if(get_json_object(requst_data,'$.borrower.age') is null or length(get_json_object(requst_data,'$.borrower.age')) = 0,
+    year(get_json_object(requst_data,'$.schedule_base.loan_date')) - cast(datefmt(substring(get_json_object(requst_data,'$.borrower.id_no'),7,8),'yyyyMMdd','yyyy') as int),
+    cast(get_json_object(requst_data,'$.borrower.age') as int)
+  ) as age,
+  get_json_object(requst_data,'$.borrower.mobile_phone') as mobile_phone,
+  get_json_object(requst_data,'$.borrower.province') as province,
+  get_json_object(requst_data,'$.borrower.city') as city,
+  get_json_object(requst_data,'$.borrower.area') as area,
+  get_json_object(requst_data,'$.borrower.address') as address,
+  get_json_object(requst_data,'$.borrower.marital_status') as marital_status,
+  get_json_object(requst_data,'$.borrower.education') as education,
+  get_json_object(requst_data,'$.borrower.industry') as industry,
+
+  get_json_object(requst_data,'$.borrower.annual_income') as annual_income,
+  get_json_object(requst_data,'$.borrower.have_house') as have_house,
+  get_json_object(requst_data,'$.borrower.housing_area') as housing_area,
+  get_json_object(requst_data,'$.borrower.housing_value') as housing_value,
+  get_json_object(requst_data,'$.borrower.family_worth') as family_worth,
+
+  get_json_object(requst_data,'$.borrower.front_url') as front_url,
+  get_json_object(requst_data,'$.borrower.back_url') as back_url,
+
+  get_json_object(requst_data,'$.borrower.private_owners') as private_owners,
+  get_json_object(requst_data,'$.borrower.income_m1') as income_m1,
+  get_json_object(requst_data,'$.borrower.income_m2') as income_m2,
+  get_json_object(requst_data,'$.borrower.income_m3') as income_m3,
+  get_json_object(requst_data,'$.borrower.income_m4') as income_m4,
+  get_json_object(requst_data,'$.borrower.social_credit_code') as social_credit_code,
+  get_json_object(requst_data,'$.borrower.company_name') as company_name,
+
+  get_json_object(requst_data,'$.borrower.industry') as industry,
+  get_json_object(requst_data,'$.borrower.legal_person_name') as legal_person_name,
+  get_json_object(requst_data,'$.borrower.legal_person_phone') as legal_person_phone,
+  get_json_object(requst_data,'$.borrower.phone') as phone,
+  get_json_object(requst_data,'$.borrower.operate_years') as operate_years,
+  get_json_object(requst_data,'$.schedule_base.repay_type') as repay_type,
+  get_json_object(requst_data,'$.schedule_base.repay_frequency') as repay_frequency,
+  get_json_object(requst_data,'$.schedule_base.terms') as terms,
+  get_json_object(requst_data,'$.schedule_base.deduction_date') as deduction_date,
+  get_json_object(requst_data,'$.schedule_base.loan_rate') as loan_rate,
+  get_json_object(requst_data,'$.schedule_base.year_rate_base') as year_rate_base,
+  get_json_object(requst_data,'$.schedule_base.loan_date') as loan_date,
+  get_json_object(requst_data,'$.schedule_base.loan_end_date') as loan_end_date,
+  get_json_object(resp_data,'$.apply_request_no') as apply_request_no,
+  get_json_object(resp_data,'$.acct_setup_ind') as acct_setup_ind
+from (
+  select
+    id,
+    agency_id,
+    project_id,
+    partition_key,
+    create_time,
+    update_time,
+    requst_data,
+    resp_data
+  from ods.t_real_param
+  where interface_name = 'LOAN_INFO_PER_APPLY'
+  and agency_id = '0004'
+  and requst_data is not null
+) as t_real_param
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer
+) as ecif_customer
+on encrypt_aes(get_json_object(t_real_param.requst_data,'$.borrower.id_no')) = ecif_customer.id_no
+limit 10;
+
+
+
+
+select
+  id,
+  agency_id,
+  project_id,
+  partition_key,
+  create_time,
+  update_time,
+  requst_data,
+  resp_data
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+and requst_data is not null
+limit 10;
+
+
+-- LOAN_INFO_PER_APPLY
+-- LOAN_SCHEDULE_CALC
+-- LOAN_REPAY
+-- REPAY_PLAN_QUERY
+select distinct interface_name from ods.t_real_param;
+
+
+select
+  distinct
+  -- get_json_object(requst_data,'$.borrower.id_no') as id_no,
+  -- substring(get_json_object(requst_data,'$.borrower.id_no'),17,1) as sex
+  -- length(get_json_object(requst_data,'$.borrower.id_no')) as len
+  -- case get_json_object(requst_data,'$.borrower.sex') when 'F' then '女' when 'M' then '男' else get_json_object(requst_data,'$.borrower.sex') end as gender,
+  -- sex_idno(get_json_object(requst_data,'$.borrower.id_no')) as sex
+  -- if(case get_json_object(requst_data,'$.borrower.sex') when 'F' then '女' when 'M' then '男' else get_json_object(requst_data,'$.borrower.sex') end != sex_idno(get_json_object(requst_data,'$.borrower.id_no')),'false','true') as tf
+
+  get_json_object(requst_data,'$.borrower.age') as age,
+  get_json_object(requst_data,'$.schedule_base.loan_date') as loan_date,
+  datefmt(substring(get_json_object(requst_data,'$.borrower.id_no'),7,8),'yyyyMMdd','yyyy-MM-dd') as birthday,
+  year(get_json_object(requst_data,'$.schedule_base.loan_date')) - cast(datefmt(substring(get_json_object(requst_data,'$.borrower.id_no'),7,8),'yyyyMMdd','yyyy') as int) as age1,
+  if(cast(get_json_object(requst_data,'$.borrower.age') as int) = year(get_json_object(requst_data,'$.schedule_base.loan_date')) - cast(datefmt(substring(get_json_object(requst_data,'$.borrower.id_no'),7,8),'yyyyMMdd','yyyy') as int),'true','false') as a
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+and requst_data is not null
+-- and (get_json_object(requst_data,'$.borrower.age') is null or length(get_json_object(requst_data,'$.borrower.age')) = 0)
+and cast(get_json_object(requst_data,'$.borrower.age') as int) != year(get_json_object(requst_data,'$.schedule_base.loan_date')) - cast(datefmt(substring(get_json_object(requst_data,'$.borrower.id_no'),7,8),'yyyyMMdd','yyyy') as int)
+-- limit 10
+;
+
+
+select
+  partition_key,
+  create_time,
+  update_time,
+  concat(
+        substring(get_json_object(requst_data,'$.schedule_base.loan_date'),1,4),
+        substring(get_json_object(requst_data,'$.schedule_base.loan_date'),6,2),
+        substring(get_json_object(requst_data,'$.schedule_base.loan_date'),9,2)
+        ) as loan_date_t,
+  get_json_object(requst_data,'$.schedule_base.loan_date') as loan_date,
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+and requst_data is not null
+and cast(partition_key as string) != concat(
+                            substring(get_json_object(requst_data,'$.schedule_base.loan_date'),1,4),
+                            substring(get_json_object(requst_data,'$.schedule_base.loan_date'),6,2),
+                            substring(get_json_object(requst_data,'$.schedule_base.loan_date'),9,2)
+                            )
+limit 10;
+
+
+select
+  -- distinct
+  -- count(get_json_object(requst_data,'$.schedule_base.loan_date')) as cnt_loan_date,
+  count(1) as cnt
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+;
+
+
+
+select
+  requst_data
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+limit 1
+;
+
+
+
+
+

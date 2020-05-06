@@ -119,7 +119,6 @@ du -sh *
 export TIME_STYLE='+%F %T'      # 设置系统默认时间格式为：yyyy-MM-dd HH:mm:ss
 alias ll='ls -lh --color=auto'  # 修改 ll 命令带有文件大小
 alias la='ll -A'                # 设置 la 命令可以查看到隐藏文件
-
 ```
 
 ### 2.1.2 Shell 命令的练习
@@ -1187,19 +1186,24 @@ TBLPROPERTIES (
 ### 3.2.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
-show functions like '*key*';
-desc function extended datefmt;
-
-drop function datefmt;
-
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-add jar hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
-add jar hdfs:///user/hive/auxlib/HiveUDF-1.0.jar;
+SHOW FUNCTIONS LIKE '*array*';
 
-create function encrypt_aes as 'com.weshare.udf.Aes_Encrypt' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-create function decrypt_aes as 'com.weshare.udf.Aes_Decrypt' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-create function datefmt as 'com.weshare.udf.DateFormat' using jar 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+SHOW FUNCTIONS LIKE '*explode*';
+DESC FUNCTION EXTENDED array;
+
+DROP FUNCTION IF EXISTS json_array_to_array;
+
+ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
+ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0.jar;
+ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+
+CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+CREATE FUNCTION sex_idno            AS 'com.weshare.udf.SexOnIdNo'          USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 ```
 
 
@@ -1212,12 +1216,13 @@ create function datefmt as 'com.weshare.udf.DateFormat' using jar 'hdfs://node47
 ### 3.3.2 Impala SQL 语句
 ```sql
 -- impala 同步 hive [表] 元数据
+invalidate metadata;
 invalidate metadata [table];
 -- impala 刷新数据库
 refresh [table] [partition [partition]];
 refresh dwb.dwb_credit_apply;
 
--- Hive 函数操作
+-- impala 函数操作
 show functions in _impala_builtins like '*date*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Encrypt';
