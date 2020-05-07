@@ -1188,21 +1188,24 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-SHOW FUNCTIONS LIKE '*array*';
+SHOW FUNCTIONS LIKE '*default*';
 
-SHOW FUNCTIONS LIKE '*explode*';
-DESC FUNCTION EXTENDED array;
-
-DROP FUNCTION IF EXISTS json_array_to_array;
+SHOW FUNCTIONS LIKE '*date_format*';
+DESC FUNCTION EXTENDED date_format;
 
 ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
-ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0.jar;
 ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
 
-CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
-CREATE FUNCTION sex_idno            AS 'com.weshare.udf.SexOnIdNo'          USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0.jar';
+DROP FUNCTION IF EXISTS encrypt_aes;
+DROP FUNCTION IF EXISTS decrypt_aes;
+DROP FUNCTION IF EXISTS datefmt;
+DROP FUNCTION IF EXISTS sex_idno;
+DROP FUNCTION IF EXISTS json_array_to_array;
+
+CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sex_idno            AS 'com.weshare.udf.SexOnIdNo'          USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 ```
 
@@ -1223,13 +1226,13 @@ refresh [table] [partition [partition]];
 refresh dwb.dwb_credit_apply;
 
 -- impala 函数操作
-show functions in _impala_builtins like '*date*';
+show functions in _impala_builtins like '*aes*';
 
-create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Encrypt';
-create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Decrypt';
+create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
+create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
 
-create function decrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Encrypt';
-create function decrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0.jar' symbol='com.weshare.udf.Aes_Decrypt';
+create function decrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
+create function decrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
 ```
 
 ## 3.4 SQL 函数

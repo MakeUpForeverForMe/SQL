@@ -1823,112 +1823,6 @@ limit 10;
 
 
 
--- 联系人信息表
--- 滴滴
-select
-  null                                                                         as capital_id,
-  null                                                                         as channel_id,
-  null                                                                         as project_id,
-  product_id                                                                   as product_id,
-  null                                                                         as cust_id,
-  get_json_object(original_msg,'$.userInfo.cardNo')                            as user_hash_no,
-  ecif_no                                                                      as ecif_id,
-  get_json_object(original_msg,'$.loanOrderId')                                as due_bill_no,
-  null                                                                         as linkman_id,
-  get_json_object(original_msg,'$.withdrawContactInfo.relationship')           as relationship,
-  null                                                                         as relation_idcard_type,
-  null                                                                         as relation_idcard_no,
-  null                                                                         as relation_birthday,
-  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
-  null                                                                         as relation_gender,
-  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile,
-  null                                                                         as relation_address,
-  null                                                                         as relation_province,
-  null                                                                         as relation_city,
-  null                                                                         as relation_county,
-  null                                                                         as corp_type,
-  null                                                                         as corp_name,
-  null                                                                         as corp_teleph_nbr,
-  null                                                                         as corp_fax,
-  null                                                                         as corp_position
-from (
-  select
-    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}') as original_msg,
-    'DIDI201908161538' as product_id
-  from ods.ecas_msg_log
-  where msg_type = 'LOAN_APPLY'
-  and original_msg is not null
-) as msg_log
-left join (
-  select id_no,ecif_no from ecif_core.ecif_customer
-) as ecif_customer
-on encrypt_aes(get_json_object(msg_log.original_msg,'$.idNo')) = ecif_customer.id_no
-limit 10;
-
-
-
-
-select
-  ecif_no as ecif_id
-  -- get_json_object(requst_data,'$.relational_humans.relational_human_type') as aa,
-  -- case get_json_object(requst_data,'$.relational_humans.relational_human_type')
-  -- when 'RHT01' then '借款人联系人'
-  -- when 'RHT02' then '共同借款人'
-  -- when 'RHT03' then '抵押人'
-  -- when 'RHT04' then '抵押人家庭成员信息'
-  -- when 'RHT05' then '保证人-个人信用保证'
-  -- else get_json_object(requst_data,'$.relational_humans.relational_human_type')
-  -- end as relational_human_type,
-  -- get_json_object(requst_data,'$.relational_humans.relationship') as bb,
-  -- case get_json_object(requst_data,'$.relational_humans.relationship')
-  -- when 'C' then '配偶'
-  -- when 'F' then '父亲'
-  -- when 'M' then '母亲'
-  -- when 'B' then '兄弟'
-  -- when 'S' then '姐妹'
-  -- when 'L' then '亲属'
-  -- when 'W' then '同事'
-  -- when 'D' then '父母'
-  -- when 'H' then '子女'
-  -- when 'X' then '兄弟姐妹'
-  -- when 'T' then '同学'
-  -- when 'Y' then '朋友'
-  -- when 'O' then '其他'
-  -- else get_json_object(requst_data,'$.relational_humans.relationship')
-  -- end as relationship
-from (
-  select
-    get_json_object(requst_data,'$.borrower.id_no') as id_no,
-    -- json_array_to_array(get_json_object(requst_data,'$.relational_humans'))
-    relational_humans
-  from ods.t_real_param
-  lateral view explode(json_array_to_array(get_json_object(requst_data,'$.relational_humans'))) humans as relational_humans
-  where interface_name = 'LOAN_INFO_PER_APPLY'
-  and agency_id = '0004'
-  and requst_data is not null
-) as t_real_param
-left join (
-  select id_no,ecif_no from ecif_core.ecif_customer
-) as ecif_customer
-on encrypt_aes(id_no) = ecif_customer.id_no
-limit 10;
-
-
-
-'{"name":"郭飞飞","sequence":1,"mobile_phone":"18620038714","relationship":"C","relational_human_type":"RHT01"}','{"name":"郑智奇","sequence":2,"mobile_phone":"13711248022","relationship":"X","relational_human_type":"RHT01"}','{"name":"马良才","sequence":3,"mobile_phone":"18620079652","relationship":"W","relational_human_type":"RHT01"}'
-
-
-select get_json_object(requst_data,'$.relational_humans') ,relational_humans
-from ods.t_real_param
-lateral view explode(array('{"name":"郭飞飞","sequence":1,"mobile_phone":"18620038714","relationship":"C","relational_human_type":"RHT01"}','{"name":"郑智奇","sequence":2,"mobile_phone":"13711248022","relationship":"X","relational_human_type":"RHT01"}','{"name":"马良才","sequence":3,"mobile_phone":"18620079652","relationship":"W","relational_human_type":"RHT01"}')) humans as relational_humans
-where interface_name = 'LOAN_INFO_PER_APPLY' and agency_id = '0004' limit 1;
-
-
-select json_array_to_array('[{"aa":"bb"},{"aa":"cc"},{"aa":1}]') as arr;
-
-
-
-
 
 
 
@@ -1962,8 +1856,7 @@ select
   if(get_json_object(requst_data,'$.borrower.sex') is null or length(get_json_object(requst_data,'$.borrower.sex')) = 0,
     sex_idno(get_json_object(requst_data,'$.borrower.id_no')),
     case get_json_object(requst_data,'$.borrower.sex')
-    when 'F' then '女'
-    when 'M' then '男'
+    when 'F' then '女' when 'M' then '男'
     else get_json_object(requst_data,'$.borrower.sex')
     end
   ) as sex,
@@ -2028,7 +1921,7 @@ from (
   and requst_data is not null
 ) as t_real_param
 left join (
-  select id_no,ecif_no from ecif_core.ecif_customer
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
 ) as ecif_customer
 on encrypt_aes(get_json_object(t_real_param.requst_data,'$.borrower.id_no')) = ecif_customer.id_no
 limit 10;
@@ -2124,6 +2017,652 @@ and agency_id = '0004'
 limit 1
 ;
 
+
+
+
+
+
+
+
+
++-------------------------+--------------+-------------------------------------------------------------+
+| name                    | type         | comment                                                     |
++-------------------------+--------------+-------------------------------------------------------------+
+| id                      | string       | 接口响应日志ID : ///@UUIDSeq                                |
+| req_log_id              | string       | 请求日志ID : 请求日志ID                                     |
+| sta_service_method_name | string       | 标准请求模板编号                                            |
+| standard_req_msg        | string       | 标准请求报文                                                |
+| standard_resp_msg       | string       | 标准响应报文 : 标准响应报文                                 |
+| resp_msg                | string       | 响应报文 : 响应报文                                         |
+| resp_code               | string       | 响应码 : 响应码                                             |
+| resp_desc               | string       | 响应描述 : 响应描述                                         |
+| deal_date               | string       | 请求处理时间 : 请求处理时间                                 |
+| status                  | string       | 请求状态, SUC:成功,FAIL:失败 : 请求状态, SUC:成功,FAIL:失败 |
+| org                     | string       | 机构号 : 机构号                                             |
+| create_time             | bigint       | 创建时间 : 创建时间                                         |
+| update_time             | bigint       | 更新时间 : 更新时间                                         |
+| jpa_version             | decimal(8,0) | 乐观锁版本号 : 乐观锁版本号                                 |
++-------------------------+--------------+-------------------------------------------------------------+
+desc ods.nms_interface_resp_log;
+
+
+-- batchLoanApplyQuery
+-- setupCustCredit
+-- queryCapRepaySchedule
+-- refundConfirm
+-- preCheckForSignature
+-- payNotify
+-- loanApply
+-- batchRedemptionQuery
+-- collectionRepay
+-- amountAdj
+-- queryCollectionRepayResult
+-- offlineRepayQuery
+-- offlineRepay
+-- checkCapitalScale
+-- onlineRepay
+-- updateBindCard
+-- loanApplyCancel
+select distinct sta_service_method_name from ods.nms_interface_resp_log;
+
+
+select * from ods.nms_interface_resp_log where sta_service_method_name = 'setupCustCredit' limit 10;
+
+
+
+select
+  case get_json_object(standard_resp_msg,'$.acct_setup_ind')
+  when 'Y' then '成功' when 'N' then '失败'
+  else get_json_object(standard_resp_msg,'$.acct_setup_ind')
+  end as acct_setup_ind,
+  get_json_object(standard_resp_msg,'$.cust_no') as cust_no,
+  get_json_object(standard_resp_msg,'$.reject_msg') as reject_msg,
+
+  get_json_object(standard_req_msg,'$.pre_apply_no') as pre_apply_no,
+  get_json_object(standard_req_msg,'$.apply_no') as apply_no,
+  get_json_object(standard_req_msg,'$.company_loan_bool') as company_loan_bool,
+  get_json_object(standard_req_msg,'$.relational_humans') as relational_humans,
+  get_json_object(standard_req_msg,'$.guaranties') as guaranties,
+
+  -- get_json_object(standard_req_msg,'$.car') as car -- car 在 guaranties 中
+
+  get_json_object(standard_req_msg,'$.product.product_no') as product_no,
+  case get_json_object(standard_req_msg,'$.product.currency_type')
+  when 'RMB' then '人民币'
+  else get_json_object(standard_req_msg,'$.product.currency_type')
+  end                                                          as currency_type,
+  get_json_object(standard_req_msg,'$.product.currency_amt') as currency_amt,
+  get_json_object(standard_req_msg,'$.product.loan_amt') as loan_amt,
+  get_json_object(standard_req_msg,'$.product.loan_terms') as loan_terms,
+  case get_json_object(standard_req_msg,'$.product.repay_type')
+  when 'RT01' then '等额本息'
+  when 'RT02' then '等额本金'
+  when 'RT03' then '等本等息'
+  when 'RT04' then '一次还本付息'
+  when 'RT05' then '按月付息-到期一次性还本'
+  when 'RT06' then '循环授信-随借随还'
+  when 'RT07' then '循环授信-随借随还'
+  when 'RT08' then '循环授信-随借随还'
+  else get_json_object(standard_req_msg,'$.product.repay_type')
+  end                                                          as repay_type,
+  case get_json_object(standard_req_msg,'$.product.loan_rate_type')
+  when 'LRT01' then '固定利率'
+  else get_json_object(standard_req_msg,'$.product.loan_rate_type')
+  end                                                          as loan_rate_type,
+  case get_json_object(standard_req_msg,'$.product.agreement_rate_ind')
+  when 'Y' then '是' when 'N' then '否'
+  else get_json_object(standard_req_msg,'$.product.agreement_rate_ind')
+  end as agreement_rate_ind,
+  get_json_object(standard_req_msg,'$.product.loan_rate') as loan_rate,
+  get_json_object(standard_req_msg,'$.product.loan_fee_rate') as loan_fee_rate,
+  get_json_object(standard_req_msg,'$.product.loan_svc_fee_rate') as loan_svc_fee_rate,
+  get_json_object(standard_req_msg,'$.product.loan_penalty_rate') as loan_penalty_rate,
+  get_json_object(standard_req_msg,'$.product.guarantee_type') as guarantee_type,
+  case get_json_object(standard_req_msg,'$.product.loan_apply_use')
+  when 'LAU99' then '其他类消费'
+  when 'LAU01' then '购车'
+  when 'LAU02' then '购房'
+  when 'LAU03' then '医疗'
+  when 'LAU04' then '国内教育'
+  when 'LAU05' then '出境留学'
+  when 'LAU06' then '装修'
+  when 'LAU07' then '婚庆'
+  when 'LAU08' then '旅游'
+  when 'LAU09' then '租赁'
+  when 'LAU10' then '美容'
+  when 'LAU11' then '家具'
+  when 'LAU12' then '生活用品'
+  when 'LAU13' then '家用电器'
+  when 'LAU14' then '数码产品'
+  else get_json_object(standard_req_msg,'$.product.loan_apply_use')
+  end                                                          as loan_apply_use,
+  ecif_no                                                           as ecif_id,
+  get_json_object(standard_req_msg,'$.borrower.open_id')            as open_id,
+  case get_json_object(standard_req_msg,'$.borrower.id_type')
+  when 'I' then '身份证'
+  when 'T' then '台胞证'
+  when 'S' then '军官证/士兵证'
+  when 'P' then '护照'
+  when 'L' then '营业执照'
+  when 'O' then '其他有效证件'
+  when 'R' then '户口簿'
+  when 'H' then '港澳居民来往内地通行证'
+  when 'W' then '台湾同胞来往内地通行证'
+  when 'F' then '外国人居留证'
+  when 'C' then '警官证'
+  when 'B' then '外国护照'
+  else get_json_object(standard_req_msg,'$.borrower.id_type')
+  end                                                               as id_type,
+  get_json_object(standard_req_msg,'$.borrower.id_no')              as id_no,
+  get_json_object(standard_req_msg,'$.borrower.name')               as name,
+  get_json_object(standard_req_msg,'$.borrower.mobile_phone')       as mobile_phone,
+  get_json_object(standard_req_msg,'$.borrower.province')           as province,
+  get_json_object(standard_req_msg,'$.borrower.city')               as city,
+  get_json_object(standard_req_msg,'$.borrower.area')               as area,
+  get_json_object(standard_req_msg,'$.borrower.address')            as address,
+  case get_json_object(standard_req_msg,'$.borrower.marital_status')
+  when 'C' then '已婚'
+  when 'S' then '未婚'
+  when 'O' then '其他'
+  when 'D' then '离异'
+  when 'P' then '丧偶'
+  else get_json_object(standard_req_msg,'$.borrower.marital_status')
+  end                                                               as marital_status,
+  case get_json_object(standard_req_msg,'$.borrower.education')
+  when 'A' then '博士及以上'
+  when 'B' then '硕士'
+  when 'C' then '大学本科'
+  when 'D' then '大学专科/专科学校'
+  when 'E' then '高中/中专/技校'
+  when 'F' then '初中'
+  when 'G' then '初中以下'
+  else get_json_object(standard_req_msg,'$.borrower.education')
+  end                                                               as education,
+  case get_json_object(standard_req_msg,'$.borrower.industry')
+  when 'A' then '农、林、牧、渔业'
+  when 'B' then '采掘业'
+  when 'C' then '制造业'
+  when 'D' then '电力、燃气及水的生产和供应业'
+  when 'E' then '建筑业'
+  when 'F' then '交通运输、仓储和邮政业'
+  when 'G' then '信息传输、计算机服务和软件业'
+  when 'H' then '批发和零售业'
+  when 'I' then '住宿和餐饮业'
+  when 'J' then '金融业'
+  when 'K' then '房地产业'
+  when 'L' then '租赁和商务服务业'
+  when 'M' then '科学研究、技术服务业和地质勘察业'
+  when 'N' then '水利、环境和公共设施管理业'
+  when 'O' then '居民服务和其他服务业'
+  when 'P' then '教育'
+  when 'Q' then '卫生、社会保障和社会福利业'
+  when 'R' then '文化、体育和娱乐业'
+  when 'S' then '公共管理和社会组织'
+  when 'T' then '国际组织'
+  when 'Z' then '其他'
+  when 'NIL' then '空'
+  else get_json_object(standard_req_msg,'$.borrower.industry')
+  end                                                               as industry,
+  get_json_object(standard_req_msg,'$.borrower.annual_income_max')  as annual_income_max,
+  get_json_object(standard_req_msg,'$.borrower.annual_income_min')  as annual_income_min,
+  if(length(get_json_object(standard_req_msg,'$.borrower.have_house')) = 0,null,get_json_object(standard_req_msg,'$.borrower.have_house'))         as have_house,
+  get_json_object(standard_req_msg,'$.borrower.housing_area')       as housing_area,
+  get_json_object(standard_req_msg,'$.borrower.housing_value')      as housing_value,
+  if(length(get_json_object(standard_req_msg,'$.borrower.drivr_licen_no')) = 0,null,get_json_object(standard_req_msg,'$.borrower.drivr_licen_no'))     as drivr_licen_no,
+  get_json_object(standard_req_msg,'$.borrower.driving_expr')       as driving_expr,
+  if(get_json_object(standard_req_msg,'$.borrower.sex') is null or length(get_json_object(standard_req_msg,'$.borrower.sex')) = 0,
+    sex_idno(get_json_object(standard_req_msg,'$.borrower.id_no')),
+    case get_json_object(standard_req_msg,'$.borrower.sex')
+    when 'M' then '男' when 'F' then '女'
+    else get_json_object(standard_req_msg,'$.borrower.sex')
+    end
+  ) as sex,
+  get_json_object(standard_req_msg,'$.borrower.age')                as age,
+  if(length(get_json_object(standard_req_msg,'$.company.social_credit_code')) = 0,null,get_json_object(standard_req_msg,'$.company.social_credit_code')) as social_credit_code,
+  if(length(get_json_object(standard_req_msg,'$.company.company_name')) = 0,null,get_json_object(standard_req_msg,'$.company.company_name')) as company_name,
+  if(length(get_json_object(standard_req_msg,'$.company.industry')) = 0,null,get_json_object(standard_req_msg,'$.company.industry')) as industry,
+  if(length(get_json_object(standard_req_msg,'$.company.province')) = 0,null,get_json_object(standard_req_msg,'$.company.province')) as province,
+  if(length(get_json_object(standard_req_msg,'$.company.city')) = 0,null,get_json_object(standard_req_msg,'$.company.city')) as city,
+  if(length(get_json_object(standard_req_msg,'$.company.address')) = 0,null,get_json_object(standard_req_msg,'$.company.address')) as address,
+  if(length(get_json_object(standard_req_msg,'$.company.legal_person_name')) = 0,null,get_json_object(standard_req_msg,'$.company.legal_person_name')) as legal_person_name,
+  if(length(get_json_object(standard_req_msg,'$.company.id_type')) = 0,null,get_json_object(standard_req_msg,'$.company.id_type')) as id_type,
+  if(length(get_json_object(standard_req_msg,'$.company.id_no')) = 0,null,get_json_object(standard_req_msg,'$.company.id_no')) as id_no,
+  if(length(get_json_object(standard_req_msg,'$.company.legal_person_phone')) = 0,null,get_json_object(standard_req_msg,'$.company.legal_person_phone')) as legal_person_phone,
+  if(length(get_json_object(standard_req_msg,'$.company.phone')) = 0,null,get_json_object(standard_req_msg,'$.company.phone')) as phone,
+  if(length(get_json_object(standard_req_msg,'$.company.operate_years')) = 0,0,cast(get_json_object(standard_req_msg,'$.company.operate_years') as int)) as operate_years,
+  case get_json_object(standard_req_msg,'$.loan_account.account_type')
+  when 'ERSONAL' then '个人账户' when 'BUSINESS' then '对公账户'
+  else get_json_object(standard_req_msg,'$.loan_account.account_type')
+  end                                                             as loan_account_account_type,
+  get_json_object(standard_req_msg,'$.loan_account.account_num')  as loan_account_account_num,
+  get_json_object(standard_req_msg,'$.loan_account.account_name') as loan_account_account_name,
+  case get_json_object(standard_req_msg,'$.loan_account.bank_name')
+  when 'B0100' then '邮储银行'
+  when 'B0102' then '中国工商银行'
+  when 'B0103' then '中国农业银行'
+  when 'B0104' then '中国建设银行'
+  when 'B0105' then '交通银行'
+  when 'B0301' then '中信银行'
+  when 'B0302' then '中国光大银行'
+  when 'B0303' then '中国民生银行'
+  when 'B0305' then '广东发展银行'
+  when 'B0306' then '深发展银行'
+  when 'B0307' then '招商银行'
+  when 'B0308' then '兴业银行'
+  when 'B0410' then '中国平安银行'
+  when 'B6440' then '徽商银行'
+  when 'B0411' then '中国银行'
+  else get_json_object(standard_req_msg,'$.loan_account.bank_name')
+  end as loan_account_bank_name,
+  if(length(get_json_object(standard_req_msg,'$.loan_account.branch_name')) = 0,null,get_json_object(standard_req_msg,'$.loan_account.branch_name'))  as loan_account_branch_name,
+  get_json_object(standard_req_msg,'$.loan_account.mobile_phone') as loan_account_mobile_phone
+from (
+  select
+    id,
+    deal_date,
+    create_time,
+    update_time,
+    req_log_id,
+    org,
+    standard_req_msg,
+    standard_resp_msg,
+    status
+  from ods.nms_interface_resp_log
+  where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+) as resp_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
+) as ecif_customer
+on encrypt_aes(get_json_object(resp_log.standard_req_msg,'$.borrower.id_no')) = ecif_customer.id_no
+limit 10;
+
+
+
+
+
+
+
+
+
+-- 联系人信息表
+select
+  null                                              as capital_id,
+  null                                              as channel_id,
+  null                                              as project_id,
+  product_id                                        as product_id,
+  null                                              as cust_id,
+  msg_log.idno                                      as user_hash_no,
+  ecif_no                                           as ecif_id,
+  msg_log.loan_order_id                             as due_bill_no,
+  concat(msg_log.idno,'_',msg_log.relation_mobile)  as linkman_id,
+  null                                              as relational_type,
+  msg_log.relationship                              as relationship,
+  null                                              as relation_idcard_type,
+  null                                              as relation_idcard_no,
+  null                                              as relation_birthday,
+  msg_log.relation_name                             as relation_name,
+  null                                              as relation_gender,
+  msg_log.relation_mobile                           as relation_mobile,
+  null                                              as relation_address,
+  null                                              as relation_province,
+  null                                              as relation_city,
+  null                                              as relation_county,
+  null                                              as corp_type,
+  null                                              as corp_name,
+  null                                              as corp_teleph_nbr,
+  null                                              as corp_fax,
+  null                                              as corp_position
+from (
+  select distinct
+    deal_date,
+    create_time,
+    product_id,
+    get_json_object(original_msg,'$.idNo')                                       as idno,
+    get_json_object(original_msg,'$.loanOrderId')                                as loan_order_id,
+    case get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+    when '1' then '父母'
+    when '2' then '配偶'
+    when '3' then '子女'
+    when '4' then '兄弟姐妹'
+    else get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+    end                                                                          as relationship,
+    get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
+    get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile
+  from (
+    select
+      deal_date,
+      'DIDI201908161538' as product_id,
+      datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
+      regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+    from ods.ecas_msg_log
+    where msg_type = 'LOAN_APPLY'
+    and original_msg is not null
+    and deal_date = '2020-05-06'
+  ) as msg_log
+) as msg_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
+) as ecif_customer
+on encrypt_aes(msg_log.idno) = ecif_customer.id_no
+
+
+
+
+
+select
+  linkman_info.capital_id,
+  linkman_info.channel_id,
+  linkman_info.project_id,
+  linkman_info.product_id,
+  linkman_info.cust_id,
+  linkman_info.user_hash_no,
+  linkman_info.ecif_id,
+  linkman_info.due_bill_no,
+  linkman_info.linkman_id,
+  linkman_info.relational_type,
+  linkman_info.relationship,
+  linkman_info.relation_idcard_type,
+  linkman_info.relation_idcard_no,
+  linkman_info.relation_birthday,
+  linkman_info.relation_name,
+  linkman_info.relation_sex,
+  linkman_info.relation_mobile,
+  linkman_info.relation_address,
+  linkman_info.relation_province,
+  linkman_info.relation_city,
+  linkman_info.relation_county,
+  linkman_info.corp_type,
+  linkman_info.corp_name,
+  linkman_info.corp_teleph_nbr,
+  linkman_info.corp_fax,
+  linkman_info.corp_position,
+  linkman_info.effective_time,
+  if(to_date(linkman_info.expire_time) > '2020-05-06' and ods_new_log.linkman_id is not null,ods_new_log.create_time,linkman_info.expire_time) as expire_time
+from ods_new_s.linkman_info
+left join (
+  select distinct
+    concat(get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.idNo'),'_',get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.withdrawContactInfo.emergencyContactMobile')) as linkman_id,
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
+    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+  and deal_date = '2020-05-06'
+) as msg_log
+on linkman_info.linkman_id = ods_new_log.linkman_id
+
+
+
+
+select distinct
+  null                                              as capital_id,
+  null                                              as channel_id,
+  null                                              as project_id,
+  product_id                                        as product_id,
+  null                                              as cust_id,
+  get_json_object(original_msg,'$.idNo')            as user_hash_no,
+  ecif_no                                           as ecif_id,
+  get_json_object(original_msg,'$.loanOrderId')     as due_bill_no,
+  concat(get_json_object(original_msg,'$.idNo'),'_',get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile')) as linkman_id,
+  case get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+  when '1' then '父母'
+  when '2' then '配偶'
+  when '3' then '子女'
+  when '4' then '兄弟姐妹'
+  else get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+  end                                                                          as relationship,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile,
+  deal_date,
+  create_time
+from (
+  select
+    deal_date,
+    'DIDI201908161538' as product_id,
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
+    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+  and deal_date = '2020-05-06'
+) as msg_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
+) as ecif_customer
+on encrypt_aes(get_json_object(original_msg,'$.idNo')) = ecif_customer.id_no
+
+limit 10;
+
+
+
+
+SELECT A.user_num,
+       A.mobile,
+       A.reg_date,
+       A.t_start_time,
+       CASE
+            WHEN A.t_end_time = '9999-12-31' AND B.user_num IS NOT NULL THEN '2017-01-01'
+            ELSE A.t_end_time
+       END AS t_end_time
+FROM dws.user_his AS A
+LEFT JOIN ods.user_update AS B
+ON A.user_num = B.user_num
+UNION all
+SELECT C.user_num,
+       C.mobile,
+       C.reg_date,
+       '2017-01-02' AS t_start_time,
+       '9999-12-31' AS t_end_time
+FROM ods.user_update AS C
+
+
+
+
+select
+  null                                                                                          as capital_id,
+  null                                                                                          as channel_id,
+  null                                                                                          as project_id,
+  product_id                                                                                    as product_id,
+  null                                                                                          as cust_id,
+  t_real_param.id_no                                                                            as user_hash_no,
+  ecif_no                                                                                       as ecif_id,
+  t_real_param.request_no                                                                       as due_bill_no,
+  concat(t_real_param.id_no,'_',relational_humans['mobile_phone'])                              as linkman_id,
+  case relational_humans['relational_human_type']
+  when 'RHT01' then '借款人联系人'
+  when 'RHT02' then '共同借款人'
+  when 'RHT03' then '抵押人'
+  when 'RHT04' then '抵押人家庭成员信息'
+  when 'RHT05' then '保证人-个人信用保证'
+  else relational_humans['relational_human_type']
+  end                                                                                           as relational_type,
+  case relational_humans['relationship']
+  when 'C' then '配偶'
+  when 'F' then '父亲'
+  when 'M' then '母亲'
+  when 'B' then '兄弟'
+  when 'S' then '姐妹'
+  when 'L' then '亲属'
+  when 'W' then '同事'
+  when 'D' then '父母'
+  when 'H' then '子女'
+  when 'X' then '兄弟姐妹'
+  when 'T' then '同学'
+  when 'Y' then '朋友'
+  when 'O' then '其他'
+  else relational_humans['relationship']
+  end                                                                                           as relationship,
+  null                                                                                          as relation_idcard_type,
+  null                                                                                          as relation_idcard_no,
+  null                                                                                          as relation_birthday,
+  relational_humans['name']                                                                     as relation_name,
+  null                                                                                          as relation_gender,
+  relational_humans['mobile_phone']                                                             as relation_mobile,
+  null                                                                                          as relation_address,
+  null                                                                                          as relation_province,
+  null                                                                                          as relation_city,
+  null                                                                                          as relation_county,
+  null                                                                                          as corp_type,
+  null                                                                                          as corp_name,
+  null                                                                                          as corp_teleph_nbr,
+  null                                                                                          as corp_fax,
+  null                                                                                          as corp_position
+from (
+  select distinct
+    get_json_object(requst_data,'$.borrower.id_no') as id_no,
+    get_json_object(requst_data,'$.request_no') as request_no,
+    get_json_object(requst_data,'$.product_no') as product_id,
+    relational_humans
+  from ods.t_real_param
+  lateral view explode(json_array_to_array(get_json_object(requst_data,'$.relational_humans'))) humans as relational_humans
+  where interface_name = 'LOAN_INFO_PER_APPLY'
+  and agency_id = '0004'
+  and requst_data is not null
+  and to_date(create_time) = '2020-05-06'
+) as t_real_param
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
+) as ecif_customer
+on encrypt_aes(t_real_param.id_no) = ecif_customer.id_no
+
+
+
+select
+  null                                                                                          as capital_id,
+  null                                                                                          as channel_id,
+  null                                                                                          as project_id,
+  resp_log.product_no                                                                           as product_id,
+  null                                                                                          as cust_id,
+  resp_log.id_no                                                                                as user_hash_no,
+  ecif_no                                                                                       as ecif_id,
+  resp_log.apply_no                                                                             as due_bill_no,
+  concat(resp_log.id_no,'_',relational_humans['mbile_phone'])                                   as linkman_id,
+  case relational_humans['relational_human_type']
+  when 'RHT01' then '借款人联系人'
+  when 'RHT02' then '共同借款人'
+  when 'RHT03' then '抵押人'
+  when 'RHT04' then '抵押人家庭成员信息'
+  when 'RHT05' then '保证人-个人信用保证'
+  else relational_humans['relational_human_type']
+  end                                                                                           as relational_type,
+  case relational_humans['relationship']
+  when 'C' then '配偶'
+  when 'F' then '父亲'
+  when 'M' then '母亲'
+  when 'B' then '兄弟'
+  when 'S' then '姐妹'
+  when 'L' then '亲属'
+  when 'W' then '同事'
+  when 'D' then '父母'
+  when 'H' then '子女'
+  when 'X' then '兄弟姐妹'
+  when 'T' then '同学'
+  when 'Y' then '朋友'
+  when 'O' then '其他'
+  else relational_humans['relationship']
+  end                                                                                           as relationship,
+  case relational_humans['id_type']
+  when 'I' then '身份证'
+  when 'T' then '台胞证'
+  when 'S' then '军官证/士兵证'
+  when 'P' then '护照'
+  when 'L' then '营业执照'
+  when 'O' then '其他有效证件'
+  when 'R' then '户口簿'
+  when 'H' then '港澳居民来往内地通行证'
+  when 'W' then '台湾同胞来往内地通行证'
+  when 'F' then '外国人居留证'
+  when 'C' then '警官证'
+  when 'B' then '外国护照'
+  else if(length(relational_humans['id_type']) = 0 or relational_humans['id_type'] is null,null,relational_humans['id_type'])
+  end                                                                                           as relation_idcard_type,
+  if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,relational_humans['id_no']) as relation_idcard_no,
+  if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,datefmt(substring(relational_humans['id_no'],7,8),'yyyyMMdd','yyyy-MM-dd'))  as relation_birthday,
+  relational_humans['name']                                                                     as relation_name,
+  if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,sex_idno(substring(relational_humans['id_no'],17,1)))  as relation_gender,
+  relational_humans['mbile_phone']                                                              as relation_mobile,
+  if(length(relational_humans['address']) = 0 or relational_humans['address'] is null,null,relational_humans['address']) as relation_address,
+  if(length(relational_humans['province']) = 0 or relational_humans['province'] is null,null,relational_humans['province']) as relation_province,
+  if(length(relational_humans['city']) = 0 or relational_humans['city'] is null,null,relational_humans['city']) as relation_city,
+  if(length(relational_humans['area']) = 0 or relational_humans['area'] is null,null,relational_humans['area']) as relation_county,
+  null                                                                                          as corp_type,
+  null                                                                                          as corp_name,
+  null                                                                                          as corp_teleph_nbr,
+  null                                                                                          as corp_fax,
+  null                                                                                          as corp_position
+from (
+  select
+    get_json_object(standard_req_msg,'$.borrower.id_no') as id_no,
+    get_json_object(standard_req_msg,'$.apply_no') as apply_no,
+    get_json_object(standard_req_msg,'$.product.product_no') as product_no,
+    relational_humans
+  from ods.nms_interface_resp_log
+  lateral view explode(json_array_to_array(get_json_object(standard_req_msg,'$.relational_humans'))) humans as relational_humans
+  where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+  and deal_date = '2020-05-06'
+) as resp_log
+left join (
+  select id_no,ecif_no from ecif_core.ecif_customer_hive
+) as ecif_customer
+on encrypt_aes(resp_log.id_no) = ecif_customer.id_no
+limit 10;
+
+
+
+
+
+
+
+select distinct
+  deal_date,
+  datefmt(cast(create_time as string),'ms','yyyy-MM-dd') as create_time
+  -- regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}') as original_msg
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+and original_msg is not null
+-- and deal_date != datefmt(cast(create_time as string),'ms','yyyy-MM-dd')
+-- group by msg_log_id,deal_date,datefmt(cast(create_time as string),'ms','yyyy-MM-dd HH:mm:ss'),regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}')
+-- having count(msg_log_id) > 1
+limit 10;
+
+
+
+
+
+select
+  id,
+  create_time,
+  partition_key
+  -- count(id) as cnt
+from ods.t_real_param
+where interface_name = 'LOAN_INFO_PER_APPLY'
+and agency_id = '0004'
+and requst_data is not null
+and datefmt(partition_key,'yyyyMMdd','yyyy-MM-dd') != to_date(create_time)
+-- and create_time in ('2020-01-16 14:58:31.0','2020-02-27 11:39:40.0','2020-01-20 12:53:41.0','2020-02-27 14:32:53.0')
+-- group by create_time,partition_key
+-- having count(id) > 1
+limit 10;
+
+
+
+
+
+select
+  id,
+  req_log_id,
+  -- count(id) as cnt,
+  deal_date,
+  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time
+from ods.nms_interface_resp_log
+where sta_service_method_name = 'setupCustCredit'
+and standard_req_msg is not null
+and deal_date != datefmt(create_time,'ms','yyyy-MM-dd')
+-- group by deal_date,datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')
+-- having count(id) > 1
+limit 10;
 
 
 
