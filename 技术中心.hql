@@ -2287,23 +2287,74 @@ limit 10;
 
 -- 联系人信息表
 select
+  linkman_info.capital_id,
+  linkman_info.channel_id,
+  linkman_info.project_id,
+  linkman_info.product_id,
+  linkman_info.cust_id,
+  linkman_info.user_hash_no,
+  linkman_info.ecif_id,
+  linkman_info.due_bill_no,
+  linkman_info.linkman_id,
+  linkman_info.relational_type,
+  linkman_info.relationship,
+  linkman_info.relation_idcard_type,
+  linkman_info.relation_idcard_no,
+  linkman_info.relation_birthday,
+  linkman_info.relation_name,
+  linkman_info.relation_sex,
+  linkman_info.relation_mobile,
+  linkman_info.relation_address,
+  linkman_info.relation_province,
+  linkman_info.relation_city,
+  linkman_info.relation_county,
+  linkman_info.corp_type,
+  linkman_info.corp_name,
+  linkman_info.corp_teleph_nbr,
+  linkman_info.corp_fax,
+  linkman_info.corp_position,
+  linkman_info.effective_time,
+  cast(if(to_date(linkman_info.expire_time) > '2020-05-06' and msg_log.linkman_id is not null,msg_log.create_time,linkman_info.expire_time) as timestamp) as expire_time
+from ods_new_s.linkman_info
+left join (
+  select distinct
+    cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as timestamp) as create_time,
+    concat(
+      get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.idNo'),
+      '_',
+      get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.withdrawContactInfo.emergencyContactMobile')
+    ) as linkman_id
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+  and deal_date = '2020-05-06'
+) as msg_log
+on linkman_info.linkman_id = msg_log.linkman_id
+union all
+select distinct
   null                                              as capital_id,
   null                                              as channel_id,
   null                                              as project_id,
   product_id                                        as product_id,
   null                                              as cust_id,
-  msg_log.idno                                      as user_hash_no,
+  get_json_object(original_msg,'$.idNo')            as user_hash_no,
   ecif_no                                           as ecif_id,
-  msg_log.loan_order_id                             as due_bill_no,
-  concat(msg_log.idno,'_',msg_log.relation_mobile)  as linkman_id,
+  get_json_object(original_msg,'$.loanOrderId')     as due_bill_no,
+  concat(get_json_object(original_msg,'$.idNo'),'_',get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile')) as linkman_id,
   null                                              as relational_type,
-  msg_log.relationship                              as relationship,
+  case get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+  when '1' then '父母'
+  when '2' then '配偶'
+  when '3' then '子女'
+  when '4' then '兄弟姐妹'
+  else get_json_object(original_msg,'$.withdrawContactInfo.relationship')
+  end                                                                          as relationship,
   null                                              as relation_idcard_type,
   null                                              as relation_idcard_no,
   null                                              as relation_birthday,
-  msg_log.relation_name                             as relation_name,
-  null                                              as relation_gender,
-  msg_log.relation_mobile                           as relation_mobile,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
+  null                                              as relation_sex,
+  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile,
   null                                              as relation_address,
   null                                              as relation_province,
   null                                              as relation_city,
@@ -2312,44 +2363,24 @@ select
   null                                              as corp_name,
   null                                              as corp_teleph_nbr,
   null                                              as corp_fax,
-  null                                              as corp_position
+  null                                              as corp_position,
+  cast(create_time as timestamp)                    as effective_time,
+  cast('3000-12-31 00:00:00' as timestamp)          as expire_time
 from (
-  select distinct
-    deal_date,
-    create_time,
-    product_id,
-    get_json_object(original_msg,'$.idNo')                                       as idno,
-    get_json_object(original_msg,'$.loanOrderId')                                as loan_order_id,
-    case get_json_object(original_msg,'$.withdrawContactInfo.relationship')
-    when '1' then '父母'
-    when '2' then '配偶'
-    when '3' then '子女'
-    when '4' then '兄弟姐妹'
-    else get_json_object(original_msg,'$.withdrawContactInfo.relationship')
-    end                                                                          as relationship,
-    get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
-    get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile
-  from (
-    select
-      deal_date,
-      'DIDI201908161538' as product_id,
-      datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
-      regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
-    from ods.ecas_msg_log
-    where msg_type = 'LOAN_APPLY'
-    and original_msg is not null
-    and deal_date = '2020-05-06'
-  ) as msg_log
+  select
+    'DIDI201908161538' as product_id,
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
+    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+  from ods.ecas_msg_log
+  where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+  and deal_date = '2020-05-06'
 ) as msg_log
 left join (
   select id_no,ecif_no from ecif_core.ecif_customer_hive
 ) as ecif_customer
-on encrypt_aes(msg_log.idno) = ecif_customer.id_no
-
-
-
-
-
+on encrypt_aes(get_json_object(original_msg,'$.idNo')) = ecif_customer.id_no
+union all
 select
   linkman_info.capital_id,
   linkman_info.channel_id,
@@ -2378,97 +2409,31 @@ select
   linkman_info.corp_fax,
   linkman_info.corp_position,
   linkman_info.effective_time,
-  if(to_date(linkman_info.expire_time) > '2020-05-06' and ods_new_log.linkman_id is not null,ods_new_log.create_time,linkman_info.expire_time) as expire_time
+  cast(if(to_date(linkman_info.expire_time) > '2020-05-06' and t_real_param.linkman_id is not null,t_real_param.create_time,linkman_info.expire_time) as timestamp) as expire_time
 from ods_new_s.linkman_info
 left join (
   select distinct
-    concat(get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.idNo'),'_',get_json_object(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'$.withdrawContactInfo.emergencyContactMobile')) as linkman_id,
-    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
-    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
-  from ods.ecas_msg_log
-  where msg_type = 'LOAN_APPLY'
-  and original_msg is not null
-  and deal_date = '2020-05-06'
-) as msg_log
-on linkman_info.linkman_id = ods_new_log.linkman_id
-
-
-
-
-select distinct
-  null                                              as capital_id,
-  null                                              as channel_id,
-  null                                              as project_id,
-  product_id                                        as product_id,
-  null                                              as cust_id,
-  get_json_object(original_msg,'$.idNo')            as user_hash_no,
-  ecif_no                                           as ecif_id,
-  get_json_object(original_msg,'$.loanOrderId')     as due_bill_no,
-  concat(get_json_object(original_msg,'$.idNo'),'_',get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile')) as linkman_id,
-  case get_json_object(original_msg,'$.withdrawContactInfo.relationship')
-  when '1' then '父母'
-  when '2' then '配偶'
-  when '3' then '子女'
-  when '4' then '兄弟姐妹'
-  else get_json_object(original_msg,'$.withdrawContactInfo.relationship')
-  end                                                                          as relationship,
-  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactName')   as relation_name,
-  get_json_object(original_msg,'$.withdrawContactInfo.emergencyContactMobile') as relation_mobile,
-  deal_date,
-  create_time
-from (
-  select
-    deal_date,
-    'DIDI201908161538' as product_id,
-    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss.SSS') as create_time,
-    regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
-  from ods.ecas_msg_log
-  where msg_type = 'LOAN_APPLY'
-  and original_msg is not null
-  and deal_date = '2020-05-06'
-) as msg_log
-left join (
-  select id_no,ecif_no from ecif_core.ecif_customer_hive
-) as ecif_customer
-on encrypt_aes(get_json_object(original_msg,'$.idNo')) = ecif_customer.id_no
-
-limit 10;
-
-
-
-
-SELECT A.user_num,
-       A.mobile,
-       A.reg_date,
-       A.t_start_time,
-       CASE
-            WHEN A.t_end_time = '9999-12-31' AND B.user_num IS NOT NULL THEN '2017-01-01'
-            ELSE A.t_end_time
-       END AS t_end_time
-FROM dws.user_his AS A
-LEFT JOIN ods.user_update AS B
-ON A.user_num = B.user_num
-UNION all
-SELECT C.user_num,
-       C.mobile,
-       C.reg_date,
-       '2017-01-02' AS t_start_time,
-       '9999-12-31' AS t_end_time
-FROM ods.user_update AS C
-
-
-
-
+    create_time,
+    concat(get_json_object(requst_data,'$.borrower.id_no'),'_',relational_humans['mobile_phone'])  as linkman_id
+  from ods.t_real_param
+  lateral view explode(json_array_to_array(get_json_object(requst_data,'$.relational_humans'))) humans as relational_humans
+  where interface_name = 'LOAN_INFO_PER_APPLY'
+  and agency_id = '0004'
+  and requst_data is not null
+  and to_date(create_time) = '2020-03-03'
+) as t_real_param
+on linkman_info.linkman_id = t_real_param.linkman_id
+union all
 select
-  null                                                                                          as capital_id,
-  null                                                                                          as channel_id,
-  null                                                                                          as project_id,
-  product_id                                                                                    as product_id,
-  null                                                                                          as cust_id,
-  t_real_param.id_no                                                                            as user_hash_no,
-  ecif_no                                                                                       as ecif_id,
-  t_real_param.request_no                                                                       as due_bill_no,
-  concat(t_real_param.id_no,'_',relational_humans['mobile_phone'])                              as linkman_id,
+  null                                                              as capital_id,
+  null                                                              as channel_id,
+  null                                                              as project_id,
+  product_id                                                        as product_id,
+  null                                                              as cust_id,
+  t_real_param.id_no                                                as user_hash_no,
+  ecif_no                                                           as ecif_id,
+  t_real_param.request_no                                           as due_bill_no,
+  concat(t_real_param.id_no,'_',relational_humans['mobile_phone'])  as linkman_id,
   case relational_humans['relational_human_type']
   when 'RHT01' then '借款人联系人'
   when 'RHT02' then '共同借款人'
@@ -2476,7 +2441,7 @@ select
   when 'RHT04' then '抵押人家庭成员信息'
   when 'RHT05' then '保证人-个人信用保证'
   else relational_humans['relational_human_type']
-  end                                                                                           as relational_type,
+  end                                                               as relational_type,
   case relational_humans['relationship']
   when 'C' then '配偶'
   when 'F' then '父亲'
@@ -2492,24 +2457,27 @@ select
   when 'Y' then '朋友'
   when 'O' then '其他'
   else relational_humans['relationship']
-  end                                                                                           as relationship,
-  null                                                                                          as relation_idcard_type,
-  null                                                                                          as relation_idcard_no,
-  null                                                                                          as relation_birthday,
-  relational_humans['name']                                                                     as relation_name,
-  null                                                                                          as relation_gender,
-  relational_humans['mobile_phone']                                                             as relation_mobile,
-  null                                                                                          as relation_address,
-  null                                                                                          as relation_province,
-  null                                                                                          as relation_city,
-  null                                                                                          as relation_county,
-  null                                                                                          as corp_type,
-  null                                                                                          as corp_name,
-  null                                                                                          as corp_teleph_nbr,
-  null                                                                                          as corp_fax,
-  null                                                                                          as corp_position
+  end                                                               as relationship,
+  null                                                              as relation_idcard_type,
+  null                                                              as relation_idcard_no,
+  null                                                              as relation_birthday,
+  relational_humans['name']                                         as relation_name,
+  null                                                              as relation_sex,
+  relational_humans['mobile_phone']                                 as relation_mobile,
+  null                                                              as relation_address,
+  null                                                              as relation_province,
+  null                                                              as relation_city,
+  null                                                              as relation_county,
+  null                                                              as corp_type,
+  null                                                              as corp_name,
+  null                                                              as corp_teleph_nbr,
+  null                                                              as corp_fax,
+  null                                                              as corp_position,
+  cast(create_time as timestamp)                                    as effective_time,
+  cast('3000-12-31 00:00:00' as timestamp)                          as expire_time
 from (
   select distinct
+    create_time,
     get_json_object(requst_data,'$.borrower.id_no') as id_no,
     get_json_object(requst_data,'$.request_no') as request_no,
     get_json_object(requst_data,'$.product_no') as product_id,
@@ -2519,15 +2487,55 @@ from (
   where interface_name = 'LOAN_INFO_PER_APPLY'
   and agency_id = '0004'
   and requst_data is not null
-  and to_date(create_time) = '2020-05-06'
+  and to_date(create_time) = '2020-03-03'
 ) as t_real_param
 left join (
   select id_no,ecif_no from ecif_core.ecif_customer_hive
 ) as ecif_customer
 on encrypt_aes(t_real_param.id_no) = ecif_customer.id_no
-
-
-
+union all
+select
+  linkman_info.capital_id,
+  linkman_info.channel_id,
+  linkman_info.project_id,
+  linkman_info.product_id,
+  linkman_info.cust_id,
+  linkman_info.user_hash_no,
+  linkman_info.ecif_id,
+  linkman_info.due_bill_no,
+  linkman_info.linkman_id,
+  linkman_info.relational_type,
+  linkman_info.relationship,
+  linkman_info.relation_idcard_type,
+  linkman_info.relation_idcard_no,
+  linkman_info.relation_birthday,
+  linkman_info.relation_name,
+  linkman_info.relation_sex,
+  linkman_info.relation_mobile,
+  linkman_info.relation_address,
+  linkman_info.relation_province,
+  linkman_info.relation_city,
+  linkman_info.relation_county,
+  linkman_info.corp_type,
+  linkman_info.corp_name,
+  linkman_info.corp_teleph_nbr,
+  linkman_info.corp_fax,
+  linkman_info.corp_position,
+  linkman_info.effective_time,
+  cast(if(to_date(linkman_info.expire_time) > '2020-05-06' and resp_log.linkman_id is not null,resp_log.create_time,linkman_info.expire_time) as timestamp) as expire_time
+from ods_new_s.linkman_info
+left join (
+  select
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+    concat(get_json_object(standard_req_msg,'$.borrower.id_no'),'_',relational_humans['mbile_phone']) as linkman_id
+  from ods.nms_interface_resp_log
+  lateral view explode(json_array_to_array(get_json_object(standard_req_msg,'$.relational_humans'))) humans as relational_humans
+  where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+  and deal_date = '2020-05-06'
+) as resp_log
+on linkman_info.linkman_id = resp_log.linkman_id
+union all
 select
   null                                                                                          as capital_id,
   null                                                                                          as channel_id,
@@ -2580,7 +2588,7 @@ select
   if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,relational_humans['id_no']) as relation_idcard_no,
   if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,datefmt(substring(relational_humans['id_no'],7,8),'yyyyMMdd','yyyy-MM-dd'))  as relation_birthday,
   relational_humans['name']                                                                     as relation_name,
-  if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,sex_idno(substring(relational_humans['id_no'],17,1)))  as relation_gender,
+  if(length(relational_humans['id_no']) = 0 or relational_humans['id_no'] is null,null,sex_idno(relational_humans['id_no']))  as relation_sex,
   relational_humans['mbile_phone']                                                              as relation_mobile,
   if(length(relational_humans['address']) = 0 or relational_humans['address'] is null,null,relational_humans['address']) as relation_address,
   if(length(relational_humans['province']) = 0 or relational_humans['province'] is null,null,relational_humans['province']) as relation_province,
@@ -2590,9 +2598,12 @@ select
   null                                                                                          as corp_name,
   null                                                                                          as corp_teleph_nbr,
   null                                                                                          as corp_fax,
-  null                                                                                          as corp_position
+  null                                                                                          as corp_position,
+  cast(create_time as timestamp)                                                                as effective_time,
+  cast('3000-12-31 00:00:00' as timestamp)                                                      as expire_time
 from (
   select
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
     get_json_object(standard_req_msg,'$.borrower.id_no') as id_no,
     get_json_object(standard_req_msg,'$.apply_no') as apply_no,
     get_json_object(standard_req_msg,'$.product.product_no') as product_no,
@@ -2615,16 +2626,125 @@ limit 10;
 
 
 
-select distinct
-  deal_date,
-  datefmt(cast(create_time as string),'ms','yyyy-MM-dd') as create_time
-  -- regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}') as original_msg
-from ods.ecas_msg_log
-where msg_type = 'LOAN_APPLY'
-and original_msg is not null
--- and deal_date != datefmt(cast(create_time as string),'ms','yyyy-MM-dd')
--- group by msg_log_id,deal_date,datefmt(cast(create_time as string),'ms','yyyy-MM-dd HH:mm:ss'),regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\"\{','\{'),'\}\"','\}')
--- having count(msg_log_id) > 1
+
+
+
+
+select
+  null as capital_id,                    -- '资金方编号'
+  null as channel_id,                    -- '渠道方编号'
+  null as project_id,                    -- '项目编号'
+  null as product_id,                    -- '产品编号'
+  null as cust_id,                       -- '客户编号（渠道方编号—用户编号）'
+  null as user_hash_no,                  -- '用户编号'
+  ecif_no as ecif_id,                       -- 'ecif_id'
+  loan_id as loan_id,                       -- '借据ID'
+  due_bill_no as due_bill_no,                   -- '借据编号'
+  contract_no as contract_no,                   -- '合同编号'
+  apply_no as apply_no,                      -- '进件编号'
+  purpose as loan_usage,                    -- '贷款用途'
+  register_date as register_date,                 -- '放款日期'
+  request_time as request_time,                  -- '请求时间'
+  active_date as loan_active_date,              -- '激活日期—借据生成时间'
+  cycle_day as cycle_day,                     -- '账单日'
+  loan_expire_date as loan_expire_date,              -- '贷款到期日期'
+  loan_init_term as loan_init_term,                -- '贷款期数（3、6、9等）'
+  loan_init_prin as loan_init_principal,           -- '贷款本金'
+  interest_rate as interest_rate,                 -- '利息利率'
+  totle_int as loan_init_interest,            -- '贷款利息'
+  term_fee_rate as fee_rate_term,                      -- '手续费费率'
+  totle_term_fee as loan_init_term_fee,            -- '贷款手续费'
+  svc_fee_rate as fee_rate_svc,                      -- '服务费费率'
+  totle_svc_fee as loan_init_svc_fee,             -- '贷款服务费'
+  penalty_rate as penalty_rate,                  -- '罚息利率'
+  totle_mult_fee as totle_mult_fee,                -- '总应收滞纳金'
+  curr_term as loan_term,                     -- '当前期数'
+  repay_term as loan_term_repaid,              -- '已还期数'
+  remain_term as loan_term_remain,              -- '剩余期数'
+  loan_type as loan_type,                     -- '分期类型（R：消费转分期，C：现金分期，B：账单分期，P：POS分期，M：大额分期（专项分期），MCAT：随借随还，MCEP：等额本金，MCEI：等额本息）'
+  loan_status as loan_status,                   -- '分期状态（N：正常，O：逾期，F：已还清）'
+  if(loan_settle_reason terminal_reason_cd) as paid_out_type,                 -- '结清类型（D：代偿结清，H：回购结清，T：退货（车）结清，P：提前结清，C：强制结清，F：正常到期结清）'
+  paid_out_date as paid_out_date,                 -- '还款日期'
+  overdue_date as overdue_date,                  -- '逾期起始日期'
+  overdue_days as overdue_days,                  -- '逾期天数'
+  ((loan_init_prin + totle_int + totle_term_fee + totle_svc_fee) - (paid_principal + paid_interest + paid_svc_fee + paid_term_fee)) as remain_amount,                 -- '剩余金额：本息费'
+  (loan_init_prin - paid_principal) as remain_principal,              -- '剩余本金'
+  (totle_int - paid_interest) as remain_interest,               -- '剩余利息'
+  (due_term_prin + due_term_int + due_penalty + due_term_fee + due_svc_fee + due_mult_amt) as should_repay_amount,           -- '应还金额'
+  due_term_prin as should_repay_principal,        -- '应还本金'
+  due_term_int as should_repay_interest,         -- '应还利息'
+  due_penalty as should_repay_penalty,          -- '应还罚息'
+  due_term_fee as should_repay_term_fee,         -- '应还手续费'
+  due_svc_fee as should_repay_svc_fee,          -- '应还服务费'
+  due_mult_amt as should_repay_mult_amt,         -- '应还滞纳金'
+  (paid_principal + paid_interest + paid_penalty + paid_svc_fee + paid_term_fee + paid_mult) as paid_amount,                   -- '已还金额'
+  paid_principal as paid_principal,                -- '已还本金'
+  paid_interest as paid_interest,                 -- '已还利息'
+  paid_penalty as paid_penalty,                  -- '已还罚息'
+  paid_svc_fee as paid_svc_fee,                  -- '已还服务费'
+  paid_term_fee as paid_term_fee,                 -- '已还手续费'
+  paid_mult as paid_mult,                     -- '已还滞纳金'
+  (reduce_prin + reduce_interest + reduce_penalty + reduce_svc_fee + reduce_term_fee + reduce_mult_amt) as reduce_amount,                 -- '减免金额'
+  reduce_prin as reduce_principal,              -- '减免本金'
+  reduce_interest as reduce_interest,               -- '减免利息'
+  reduce_penalty as reduce_penalty,                -- '减免罚息'
+  reduce_svc_fee as reduce_svc_fee,                -- '减免服务费'
+  reduce_term_fee as reduce_term_fee,               -- '减免手续费'
+  reduce_mult_amt as reduce_mult_amt,               -- '减免滞纳金'
+  overdue_prin as overdue_principal,             -- '逾期本金'
+  overdue_interest as overdue_interest,              -- '逾期利息'
+  overdue_penalty as overdue_penalty,               -- '逾期罚息'
+  overdue_svc_fee as overdue_svc_fee,               -- '逾期服务费'
+  overdue_term_fee as overdue_term_fee,              -- '逾期手续费'
+  overdue_mult_amt as overdue_mult_amt,              -- '逾期滞纳金'
+  first_value() over(partition by order by)  as first_overdue_date,            -- '首个逾期日期'
+  null as dpd_begin_date,                -- 'DPD起始日期'
+  null as dpd_days,                      -- 'DPD天数'
+  null as dpd_days_count,                -- '累计DPD天数'
+  max_dpd as dpd_days_max,                  -- '历史最大DPD天数'
+  collect_out_date as collect_out_date,              -- '出催日期'
+  overdue_term as overdue_term,                  -- '当前逾期期数'
+  count_overdue_term as overdue_terms_count,           -- '累计逾期期数'
+  max_overdue_term as overdue_terms_max,             -- '历史单次最长逾期期数'
+  null as overdue_principal_accumulate,  -- '累计逾期本金'
+  max_overdue_prin as overdue_principal_max,         -- '历史最大逾期本金'
+  null as mob,                           -- '月账龄'
+  sync_date as sync_date,                     -- '同步日期'
+  null as loan_map                      -- '借据表中其他字段合集'
+  -- as effective_time,                -- '生效时间（yyyy—MM—dd HH:mm:ss）'
+  -- as expire_time                    -- '失效时间（yyyy—MM—dd HH:mm:ss）'
+from (
+  select *
+  from ods.ecas_loan
+  where d_date = '2020-05-06'
+) as ecas_loan
+left join (
+  select due_bill_no,due_term_prin,due_term_int,due_penalty,due_term_fee,due_svc_fee,due_mult_amt
+  from ods.ecas_repay_schedule
+  where d_date = '2020-05-06'
+) as repay_schedule
+on ecas_loan.due_bill_no = repay_schedule.due_bill_no and ecas_loan.curr_term = repay_schedule.curr_term
+left join (
+  select attr_value,ecif_no
+  from ( select inner_id,attr_value from ecif_core.ecif_customer_attribute_hive where attr_key = 'application_no' ) as a
+  join ( select inner_id,ecif_no from ecif_core.ecif_inner_id_hive ) as b on a.inner_id = b.inner_id
+) as ecif_customer
+on ecas_loan.apply_no = ecif_customer.attr_value
+limit 10;
+
+
+
+
+
+
+select distinct cast(term_fee_rate as double),cast(svc_fee_rate as decimal(15,7)),penalty_rate
+from ods.ecas_loan
+where due_bill_no = 'DD00023036202001091253006d6449'
+limit 10;
+
+select distinct due_bill_no,term_fee_rate,svc_fee_rate,penalty_rate
+from ods.ecas_loan
+-- where due_bill_no = '1000000181'
 limit 10;
 
 
@@ -2632,18 +2752,14 @@ limit 10;
 
 
 select
-  id,
-  create_time,
-  partition_key
-  -- count(id) as cnt
-from ods.t_real_param
-where interface_name = 'LOAN_INFO_PER_APPLY'
-and agency_id = '0004'
-and requst_data is not null
-and datefmt(partition_key,'yyyyMMdd','yyyy-MM-dd') != to_date(create_time)
--- and create_time in ('2020-01-16 14:58:31.0','2020-02-27 11:39:40.0','2020-01-20 12:53:41.0','2020-02-27 14:32:53.0')
--- group by create_time,partition_key
--- having count(id) > 1
+  -- distinct purpose
+  first_value() over(partition by due_bill_no order by cpd_begin_date desc)
+from ods.ecas_loan
+where cpd_begin_date is not null
+limit 10;
+
+select distinct overdue_date
+from ods.ecas_loan
 limit 10;
 
 
@@ -2651,19 +2767,54 @@ limit 10;
 
 
 select
-  id,
-  req_log_id,
-  -- count(id) as cnt,
-  deal_date,
-  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time
-from ods.nms_interface_resp_log
-where sta_service_method_name = 'setupCustCredit'
-and standard_req_msg is not null
-and deal_date != datefmt(create_time,'ms','yyyy-MM-dd')
--- group by deal_date,datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')
--- having count(id) > 1
+
+from temp_today_dwb_loan as tmp
+left join (
+  select
+  a.due_bill_no as due_bill_no,
+  min(b.curr_term) as curr_term
+  from
+  (select * from temp_today_dwb_loan ) a
+  left join
+  (select * from ods.ecas_repay_schedule where d_date='"+partitionDate+"') b
+  on a.due_bill_no=b.due_bill_no
+  where (b.pmt_due_date>='"+partitionDate+"' or a.curr_term=b.curr_term) and b.curr_term>0
+  group by a.due_bill_no
+) as curr_term
+on tmp.due_bill_no = curr_term.due_bill_no
+
+
+
+
+
+select
+  ecas_loan.due_bill_no,
+  repay_schedule.due_bill_no,
+  ecas_loan.curr_term,
+  repay_schedule.curr_term
+from (select due_bill_no,curr_term from ods.ecas_loan where d_date = '2020-05-06') as ecas_loan
+left join (select due_bill_no,curr_term from ods.ecas_repay_schedule where d_date = '2020-05-06') as repay_schedule
+on ecas_loan.due_bill_no = repay_schedule.due_bill_no
+-- and ecas_loan.curr_term = repay_schedule.curr_term
+where ecas_loan.due_bill_no = 'DD0002303620200322103100f4ccaa'
+order by ecas_loan.curr_term,repay_schedule.curr_term;
+
+
+select
+a.due_bill_no as due_bill_no,
+min(b.curr_term) as curr_term
+from
+(select due_bill_no,curr_term from ods.ecas_loan where d_date = '2020-05-06') a
+left join
+(select due_bill_no,curr_term,pmt_due_date from ods.ecas_repay_schedule where d_date = '2020-05-06') b
+on a.due_bill_no=b.due_bill_no
+where (b.pmt_due_date >= '2020-05-06' or a.curr_term=b.curr_term) and b.curr_term>0
+group by a.due_bill_no
 limit 10;
 
 
-
+select *
+from ods.ecas_loan
+where due_bill_no = '1000000181'
+limit 10;
 
