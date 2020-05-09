@@ -2818,3 +2818,170 @@ from ods.ecas_loan
 where due_bill_no = '1000000181'
 limit 10;
 
+
+
+
+desc ods.ecas_repay_schedule;
+
+
+select distinct d_date
+from ods.ecas_repay_schedule
+order by d_date;
+
+
+
+
+select distinct
+  due_bill_no,
+  curr_term,
+  grace_date,
+  start_interest_date,
+  pmt_due_date,
+  origin_pmt_due_date,
+  paid_out_type,
+  case schedule_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else schedule_status
+  end as schedule_status,
+  paid_out_date,
+  -- datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as lst_upd_time
+from ods.ecas_repay_schedule
+where due_bill_no = '1000000002'
+and lst_upd_time is not null
+order by pmt_due_date,lst_upd_time desc
+-- limit 10
+;
+
+select distinct
+  due_bill_no,
+  curr_term,
+  pmt_due_date,
+  origin_pmt_due_date,
+  grace_date,
+  due_term_prin,
+  due_term_int,
+  due_penalty,
+  due_term_fee,
+  due_svc_fee,
+  due_mult_amt
+from ods.ecas_repay_schedule
+where lst_upd_time is not null
+and due_bill_no = '1000000002'
+order by pmt_due_date
+-- ,lst_upd_time desc
+-- limit 10
+;
+
+
+
+select distinct
+  due_bill_no,
+  case bnp_type
+  when 'Pricinpal'         then '本金'
+  when 'Interest'          then '利息'
+  when 'Penalty'           then '罚息'
+  when 'SVCFee'            then '服务费'
+  when 'TERMFee'           then '手续费'
+  when 'LatePaymentCharge' then '滞纳金'
+
+  when 'Mulct'             then '罚金'
+  when 'Compound'          then '复利'
+  when 'CardFee'           then '年费'
+  when 'OverLimitFee'      then '超限费'
+  when 'NSFCharge'         then '资金不足罚金'
+  when 'TXNFee'            then '交易费'
+  when 'LifeInsuFee'       then '寿险计划包费'
+  else bnp_type
+  end as bnp_type,
+  repay_amt,
+  term,
+  txn_date,
+  overdue_days,
+  case loan_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else loan_status
+  end as loan_status,
+  datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as lst_upd_time
+from ods.ecas_repay_hst
+where due_bill_no = '1000000002'
+order by term,bnp_type desc
+;
+
+
+
+select
+  due_bill_no,
+  sum(if(bnp_type = 'Pricinpal',        repay_amt,0)) as repaid_pincipal,
+  sum(if(bnp_type = 'Interest',         repay_amt,0)) as repaid_interest,
+  sum(if(bnp_type = 'Penalty',          repay_amt,0)) as repaid_penalty_interest,
+  sum(if(bnp_type = 'SVCFee',           repay_amt,0)) as repaid_svc_fee,
+  sum(if(bnp_type = 'TERMFee',          repay_amt,0)) as repaid_term_fee,
+  sum(if(bnp_type = 'LatePaymentCharge',repay_amt,0)) as repaid_mult,
+  term,
+  txn_date
+from (
+  select distinct
+    due_bill_no,
+    bnp_type,
+    repay_amt,
+    term,
+    cast(txn_date as timestamp) as txn_date
+  from ods.ecas_repay_hst
+  where due_bill_no = '1000000002'
+) as tmp
+group by due_bill_no,term,txn_date
+order by term,txn_date desc
+;
+
+
+
+
+set hivevar:compute_date='2020-03-03';
+
+
+
+invalidate metadata ods_new_s.loan_info;
+
+refresh ods_new_s.loan_info;
+select * from ods_new_s.loan_info;
+
+invalidate metadata ods_new_s.loan_info_tmp;
+
+refresh ods_new_s.loan_info_tmp;
+select * from ods_new_s.loan_info_tmp;
+
+
+ALTER TABLE ods_new_s.loan_info DROP IF EXISTS PARTITION (is_settled = 'is');
+
+select distinct
+  due_bill_no,
+  curr_term,
+  datefmt(lst_upd_time,'ms','yyyy-MM-dd') as update_time,
+  sync_date,
+  d_date
+from ods.ecas_loan
+where sync_date is not null
+and (
+  d_date = '2020-02-25' or
+  d_date = '2020-02-26' or
+  d_date = '2020-02-27' or
+  d_date = '2020-02-28' or
+  d_date = '2020-02-29' or
+  d_date = '2020-03-01' or
+  d_date = '2020-03-02' or
+  d_date = '2020-03-03'
+)
+and due_bill_no = '1000000002'
+order by update_time
+-- limit 10
+;
+
+
+
+
+

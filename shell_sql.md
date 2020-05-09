@@ -844,8 +844,11 @@ g.V(8360).in('belongs').valueMap()
 -- union 与 union all 相比 多了去重排序的功能
 
 -- 表重命名
-ALTER TABLE ods_starconnect.07_distiinct_starconnect_actual_repayment_info RENAME TO ods_starconnect.07_distinct_starconnect_actual_repayment_info;
-
+ALTER TABLE dwd_inter.event_client_source RENAME TO dwd_inter.event_client_source_old;
+-- 增加分区
+ALTER TABLE ods_wefix.t_ad_query_water_json ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
+-- 删除分区
+ALTER TABLE dm_cf.unfraud_recommend_wefix DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
 ```
 
 ## 3.2 Hive
@@ -1218,15 +1221,17 @@ CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USIN
 
 ### 3.3.2 Impala SQL 语句
 ```sql
+-- 时间设置
+set use_local_tz_for_unix_timestamp_conversions=true;
 -- impala 同步 hive [表] 元数据
 invalidate metadata;
 invalidate metadata [table];
 -- impala 刷新数据库
-refresh [table] [partition [partition]];
 refresh dwb.dwb_credit_apply;
+refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*aes*';
+show functions in _impala_builtins like '*date*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
