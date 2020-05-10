@@ -2983,5 +2983,103 @@ order by update_time
 
 
 
+select distinct
+  loan_status
+from ods.ccs_loan
+limit 10
+;
+
+invalidate metadata;
+select distinct
+  due_bill_no,
+  -- schedule_id,
+  curr_term,
+  -- create_time,lst_upd_time,
+  -- first_value(lst_upd_time) over(partition by due_bill_no,schedule_id,curr_term order by lst_upd_time) as update_time
+ datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+ datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as update_time,
+ d_date
+ -- length(lst_upd_time) as len
+from ods.ecas_repay_schedule
+where d_date != 'bak'
+-- and lst_upd_time is null
+-- and due_bill_no in ('DD0002303620200109111600e8631a')
+-- and schedule_id = '000015785673691admin000077000014'
+and d_date = '2019-12-02'
+order by due_bill_no,curr_term,create_time,update_time,d_date
+limit 100
+;
+
+
+select distinct *
+from ods.ecas_repay_schedule
+where d_date != 'bak'
+-- and schedule_id = '000015785673691admin000077000014'
+and d_date = '2020-05-09'
+and (lst_upd_time is null or create_time is null)
+order by d_date
+-- limit 100
+;
+
+select
+  length(
+    concat(
+      schedule_id,
+      out_side_schedule_no,
+      due_bill_no,
+      loan_init_prin,
+      loan_init_term,
+      curr_term,
+      start_interest_date,
+      pmt_due_date,
+      origin_pmt_due_date,
+      grace_date,
+      due_term_prin,
+      due_term_int,
+      due_penalty,
+      due_term_fee,
+      due_svc_fee,
+      due_mult_amt,
+      reduced_amt,
+      reduce_term_prin,
+      reduce_term_int,
+      reduce_term_fee,
+      reduce_svc_fee,
+      reduce_penalty,
+      reduce_mult_amt
+    )
+  ) as len,
+  md5(
+    concat(
+      schedule_id,
+      out_side_schedule_no,
+      -- due_bill_no,
+      -- loan_init_prin,
+      -- loan_init_term,
+      -- curr_term,
+      -- start_interest_date,
+      -- pmt_due_date,
+      -- origin_pmt_due_date,
+      -- grace_date,
+      -- due_term_prin,
+      -- due_term_int,
+      -- due_penalty,
+      -- due_term_fee,
+      -- due_svc_fee,
+      -- due_mult_amt,
+      -- reduced_amt,
+      -- reduce_term_prin,
+      -- reduce_term_int,
+      -- reduce_term_fee,
+      -- reduce_svc_fee,
+      -- reduce_penalty,
+      reduce_mult_amt
+    )
+  ) as md_5
+from ods.ecas_repay_schedule
+limit 10
+;
+
+
 
 
