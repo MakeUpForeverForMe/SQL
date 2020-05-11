@@ -3021,65 +3021,169 @@ order by d_date
 -- limit 100
 ;
 
-select
-  length(
-    concat(
-      schedule_id,
-      out_side_schedule_no,
-      due_bill_no,
-      loan_init_prin,
-      loan_init_term,
-      curr_term,
-      start_interest_date,
-      pmt_due_date,
-      origin_pmt_due_date,
-      grace_date,
-      due_term_prin,
-      due_term_int,
-      due_penalty,
-      due_term_fee,
-      due_svc_fee,
-      due_mult_amt,
-      reduced_amt,
-      reduce_term_prin,
-      reduce_term_int,
-      reduce_term_fee,
-      reduce_svc_fee,
-      reduce_penalty,
-      reduce_mult_amt
-    )
-  ) as len,
+select distinct
+  -- due_bill_no,
   md5(
     concat(
-      schedule_id,
-      out_side_schedule_no,
-      -- due_bill_no,
-      -- loan_init_prin,
-      -- loan_init_term,
-      -- curr_term,
-      -- start_interest_date,
-      -- pmt_due_date,
-      -- origin_pmt_due_date,
-      -- grace_date,
-      -- due_term_prin,
-      -- due_term_int,
-      -- due_penalty,
-      -- due_term_fee,
-      -- due_svc_fee,
-      -- due_mult_amt,
-      -- reduced_amt,
-      -- reduce_term_prin,
-      -- reduce_term_int,
-      -- reduce_term_fee,
-      -- reduce_svc_fee,
-      -- reduce_penalty,
-      reduce_mult_amt
+      cast(cast(if(schedule_id                  is null,'',schedule_id)          as string)         as string),
+      cast(cast(if(out_side_schedule_no         is null,'',out_side_schedule_no) as string)         as string),
+      cast(cast(if(due_bill_no                  is null,'',due_bill_no)          as string)         as string),
+      cast(cast(if(loan_init_prin               is null,0, loan_init_prin)       as decimal(15,4))  as string),
+      cast(cast(if(loan_init_term               is null,0, loan_init_term)       as decimal(3,0))   as string),
+      cast(cast(if(curr_term                    is null,0, curr_term)            as decimal(3,0))   as string),
+      cast(to_date(cast(if(start_interest_date  is null,'',start_interest_date)  as timestamp))     as string),
+      cast(to_date(cast(if(pmt_due_date         is null,'',pmt_due_date)         as timestamp))     as string),
+      cast(to_date(cast(if(origin_pmt_due_date  is null,'',origin_pmt_due_date)  as timestamp))     as string),
+      cast(to_date(cast(if(grace_date           is null,'',grace_date)           as timestamp))     as string),
+      cast(cast(if(due_term_prin                is null,0 ,due_term_prin)        as decimal(15,4))  as string),
+      cast(cast(if(due_term_int                 is null,0 ,due_term_int)         as decimal(15,4))  as string),
+      cast(cast(if(due_penalty                  is null,0 ,due_penalty)          as decimal(15,4))  as string),
+      cast(cast(if(due_term_fee                 is null,0 ,due_term_fee)         as decimal(15,4))  as string),
+      cast(cast(if(due_svc_fee                  is null,0 ,due_svc_fee)          as decimal(15,4))  as string),
+      cast(cast(if(due_mult_amt                 is null,0 ,due_mult_amt)         as decimal(15,4))  as string),
+      cast(cast(if(reduced_amt                  is null,0 ,reduced_amt)          as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_prin             is null,0 ,reduce_term_prin)     as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_int              is null,0 ,reduce_term_int)      as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_fee              is null,0 ,reduce_term_fee)      as decimal(15,4))  as string),
+      cast(cast(if(reduce_svc_fee               is null,0 ,reduce_svc_fee)       as decimal(15,4))  as string),
+      cast(cast(if(reduce_penalty               is null,0 ,reduce_penalty)       as decimal(15,4))  as string),
+      cast(cast(if(reduce_mult_amt              is null,0 ,reduce_mult_amt)      as decimal(15,4))  as string)
     )
-  ) as md_5
+  ) as md_5,
+  concat(
+    cast(cast(if(schedule_id                  is null,'',schedule_id)          as string)         as string),
+    cast(cast(if(out_side_schedule_no         is null,'',out_side_schedule_no) as string)         as string),
+    cast(cast(if(due_bill_no                  is null,'',due_bill_no)          as string)         as string),
+    cast(cast(if(loan_init_prin               is null,0, loan_init_prin)       as decimal(15,4))  as string),
+    cast(cast(if(loan_init_term               is null,0, loan_init_term)       as decimal(3,0))   as string),
+    cast(cast(if(curr_term                    is null,0, curr_term)            as decimal(3,0))   as string),
+    cast(to_date(cast(if(start_interest_date  is null,'',start_interest_date)  as timestamp))     as string),
+    cast(to_date(cast(if(pmt_due_date         is null,'',pmt_due_date)         as timestamp))     as string),
+    cast(to_date(cast(if(origin_pmt_due_date  is null,'',origin_pmt_due_date)  as timestamp))     as string),
+    cast(to_date(cast(if(grace_date           is null,'',grace_date)           as timestamp))     as string),
+    cast(cast(if(due_term_prin                is null,0 ,due_term_prin)        as decimal(15,4))  as string),
+    cast(cast(if(due_term_int                 is null,0 ,due_term_int)         as decimal(15,4))  as string),
+    cast(cast(if(due_penalty                  is null,0 ,due_penalty)          as decimal(15,4))  as string),
+    cast(cast(if(due_term_fee                 is null,0 ,due_term_fee)         as decimal(15,4))  as string),
+    cast(cast(if(due_svc_fee                  is null,0 ,due_svc_fee)          as decimal(15,4))  as string),
+    cast(cast(if(due_mult_amt                 is null,0 ,due_mult_amt)         as decimal(15,4))  as string),
+    cast(cast(if(reduced_amt                  is null,0 ,reduced_amt)          as decimal(15,4))  as string),
+    cast(cast(if(reduce_term_prin             is null,0 ,reduce_term_prin)     as decimal(15,4))  as string),
+    cast(cast(if(reduce_term_int              is null,0 ,reduce_term_int)      as decimal(15,4))  as string),
+    cast(cast(if(reduce_term_fee              is null,0 ,reduce_term_fee)      as decimal(15,4))  as string),
+    cast(cast(if(reduce_svc_fee               is null,0 ,reduce_svc_fee)       as decimal(15,4))  as string),
+    cast(cast(if(reduce_penalty               is null,0 ,reduce_penalty)       as decimal(15,4))  as string),
+    cast(cast(if(reduce_mult_amt              is null,0 ,reduce_mult_amt)      as decimal(15,4))  as string)
+  ) as con
 from ods.ecas_repay_schedule
-limit 10
+where due_bill_no = 'DD00023036201910110921008781fb'
+order by md_5
+-- limit 10
 ;
 
 
 
+select
+  -- schedule_id,due_bill_no,
+  md5(concat_col) as repay_schedule_md5
+  ,create_time,update_time
+  ,concat_col
+from (
+  select distinct
+    -- schedule_id,due_bill_no,
+    concat_ws('_',
+      cast(cast(if(due_bill_no          is null,'',due_bill_no)           as string)         as string),
+      cast(cast(if(schedule_id          is null,'',schedule_id)           as string)         as string),
+      cast(cast(if(out_side_schedule_no is null,'',out_side_schedule_no)  as string)         as string),
+      cast(cast(if(loan_init_prin       is null,0 ,loan_init_prin)        as decimal(15,4))  as string),
+      cast(cast(if(loan_init_term       is null,0 ,loan_init_term)        as decimal(3,0))   as string),
+      cast(cast(if(curr_term            is null,0 ,curr_term)             as decimal(3,0))   as string),
+      cast(cast(if(start_interest_date  is null,'',start_interest_date)   as string)         as string),
+      cast(cast(if(pmt_due_date         is null,'',pmt_due_date)          as string)         as string),
+      cast(cast(if(origin_pmt_due_date  is null,'',origin_pmt_due_date)   as string)         as string),
+      cast(cast(if(grace_date           is null,'',grace_date)            as string)         as string),
+      cast(cast(if(due_term_prin        is null,0 ,due_term_prin)         as decimal(15,4))  as string),
+      cast(cast(if(due_term_int         is null,0 ,due_term_int)          as decimal(15,4))  as string),
+      cast(cast(if(due_penalty          is null,0 ,due_penalty)           as decimal(15,4))  as string),
+      cast(cast(if(due_term_fee         is null,0 ,due_term_fee)          as decimal(15,4))  as string),
+      cast(cast(if(due_svc_fee          is null,0 ,due_svc_fee)           as decimal(15,4))  as string),
+      cast(cast(if(due_mult_amt         is null,0 ,due_mult_amt)          as decimal(15,4))  as string),
+      cast(cast(if(reduced_amt          is null,0 ,reduced_amt)           as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_prin     is null,0 ,reduce_term_prin)      as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_int      is null,0 ,reduce_term_int)       as decimal(15,4))  as string),
+      cast(cast(if(reduce_term_fee      is null,0 ,reduce_term_fee)       as decimal(15,4))  as string),
+      cast(cast(if(reduce_svc_fee       is null,0 ,reduce_svc_fee)        as decimal(15,4))  as string),
+      cast(cast(if(reduce_penalty       is null,0 ,reduce_penalty)        as decimal(15,4))  as string),
+      cast(cast(if(reduce_mult_amt      is null,0 ,reduce_mult_amt)       as decimal(15,4))  as string)
+    ) as concat_col,
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+    datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as update_time
+  from ods.ecas_repay_schedule
+  where create_time is not null
+) as repay_schedule
+order by concat_col,repay_schedule_md5
+limit 50
+;
+
+
+
+
+select distinct
+  cast(cast(if(start_interest_date  is null,'',start_interest_date)   as string)         as string) as start_interest_date,
+  cast(cast(if(pmt_due_date         is null,'',pmt_due_date)          as string)         as string) as pmt_due_date,
+  cast(cast(if(origin_pmt_due_date  is null,'',origin_pmt_due_date)   as string)         as string) as origin_pmt_due_date,
+  cast(cast(if(grace_date           is null,'',grace_date)            as string)         as string) as grace_date
+from ods.ecas_repay_schedule
+where create_time is not null
+and due_bill_no = '1000000002'
+;
+
+
+
+
+select count(distinct schedule_id) as cnt
+from ods.ecas_repay_schedule
+where create_time is not null
+and d_date = '2020-05-09'
+;
+
+set hivevar:compute_date='2020-04-20';
+select count(distinct schedule_id) as cnt
+from ods.ecas_repay_schedule
+where create_time is not null
+and (datefmt(create_time,'ms','yyyy-MM-dd') = ${compute_date} or datefmt(lst_upd_time,'ms','yyyy-MM-dd') = ${compute_date})
+;
+
+
+select count(distinct schedule_id) as cnt
+from ods_new_s.repay_schedule
+;
+
+invalidate metadata ods_new_s.repay_schedule;
+select
+  *
+from ods_new_s.repay_schedule
+order by due_bill_no,loan_term,effective_time;
+
+
+select
+  min(effective_time) as effective_time
+from ods_new_s.repay_schedule
+
+
+select
+  -- min(cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)) as create_time,
+  min(d_date) as d_date
+from ods.ecas_repay_schedule
+where create_time is not null
+;
+
+
+select distinct
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time
+from ods.ecas_repay_schedule
+where create_time is not null
+and d_date = '2020-04-30'
+limit 10;
 
