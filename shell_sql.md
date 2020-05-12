@@ -1194,7 +1194,7 @@ hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 SHOW FUNCTIONS LIKE 'default*';
 
 SHOW FUNCTIONS LIKE '*length*';
-DESC FUNCTION EXTENDED length;
+DESC FUNCTION EXTENDED date_format;
 
 ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
 ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;

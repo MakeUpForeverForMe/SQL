@@ -3011,6 +3011,12 @@ limit 100
 ;
 
 
+
+invalidate metadata;
+select * from ods_new_s.repay_schedule limit 10;
+
+
+
 select distinct *
 from ods.ecas_repay_schedule
 where d_date != 'bak'
@@ -3186,4 +3192,89 @@ from ods.ecas_repay_schedule
 where create_time is not null
 and d_date = '2020-04-30'
 limit 10;
+
+
+
+
+
+select distinct
+  d_date
+from ods.ccs_repay_schedule
+order by d_date
+limit 10;
+
+
+select
+  -- distinct
+  *,
+  -- d_date,
+  datefmt(create_time,'ms','yyyy-MM-dd')  as create_time,
+  datefmt(lst_upd_time,'ms','yyyy-MM-dd') as update_time
+  -- count(distinct schedule_id) as schedule_cnt,
+  -- count(1) as cnt
+from ods.ccs_repay_schedule
+-- where d_date in ('2020-03-01','2020-03-02')
+-- where d_date in ('2020-05-10','2020-05-11')
+-- and schedule_id = '000015756247871admin000006000004'
+-- where schedule_id = '000015756247871admin000006000004'
+-- group by d_date,datefmt(create_time,'ms','yyyy-MM-dd'),datefmt(lst_upd_time,'ms','yyyy-MM-dd')
+order by d_date,create_time,update_time
+limit 10
+;
+
+
+select
+  d_date,
+  count(distinct schedule_id) as schedule_cnt,
+  count(1) as cnt
+from ods.ccs_repay_schedule
+-- where d_date in ('2020-03-01','2020-03-02')
+-- and (
+--   datefmt(create_time,'ms','yyyy-MM-dd')  = '2020-03-02' or
+--   datefmt(lst_upd_time,'ms','yyyy-MM-dd') = '2020-03-02')
+group by d_date
+order by d_date
+-- limit 10
+;
+
+
+select distinct
+  d_date
+  -- count(distinct schedule_id) as schedule_cnt,
+  -- count(1) as cnt,
+  -- if(count(distinct schedule_id) != count(1),'---','|||') as flag,
+  -- datefmt(if(create_time is null,cast(create_user as bigint),create_time),'ms','yyyy-MM-dd')  as create_time,
+  -- datefmt(lst_upd_time,'ms','yyyy-MM-dd') as update_time
+from ods.ecas_repay_schedule
+where d_date != 'bak'
+and create_time is null
+-- and d_date = '2020-03-01'
+-- group by d_date
+order by d_date
+limit 10
+;
+
+
+
+select distinct
+  product_code
+from dwb.dwb_loan
+limit 10
+;
+
+select distinct
+  loan_code
+from ods.ccs_loan
+limit 10
+;
+
+
+
+
+select * from ods.ccs_loan limit 10;
+
+
+select distinct loan_id,ref_nbr from ods.ccs_repay_schedule limit 50;
+
+
 
