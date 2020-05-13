@@ -3254,7 +3254,8 @@ order by d_date
 limit 10
 ;
 
-
+invalidate metadata ods_new_s.repay_schedule;
+select count(1) from ods_new_s.repay_schedule;
 
 select distinct
   product_code
@@ -3268,6 +3269,10 @@ from ods.ccs_loan
 limit 10
 ;
 
+select (
+select if(create_time is null,curr_time,create_time) as create_time from (select distinct create_time from dim_new.biz_conf where product_id = '001507') as t1 full join (select current_timestamp as curr_time) as t2
+) as tt
+;
 
 
 
@@ -3275,6 +3280,104 @@ select * from ods.ccs_loan limit 10;
 
 
 select distinct loan_id,ref_nbr from ods.ccs_repay_schedule limit 50;
+
+
+invalidate metadata;
+select
+  count(1) as cnt
+from ods_new_s.linkman_info_tmp;
+
+select distinct * from
+(
+  select a,first_value(b) over(partition by a order by b desc) as t
+  from (
+    select 1 as a,null as b union all
+    select null as a,2 as b union all
+    select 1 as a,null as b union all
+    select null as a,null as b
+  ) as t
+) as t
+;
+
+
+select distinct
+  sync_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time
+from ods.ecas_loan
+order by sync_date
+limit 10
+;
+
+
+
+select distinct *
+from ods.ecas_loan
+where datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') = '2019-12-30 20:00:18'
+limit 10
+;
+
+
+select distinct
+  curr_term,
+  ref_nbr,
+  loan_pmt_due_date,
+  stmt_date
+from ods.ccs_repay_schedule
+limit 10
+;
+
+
+
+select distinct
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time
+  -- force_flag
+  -- due_bill_no,
+  -- loan_init_term,
+  -- curr_term,
+  -- remain_term
+from ods.ccs_loan
+-- where due_bill_no = '64e9950900c447ee89c1d705da108fe6'
+limit 10
+;
+
+
+
+
+
+select distinct *
+from ods.ccs_loan
+where loan_id = '000015654698161admin000186000000'
+-- where due_bill_no = '01547cdafffe4ab5a78b39d77c2c57eb'
+limit 10
+;
+
+
+
+select attr_value,ecif_no as ecif_id
+from ( select inner_id,attr_value from ecif_core.ecif_customer_attribute where attr_key = 'application_no' ) as a
+join ( select inner_id,ecif_no from ecif_core.ecif_inner ) as b on a.inner_id = b.inner_id
+where attr_value = '01547cdafffe4ab5a78b39d77c2c57eb'
+;
+
+
+
+select distinct
+  ref_nbr,
+  day(loan_pmt_due_date) as cycle_day
+from ods.ccs_repay_schedule
+-- where ref_nbr = '000015654698111admin000106000008'
+where loan_id = '000015654698161admin000186000000'
+limit 10
+;
+
+
+
+
+
+
+
 
 
 
