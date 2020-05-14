@@ -3373,11 +3373,363 @@ limit 10
 ;
 
 
+select nvl(null,0) as a;
+select nvl(1,0) as a;
 
 
 
 
 
+select
+  count(1) as cnt
+from ods_new_s.loan_info
+-- where to_date(effective_time) <= '2020-03-01'
+limit 10
+;
+
+
+
+
+
+select
+  count(1) as cnt
+from
+(
+select
+  -- *
+  distinct
+  to_date(effective_time) as effective_time
+from ods_new_s.loan_info
+where is_settled = 'no'
+  -- and cast(to_date(effective_time) as string) = '2020-03-02'
+) as t
+limit 10
+;
+
+select from_unixtime(unix_timestamp('2020-05-14','yyyy-MM-dd') + 113400,'yyyy-MM-dd HH:mm:ss');
+
+
+select count(1) as cnt from ods_new_s.loan_info_tmp;
+
+select count(1) as cnt from ods_new_s.loan_info;
+
+
+
+select
+  count(1) as cnt
+from (
+  select distinct *
+  from ods_new_s.loan_info
+  -- where due_bill_no = 'd45f403834914fec94c5aafe4ac26c6a'
+) as t
+;
+
+
+select
+  count(1) as cnt
+from (
+  select distinct *
+  from ods_new_s.loan_info_tmp
+  -- where due_bill_no = 'd45f403834914fec94c5aafe4ac26c6a'
+) as t
+;
+
+
+select distinct loan_info.due_bill_no
+from ods_new_s.loan_info
+left join ods_new_s.loan_info_tmp
+on  loan_info.due_bill_no = loan_info_tmp.due_bill_no
+and loan_info.loan_term   = loan_info_tmp.loan_term
+and to_date(loan_info.effective_time) = to_date(loan_info_tmp.effective_time)
+where loan_info_tmp.due_bill_no is null
+-- limit 10
+;
+
+
+select distinct loan_info_tmp.due_bill_no
+from ods_new_s.loan_info_tmp
+left join ods_new_s.loan_info
+on  loan_info.due_bill_no = loan_info_tmp.due_bill_no
+and loan_info.loan_term   = loan_info_tmp.loan_term
+and loan_info.expire_time = loan_info_tmp.expire_time
+where loan_info.due_bill_no is null
+;
+
+
+
+select *
+from ods_new_s.loan_info
+-- where due_bill_no is null
+where due_bill_no = 'DD0002303620191028183200434c28'
+;
+
+select *
+from ods_new_s.loan_info_tmp as loan_info
+-- where due_bill_no is null
+where due_bill_no = '1000000014'
+;
+
+
+select distinct
+  d_date,
+  loan_code,
+  loan_id,
+  due_bill_no,
+  purpose,
+  register_date,
+  cast(datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)      as request_time,
+  active_date,
+  loan_expire_date,
+  loan_type,
+  loan_init_term,
+  curr_term,
+  remain_term,
+  loan_status,
+  terminal_reason_cd,
+  paid_out_date,
+  terminal_date,
+  loan_init_prin,
+  interest_rate,
+  pay_interest,
+  fee_rate,
+  loan_init_fee,
+  installment_fee_rate,
+  tol_svc_fee,
+  penalty_rate,
+  paid_fee,
+  paid_principal,
+  paid_interest,
+  paid_penalty,
+  paid_svc_fee,
+  (loan_init_prin + pay_interest + loan_init_fee + tol_svc_fee - paid_fee) as remain_amount,
+  (loan_init_prin - paid_principal)                                        as remain_principal,
+  (pay_interest - paid_interest)                                           as remain_interest,
+  overdue_date,
+  -- if(overdue_date is null,0,datediff(current_date,overdue_date))           as overdue_days,
+  max_dpd,
+  collect_out_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)       as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)      as update_time
+from ods.ccs_loan
+-- where due_bill_no = 'd45f403834914fec94c5aafe4ac26c6a'
+where due_bill_no is null
+;
+
+
+select distinct
+  product_code                                                        as product_id,
+  loan_id                                                             as loan_id,
+  due_bill_no                                                         as due_bill_no,
+  contract_no                                                         as contract_no,
+  apply_no                                                            as apply_no,
+  purpose                                                             as loan_usage,
+  register_date                                                       as register_date,
+  cast(datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as request_time,
+  active_date                                                         as loan_active_date,
+  cast(cycle_day as decimal(2,0))                                     as cycle_day,
+  loan_expire_date                                                    as loan_expire_date,
+  loan_type                                                           as loan_type,
+  loan_init_term                                                      as loan_init_term,
+  curr_term                                                           as loan_term,
+  repay_term                                                          as loan_term_repaid,
+  remain_term                                                         as loan_term_remain,
+  loan_status                                                         as loan_status,
+  terminal_reason_cd                                                  as loan_out_reason,
+  loan_settle_reason                                                  as paid_out_type,
+  paid_out_date                                                       as paid_out_date,
+  terminal_date                                                       as terminal_date,
+  loan_init_prin                                                      as loan_init_principal,
+  interest_rate                                                       as loan_init_interest_rate,
+  totle_int                                                           as loan_init_interest,
+  term_fee_rate                                                       as loan_init_term_fee_rate,
+  totle_term_fee                                                      as loan_init_term_fee,
+  svc_fee_rate                                                        as loan_init_svc_fee_rate,
+  totle_svc_fee                                                       as loan_init_svc_fee,
+  penalty_rate                                                        as loan_init_penalty_rate,
+  paid_principal                                                      as paid_principal,
+  paid_interest                                                       as paid_interest,
+  paid_penalty                                                        as paid_penalty,
+  paid_svc_fee                                                        as paid_svc_fee,
+  paid_term_fee                                                       as paid_term_fee,
+  paid_mult                                                           as paid_mult,
+  overdue_prin                                                        as overdue_principal,
+  overdue_interest                                                    as overdue_interest,
+  overdue_svc_fee                                                     as overdue_svc_fee,
+  overdue_term_fee                                                    as overdue_term_fee,
+  overdue_penalty                                                     as overdue_penalty,
+  overdue_mult_amt                                                    as overdue_mult_amt,
+  overdue_date                                                        as overdue_date,
+  overdue_days                                                        as overdue_days,
+  max_dpd                                                             as dpd_days_max,
+  collect_out_date                                                    as collect_out_date,
+  overdue_term                                                        as overdue_term,
+  count_overdue_term                                                  as overdue_terms_count,
+  max_overdue_term                                                    as overdue_terms_max,
+  max_overdue_prin                                                    as overdue_principal_max,
+  sync_date                                                           as sync_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time,
+  d_date
+from ods.ecas_loan
+where d_date != 'bak'
+  and due_bill_no = 'DD0002303620191104134100fda519'
+  and d_date = '2020-03-02'
+-- where due_bill_no is null
+;
+
+
+select
+  count(1) as cnt
+from
+(
+select distinct
+  d_date,
+  loan_code,
+  loan_id,
+  due_bill_no,
+  purpose,
+  register_date,
+  cast(datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)      as request_time,
+  active_date,
+  loan_expire_date,
+  loan_type,
+  loan_init_term,
+  curr_term,
+  remain_term,
+  loan_status,
+  terminal_reason_cd,
+  paid_out_date,
+  terminal_date,
+  loan_init_prin,
+  interest_rate,
+  pay_interest,
+  fee_rate,
+  loan_init_fee,
+  installment_fee_rate,
+  tol_svc_fee,
+  penalty_rate,
+  paid_fee,
+  paid_principal,
+  paid_interest,
+  paid_penalty,
+  paid_svc_fee,
+  (loan_init_prin + pay_interest + loan_init_fee + tol_svc_fee - paid_fee) as remain_amount,
+  (loan_init_prin - paid_principal)                                        as remain_principal,
+  (pay_interest - paid_interest)                                           as remain_interest,
+  overdue_date,
+  -- if(overdue_date is null,0,datediff(current_date,overdue_date))           as overdue_days,
+  max_dpd,
+  collect_out_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)       as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)      as update_time
+from ods.ccs_loan
+-- where due_bill_no = 'd45f403834914fec94c5aafe4ac26c6a'
+where d_date = '2020-03-02'
+) as t
+;
+
+
+select
+  count(1) as cnt
+from
+(
+select distinct
+  product_code                                                        as product_id,
+  loan_id                                                             as loan_id,
+  due_bill_no                                                         as due_bill_no,
+  contract_no                                                         as contract_no,
+  apply_no                                                            as apply_no,
+  purpose                                                             as loan_usage,
+  register_date                                                       as register_date,
+  cast(datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as request_time,
+  active_date                                                         as loan_active_date,
+  cast(cycle_day as decimal(2,0))                                     as cycle_day,
+  loan_expire_date                                                    as loan_expire_date,
+  loan_type                                                           as loan_type,
+  loan_init_term                                                      as loan_init_term,
+  curr_term                                                           as loan_term,
+  repay_term                                                          as loan_term_repaid,
+  remain_term                                                         as loan_term_remain,
+  loan_status                                                         as loan_status,
+  terminal_reason_cd                                                  as loan_out_reason,
+  loan_settle_reason                                                  as paid_out_type,
+  paid_out_date                                                       as paid_out_date,
+  terminal_date                                                       as terminal_date,
+  loan_init_prin                                                      as loan_init_principal,
+  interest_rate                                                       as loan_init_interest_rate,
+  totle_int                                                           as loan_init_interest,
+  term_fee_rate                                                       as loan_init_term_fee_rate,
+  totle_term_fee                                                      as loan_init_term_fee,
+  svc_fee_rate                                                        as loan_init_svc_fee_rate,
+  totle_svc_fee                                                       as loan_init_svc_fee,
+  penalty_rate                                                        as loan_init_penalty_rate,
+  paid_principal                                                      as paid_principal,
+  paid_interest                                                       as paid_interest,
+  paid_penalty                                                        as paid_penalty,
+  paid_svc_fee                                                        as paid_svc_fee,
+  paid_term_fee                                                       as paid_term_fee,
+  paid_mult                                                           as paid_mult,
+  overdue_prin                                                        as overdue_principal,
+  overdue_interest                                                    as overdue_interest,
+  overdue_svc_fee                                                     as overdue_svc_fee,
+  overdue_term_fee                                                    as overdue_term_fee,
+  overdue_penalty                                                     as overdue_penalty,
+  overdue_mult_amt                                                    as overdue_mult_amt,
+  overdue_date                                                        as overdue_date,
+  overdue_days                                                        as overdue_days,
+  max_dpd                                                             as dpd_days_max,
+  collect_out_date                                                    as collect_out_date,
+  overdue_term                                                        as overdue_term,
+  count_overdue_term                                                  as overdue_terms_count,
+  max_overdue_term                                                    as overdue_terms_max,
+  max_overdue_prin                                                    as overdue_principal_max,
+  sync_date                                                           as sync_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time,
+  d_date
+from ods.ecas_loan
+where d_date != 'bak'
+  and due_bill_no = 'DD00023036201911281430009499a9'
+  and curr_term = 3
+  and d_date = '2020-03-02'
+) as t
+;
+
+select count(1) as cnt from ods_new_s.loan_info_tmp;
+
+select
+from ods_new_s.loan_info
+left join ods_new_s.loan_info_tmp
+on  loan_info.due_bill_no = loan_info_tmp.due_bill_no
+and loan_info.loan_term   = loan_info_tmp.loan_term
+and loan_info.expire_time = loan_info_tmp.expire_time
+;
+
+
+select due_bill_no,loan_term
+from ods_new_s.loan_info_tmp
+group by due_bill_no,loan_term
+having count(due_bill_no) > 1
+;
+
+
+select due_bill_no,loan_term
+from ods_new_s.loan_info
+group by due_bill_no,loan_term
+having count(due_bill_no) > 1
+;
+
+
+
+select *
+from ods_new_s.loan_info
+where due_bill_no = 'DD00023036201911281430009499a9'
+;
+
+select *
+from ods_new_s.loan_info_tmp as loan_info
+where due_bill_no = 'DD00023036201911281430009499a9'
+;
 
 
 

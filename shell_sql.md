@@ -1193,8 +1193,8 @@ hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
 SHOW FUNCTIONS LIKE 'default*';
 
-SHOW FUNCTIONS LIKE '*length*';
-DESC FUNCTION EXTENDED date_format;
+SHOW FUNCTIONS LIKE '*sha*';
+DESC FUNCTION EXTENDED sha;
 
 ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
 ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
