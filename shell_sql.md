@@ -193,8 +193,8 @@ echo -e '\033[4m下划线\033[0m'
 echo -e '\033[5m闪烁\033[0m'
 echo -e '\033[7m反显\033[0m'
 echo -e '\033[8m消隐\033[0m'
-echo -e '\033[30m -- \33[37m设置前景色黑,红,绿,棕,蓝,紫,青,白\033[0m'
-echo -e '\033[40m -- \33[47m设置背景色黑,红,绿,棕,蓝,紫,青,白\033[0m'
+echo -e '\033[30m -- \33[37m设置前景色黑,红,绿,棕[黄],蓝,紫,青,白\033[0m'
+echo -e '\033[40m -- \33[47m设置背景色黑,红,绿,棕[黄],蓝,紫,青,白\033[0m'
 echo -e '\033[nA光标上移n行\033[0m'
 echo -e '\033[nB光标下移n行\033[0m'
 echo -e '\033[nC光标右移n行\033[0m'
@@ -1193,8 +1193,8 @@ hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
 SHOW FUNCTIONS LIKE 'default*';
 
-SHOW FUNCTIONS LIKE '*sha*';
-DESC FUNCTION EXTENDED sha;
+SHOW FUNCTIONS LIKE '*time*';
+DESC FUNCTION EXTENDED from_unixtime;
 
 ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
 ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;

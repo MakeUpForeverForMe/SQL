@@ -3733,3 +3733,30 @@ where due_bill_no = 'DD00023036201911281430009499a9'
 
 
 
+
+
+
+
+
+
+select
+  -- org,
+  -- deal_date,
+  -- create_time,
+  -- update_time,
+  original_msg
+from ods.ecas_msg_log
+where msg_type = 'CREDIT_APPLY'
+limit 10
+;
+
+
+
+
+
+
+
+
+
+
+
