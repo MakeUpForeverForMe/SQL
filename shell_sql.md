@@ -1191,12 +1191,6 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-SHOW FUNCTIONS LIKE 'default*';
-
-SHOW FUNCTIONS LIKE '*time*';
-DESC FUNCTION EXTENDED from_unixtime;
-
-ADD JAR hdfs:///user/hive/auxlib/qubole-hive-JDBC-0.0.7.jar;
 ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
 
 DROP FUNCTION IF EXISTS encrypt_aes;
@@ -1204,12 +1198,21 @@ DROP FUNCTION IF EXISTS decrypt_aes;
 DROP FUNCTION IF EXISTS datefmt;
 DROP FUNCTION IF EXISTS sex_idno;
 DROP FUNCTION IF EXISTS json_array_to_array;
+DROP FUNCTION IF EXISTS is_empty;
+DROP FUNCTION IF EXISTS sha256;
 
 CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sex_idno            AS 'com.weshare.udf.SexOnIdNo'          USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.DataIsEmpty'        USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+SHOW FUNCTIONS LIKE 'default*';
+
+SHOW FUNCTIONS LIKE '*sha*';
+DESC FUNCTION EXTENDED sha256;
 ```
 
 
@@ -1231,7 +1234,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*md5*';
+show functions in _impala_builtins like '*sha256*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
