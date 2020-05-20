@@ -31,7 +31,7 @@ for dir in ${dirs//,/ }; do
   git push >&2 &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
-  echo
+  echo -e '\n\n'
 done
 
 printf '\n\n' &>> $log
