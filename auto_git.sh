@@ -19,19 +19,19 @@ for dir in ${dirs//,/ }; do
   pwd &>> $log
 
   echo 'git add -u' &>> $log
-  git add -u >&2 &>> $log
+  git add -u &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
   msg="$(date +%F) 系统自动提交"
   echo "git commit -m '$msg'" &>> $log
-  git commit -m "$msg" >&2 &>> $log
+  git commit -m "$msg" &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
   echo 'git push' &>> $log
-  git push >&2 &>> $log
+  git push &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
-  echo -e '\n\n'
+  echo -e '\n\n' &>> $log
 done
 
 printf '\n\n' &>> $log
