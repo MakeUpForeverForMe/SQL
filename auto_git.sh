@@ -18,6 +18,8 @@ for dir in ${dirs//,/ }; do
   cd $dir
   pwd &>> $log
 
+  echo -e '\n' &>> $log
+
   echo 'git add -u' &>> $log
   git add -u &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
@@ -30,8 +32,6 @@ for dir in ${dirs//,/ }; do
   echo 'git push' &>> $log
   git push &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
-
-  echo -e '\n\n' &>> $log
 done
 
 printf '\n\n' &>> $log
