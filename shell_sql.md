@@ -89,7 +89,7 @@
 
 
 
-# 2、记录各项操作
+# 2、Shell 脚本操作
 ## 2.1 Shell 命令
 ### 2.1.1 基础 Shell 命令
 ```shell
@@ -424,7 +424,52 @@ bye
 eof
 ```
 
-### 2.1.14 Linux 中 发送信息到微信
+### 2.1.14 Shell 中 awk 命令
+```shell
+echo -ne '
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | addition_overview.hql          | 1546272000  | 1546272000  | -
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | adt_admin.hql                  | 1546272000  | 1546272000  | -
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | adt_data.hql                   | 1546272000  | 1546272000  | -
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | advertising_space.hql          | 1546272000  | 1546272000  | -
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | data_preference.hql            | 1546272000  | 1546272000  | -
+execut  | beeline  | spark                     | hdfs       | 10000            | -                              | dm_cf       | retention_overview.hql         | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | addition_overview              | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | adt_admin                      | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | adt_data                       | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | advertising_space              | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | data_preference                | 1546272000  | 1546272000  | -
+export  | mysql    | mysql22                   | root       | INikGPLun*8v     | dm_cf                          | microb      | retention_overview             | 1546272000  | 1546272000  | -
+import  | local    | app41                     | -          | -                | /app_home/logs/ads             | ods_wefix   | access.x.log                   | 1546272000  | 1546272000  | 20190101
+import  | local    | app41                     | -          | -                | /app_home/logs/ads             | ods_wefix   | bi.x.log                       | 1546272000  | 1546272000  | 20190101
+import  | local    | app41                     | -          | -                | /app_home/logs/strategy        | ods_wefix   | atd_black.x.log                | 1546272000  | 1546272000  | 20190101
+import  | local    | app41                     | -          | -                | /app_home/logs/strategy        | ods_wefix   | atd_device.x.log               | 1546272000  | 1546272000  | 20190101
+import  | local    | app41                     | -          | -                | /app_home/logs/strategy        | ods_wefix   | atd_ip.x.log                   | 1546272000  | 1546272000  | 20190101
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | CLIENT_INFO                    | 1546272000  | 1546272000  | -
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | EVENT_LOGGER                   | 1546272000  | 1546272000  | 20190101
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | FLOW_RECORD                    | 1546272000  | 1546272000  | 20190101
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | PRODUCT_INFO                   | 1546272000  | 1546272000  | -
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | RECOMMEND_FLOW                 | 1546272000  | 1546272000  | 20190101
+import  | mongodb  | mongo26                   | mongouser  | 6xVMjclL5DSGJPZ  | starsource                     | ods_source  | SOURCE_INFO                    | 1546272000  | 1546272000  | -
+import  | mysql    | mysql07                   | root       | RRDdjhPULOdZ703  | app_builder_um                 | ods_source  | TENANT                         | 1546272000  | 1546272000  | -
+import  | mysql    | mysql22                   | root       | INikGPLun*8v     | microb                         | ods_wefix   | ACQUISITION_PLAN               | 1546272000  | 1546272000  | -
+import  | mysql    | mysql22                   | root       | INikGPLun*8v     | microb                         | ods_wefix   | ADVERTISEMENT_INFO             | 1546272000  | 1546272000  | -
+import  | mysql    | mysql22                   | root       | INikGPLun*8v     | microb                         | ods_wefix   | APP_INFO                       | 1546272000  | 1546272000  | -
+import  | mysql    | mysql22                   | root       | INikGPLun*8v     | microb                         | ods_wefix   | EXCHANGE_INFO                  | 1546272000  | 1546272000  | -
+import  | mysql    | mysql22                   | root       | INikGPLun*8v     | microb                         | ods_wefix   | EXCHANGE_INFO_CHILD            | 1546272000  | 1546272000  | -
+' | grep -vE '^\s*$' | awk -F '[| ]*' '{
+  print_format="%-7s | %-8s | %-25s | %-10s | %-16s | %-30s | %-11s | %-30s | %-11s | %-11s | %s\n"
+  if($1 == "import" && $2 == "mysql" && $7 == "ods_source" && $8 == "TENANT"){
+    printf "\033[32m%-7s | %-8s | %-25s | %-10s | %-16s | %-30s | %-11s | %-30s | %-11s | %-11s | %-8s | 原值\033[0m\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+    $8 = "aa"
+    printf "\033[33m%-7s | %-8s | %-25s | %-10s | %-16s | %-30s | %-11s | %-30s | %-11s | %-11s | %-8s | 新值\033[0m\n",$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+  }
+  printf print_format,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11
+  # > "./conf/imex.table"
+}'
+```
+
+
+### 2.1.15 Linux 中 发送信息到微信
 ```shell
 # 发送信息到微信
 #!/bin/sh
@@ -854,8 +899,11 @@ g.V(8360).in('belongs').valueMap()
 
 
 
-# 3、SQL 语句
-## 3.1 通用 SQL
+# 3、Python 脚本操作
+
+
+# 4、SQL 语句
+## 4.1 SQL 函数及通用语句
 ```sql
 -- HQL 学习
 -- union 与 union all 相比 多了去重排序的功能
@@ -866,11 +914,26 @@ ALTER TABLE dwd_inter.event_client_source RENAME TO dwd_inter.event_client_sourc
 ALTER TABLE ods_wefix.t_ad_query_water_json ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
 -- 删除分区
 ALTER TABLE dm_cf.unfraud_recommend_wefix DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+
+-- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
+-- space(Int n) 空格字符串函数：返回长度为 n 的字符串
+select regexp_replace(space(10),' ','0');
+-- 与上个语句等价 repeat(String str, Int n) 重复字符串函数：返回长度为 n 的字符串
+select repeat('a',10);
+
+-- 进制转换测试
+select
+  '中国'                                   as `10 进制`,
+  hex('中国')                              as `10 --> 16 进制`,
+  conv(hex('中国'),16,2)                   as `16 --> 2  进制`,
+  conv(conv(hex('中国'),16,2),2,16)        as `2  --> 16 进制`,
+  unhex(conv(conv(hex('中国'),16,2),2,16)) as `16 --> 10 进制`
+;
 ```
 
-## 3.2 Hive
-### 3.2.1 Hive 学习
-#### 3.2.1.1 Hive 基础学习
+## 4.2 Hive
+### 4.2.1 Hive 学习
+#### 4.2.1.1 Hive 基础学习
 ```sql
 -- /*
 --   Hive 数据类型
@@ -1065,7 +1128,7 @@ from base order by user_type,sales;
 
 ```
 
-#### 3.2.1.2 面试案例
+#### 4.2.1.2 面试案例
 ```sql
 -- 面试案例
 -- /*
@@ -1148,7 +1211,7 @@ order by user_id
 ```
 
 
-#### 3.2.1.3 Hive 小测试案例
+#### 4.2.1.3 Hive 小测试案例
 ```sql
 -- 测试范围匹配
 -- 严格模式（strict）下禁用笛卡尔积，需要非严格模式（nonstrict）
@@ -1203,7 +1266,7 @@ TBLPROPERTIES (
 
 
 
-### 3.2.2 Hive SQL 语句
+### 4.2.2 Hive SQL 语句
 ```sql
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
@@ -1234,12 +1297,12 @@ DESC FUNCTION EXTENDED sha256;
 
 
 
-## 3.3 Impala
-### 3.3.1 Impala 学习
+## 4.3 Impala
+### 4.3.1 Impala 学习
 ```sql
 ```
 
-### 3.3.2 Impala SQL 语句
+### 4.3.2 Impala SQL 语句
 ```sql
 -- 时间设置
 set use_local_tz_for_unix_timestamp_conversions=true;
@@ -1260,23 +1323,6 @@ create function decrypt_aes(string) returns string location '/opt/cloudera/hive/
 create function decrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
 ```
 
-## 3.4 SQL 函数
-```sql
--- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
--- space(Int n) 空格字符串函数：返回长度为 n 的字符串
-select regexp_replace(space(10),' ','0');
--- 与上个语句等价 repeat(String str, Int n) 重复字符串函数：返回长度为 n 的字符串
-select repeat('a',10);
-
--- 进制转换测试
-select
-  '中国'                                        as  a1,
-  hex('中国')                                   as  a2,
-  conv(hex('中国'),16,2)                        as  a3,
-  conv(conv(hex('中国'),16,2),2,16)             as  a4,
-  unhex(conv(conv(hex('中国'),16,2),2,16))      as  a5
-;
-```
 
 
 # 4、Excel 操作
