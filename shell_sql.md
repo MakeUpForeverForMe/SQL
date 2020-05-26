@@ -89,7 +89,7 @@
 
 
 
-# 2、Shell 脚本操作
+# 2、命令脚本操作
 ## 2.1 Shell 命令
 ### 2.1.1 基础 Shell 命令
 ```shell
@@ -894,9 +894,57 @@ g.V().has('name','蜀国').next() // 返回 ==>v[8360]
 g.V(8360).in('belongs').valueMap()
 ```
 
+## 2.10 通过 Sublime 远程同步操作到 Linux
+在想要添加同步的文件中右键点击“SFTP/FTP”，选择 Map to Remote 进行编辑
 
+<img src="https://img-blog.csdnimg.cn/20200526103111136.png" alt="图片" style="zoom:70%;"/>
+```javascript
+{
+    // The tab key will cycle through the settings when first created
+    // Visit http://wbond.net/sublime_packages/sftp/settings for help
 
+    // sftp, ftp or ftps
+    "type": "sftp",
 
+    "save_before_upload": true,
+    "upload_on_save": true,             // 由 false 修改为 true，作用是在保存本地时，同步保存远端
+    "sync_down_on_open": false,
+    "sync_skip_deletes": false,
+    "sync_same_age": true,
+    "confirm_downloads": false,
+    "confirm_sync": true,
+    "confirm_overwrite_newer": false,
+
+    "host": "localhost",                // 修改为想要同步的 Linux 的 ip 或 host。由 example.com 修改为 ip
+    "user": "username",                 // 修改为自己的 Linux 用户名
+    "password": "password",             // 将这一行的注释打开，并填写自己的密码
+    //"port": "22",                     // 有必要的情况下打开此项
+
+    "remote_path": "/example/path/",    // 修改为远程的目录
+    "ignore_regexes": [
+        "\\.sublime-(project|workspace)", "sftp-config(-alt\\d?)?\\.json",
+        "sftp-settings\\.json", "/venv/", "\\.svn/", "\\.hg/", "\\.git/",
+        "\\.bzr", "_darcs", "CVS", "\\.DS_Store", "Thumbs\\.db", "desktop\\.ini"
+    ],
+    //"file_permissions": "664",
+    //"dir_permissions": "775",
+
+    //"extra_list_connections": 0,
+
+    "connect_timeout": 30,
+    //"keepalive": 120,
+    //"ftp_passive_mode": true,
+    //"ftp_obey_passive_host": false,
+    //"ssh_key_file": "~/.ssh/id_rsa",
+    //"sftp_flags": ["-F", "/path/to/ssh_config"],
+
+    //"preserve_modification_times": false,
+    //"remote_time_offset_in_hours": 0,
+    //"remote_encoding": "utf-8",
+    //"remote_locale": "C",
+    //"allow_config_upload": false,
+}
+```
 
 
 # 3、Python 脚本操作
@@ -907,6 +955,9 @@ g.V(8360).in('belongs').valueMap()
 ```sql
 -- HQL 学习
 -- union 与 union all 相比 多了去重排序的功能
+
+-- 查看分区
+show partitions ods_wefix.t_ad_query_water_json;
 
 -- 表重命名
 ALTER TABLE dwd_inter.event_client_source RENAME TO dwd_inter.event_client_source_old;
@@ -1291,8 +1342,8 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 
 SHOW FUNCTIONS LIKE 'default*';
 
-SHOW FUNCTIONS LIKE '*sha*';
-DESC FUNCTION EXTENDED sha256;
+SHOW FUNCTIONS LIKE '*is_empty*';
+DESC FUNCTION EXTENDED is_empty;
 ```
 
 
