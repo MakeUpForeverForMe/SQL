@@ -3734,10 +3734,13 @@ where due_bill_no = 'DD00023036201911281430009499a9'
 
 
 
+SELECT * FROM ods.ecas_loan
+WHERE d_date = to_date(date_sub(current_timestamp(),7))
+LIMIT 10;
 
 
-
-
+select to_date(date_sub(current_timestamp(),7))
+;
 
 select
   -- org,
@@ -3751,12 +3754,16 @@ limit 10
 ;
 
 
+invalidate metadata;
+refresh ods_new_s.repay_detail;
+select biz_date,count(1) as cnt
+from ods_new_s.repay_detail
+where biz_date = '2020-07-01'
+group by biz_date
+order by biz_date
+;
 
 
 
-
-
-
-
-
-
+select * from ods_new_s.repay_detail
+limit 10;
