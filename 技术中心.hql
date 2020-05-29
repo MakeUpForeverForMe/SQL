@@ -3767,3 +3767,11 @@ order by biz_date
 
 select * from ods_new_s.repay_detail
 limit 10;
+
+
+
+
+
+
+show partitions eagle_dw.loan_base_stat;
+
