@@ -3775,3 +3775,34 @@ limit 10;
 
 show partitions eagle_dw.loan_base_stat;
 
+set hive.exec.dynamici.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions=5000;
+set hivevar:compute_date=2020-05-10;
+
+
+
+
+select distinct
+  -- id,
+  -- deal_date,
+  -- create_time,
+  -- update_time,
+  -- req_log_id,
+  -- org,
+  -- standard_req_msg,
+  -- standard_resp_msg,
+  -- status
+  -- sta_service_method_name
+  -- standard_req_msg
+  -- get_json_object(standard_req_msg,'$.product.currency_amt') as currency_amt,
+  -- get_json_object(standard_req_msg,'$.product.loan_amt') as loan_amt
+  -- standard_resp_msg
+  get_json_object(standard_resp_msg,'$.acct_setup_ind') as acct_setup_ind
+from ods.nms_interface_resp_log
+where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+limit 10
+;
+
+

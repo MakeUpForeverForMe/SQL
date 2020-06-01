@@ -1342,7 +1342,7 @@ CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USIN
 CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sex_idno            AS 'com.weshare.udf.SexOnIdNo'          USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION is_empty            AS 'com.weshare.udf.DataIsEmpty'        USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'            USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
 SHOW FUNCTIONS LIKE 'default*';
