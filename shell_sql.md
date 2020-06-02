@@ -1016,6 +1016,11 @@ select
 --   其他
 --  */
 
+-- DROP DATABASE IF EXISTS database cascade;  -- 级联删除，即：删除数据库的同时删除库中的表
+-- DROP DATABASE IF EXISTS database restrict; -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
+-- CREATE DATABASE IF NOT EXISTS dm_report_asset;
+
+
 
 -- 测试数值排序
 DROP TABLE IF EXISTS base_order_number;
@@ -1347,8 +1352,8 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 
 SHOW FUNCTIONS LIKE 'default*';
 
-SHOW FUNCTIONS LIKE '*from*';
-DESC FUNCTION EXTENDED is_empty;
+SHOW FUNCTIONS LIKE '*key*';
+DESC FUNCTION EXTENDED regexp_replace;
 ```
 
 
@@ -1370,7 +1375,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*from*';
+show functions in _impala_builtins like '*unix*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';

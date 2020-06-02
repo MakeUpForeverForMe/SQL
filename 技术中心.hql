@@ -3806,3 +3806,26 @@ limit 10
 ;
 
 
+select if(a < -1,a,0) as t
+from (
+  select 1    as a union all
+  select -2   as a union all
+  select null as a
+) as tmp
+;
+
+
+select unix_timestamp(a) as t
+from (
+  select from_unixtime(1591018771,'yyyy-MM-dd HH:mm:ss') as a union all
+  select from_unixtime(1591018748,'yyyy-MM-dd HH:mm:ss') as a union all
+  select from_unixtime(null,'yyyy-MM-dd HH:mm:ss') as a
+) as tmp
+;
+
+
+
+
+
+
+select to_unix_timestamp(current_timestamp) as t,from_unixtime(to_unix_timestamp(current_timestamp),'yyyy-MM-dd HH:mm:ss') as t;
