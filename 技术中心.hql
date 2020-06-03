@@ -3778,7 +3778,7 @@ show partitions eagle_dw.loan_base_stat;
 set hive.exec.dynamici.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-05-10;
+set hivevar:compute_date=2020-05-01;
 
 
 
@@ -3803,6 +3803,14 @@ from ods.nms_interface_resp_log
 where sta_service_method_name = 'setupCustCredit'
   and standard_req_msg is not null
 limit 10
+;
+
+select
+  standard_req_msg
+from ods.nms_interface_resp_log
+where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+limit 1
 ;
 
 

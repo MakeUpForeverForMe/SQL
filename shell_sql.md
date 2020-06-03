@@ -899,7 +899,7 @@ g.V().has('name','蜀国').next() // 返回 ==>v[8360]
 g.V(8360).in('belongs').valueMap()
 ```
 
-## 2.10 通过 Sublime 远程同步操作到 Linux
+## 2.10 Sublime 远程同步文件操作到 Linux
 在想要添加同步的文件中右键点击“SFTP/FTP”，选择 Map to Remote 进行编辑
 
 <img src="https://img-blog.csdnimg.cn/20200526103111136.png" alt="图片" style="zoom:70%;"/>
@@ -951,8 +951,34 @@ g.V(8360).in('belongs').valueMap()
 }
 ```
 
+## 2.11 Sublime 使用 OmniMarkupPreviewer 时的问题
+```javascript
+// 安装 OmniMarkupPreviewer 后，浏览器打开报 404，修改配置文件
+"renderer_options-MarkdownRenderer": {
+  "extensions": [
+    "tables",
+    "toc",
+    "fenced_code",
+    "codehilite"
+  ]
+}
+// 安装 Pretty Json 后，浏览器查看失效
+"renderer_options-MarkdownRenderer": {
+  "extensions": [
+    "markdown.extensions.tables",
+    "markdown.extensions.toc",
+    "markdown.extensions.fenced_code",
+    "markdown.extensions.codehilite"
+  ]
+}
+```
+
+
+
+
 
 # 3、Python 脚本操作
+
 
 
 # 4、SQL 语句
@@ -1353,7 +1379,7 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 
 SHOW FUNCTIONS LIKE '*key*';
-DESC FUNCTION EXTENDED regexp_replace;
+DESC FUNCTION EXTENDED datediff;
 ```
 
 
