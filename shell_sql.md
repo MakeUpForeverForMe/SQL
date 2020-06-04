@@ -102,6 +102,8 @@
 
 . /etc/profile
 . ~/.bash_profile
+export LANG=zh_CN.UTF-8
+
 base_dir=$(dirname "${BASH_SOURCE[0]}")
 
 # 添加启动视图
@@ -1042,9 +1044,46 @@ select
 --   其他
 --  */
 
--- DROP DATABASE IF EXISTS database cascade;  -- 级联删除，即：删除数据库的同时删除库中的表
--- DROP DATABASE IF EXISTS database restrict; -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
--- CREATE DATABASE IF NOT EXISTS dm_report_asset;
+-- DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
+-- DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
+-- CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
+
+
+-- order by           全局有序，需要指定 hive.mapred.mode=nostrict 非严格模式
+-- sort by            Reduce 有序，可指定 mapred.reduce.tasks=n 设置 Reduce 数量
+-- distribute by      控制 Map 中的数据如何进入 Reduce
+-- cluster by         具有 distribute by 与 sort by 的功能，只能倒叙
+
+set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
+set hive.exec.dynamici.partition=true;                                             -- 设置 动态分区
+set hive.exec.dynamic.partition.mode=nonstrict;                                    -- 设置 动态分区为非严格模式
+set hive.exec.max.dynamic.partitions.pernode=100;                                  -- 设置 每个执行 MR 的节点上，最大可以创建多少个动态分区
+set hive.exec.max.dynamic.partitions=1000;                                         -- 设置 所有执行 MR 的节点上，最大可以创建多少个动态分区
+set hive.exec.max.created.files=100000;                                            -- 设置 整个 MR Job 中，最大可以创建多少个 HDFS 文件
+set hive.error.on.empty.partition=false;                                           -- 设置 当有空分区生成时，是否抛出异常
+
+-- MR 优化
+set hive.exec.compress.intermediate=true;                                          -- 设置 MR中间数据可以进行压缩，默认是 false
+set hive.intermediate.compression.codec=org.apache.hadoop.io.compress.snappycodec; -- 设置 MR中间数据压缩算法
+set hive.exec.compress.output=true;                                                -- 设置 MR输出数据可以进行压缩，默认是 false
+set mapreduce.map.output.compress.codec=org.apache.hadoop.io.compress.snappycodec; -- 设置 MR输出数据压缩算法，Hadoop 的配置
+
+-- 减少 Map 数，小文件较多时
+set mapred.max.split.size=‪268435456‬;                                               -- 设置 每个 map 处理的最大的文件大小，单位为‪ 268435456‬B=256M
+set mapred.min.split.size.per.node=100000000;                                      -- 设置 每个节点中可以处理的最小的文件大小
+set mapred.min.split.size.per.rack=100000000;                                      -- 设置 每个机架中可以处理的最小的文件大小
+set hive.exec.reducers.bytes.per.reducer=1073741824;                               -- 设置 每个 reduce 处理的数据量，默认1GB
+set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;         -- 设置 Hive 的输入进行预聚合
+
+-- 增加 Map 数，在文件中的数据量大的时候，可以拆分成 Map 执行
+set mapred.reduce.tasks=10;                                                        -- 设置 reduce 的数量
+
+-- 设置 Reduce 数
+set hive.exec.reducers.max=1099;                                                   -- 设置 每个任务最大的 reduce 数，默认为 1099）
+-- 计算reducer数的公式很简单 N=min(hive.exec.reducers.max，总输入数据量/mapred.max.split.size)
+
+
+
 
 
 
@@ -1401,7 +1440,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*unix*';
+show functions in _impala_builtins like '*substring*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';

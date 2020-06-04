@@ -3772,17 +3772,6 @@ limit 10;
 
 
 
-
-show partitions eagle_dw.loan_base_stat;
-
-set hive.exec.dynamici.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-05-01;
-
-
-
-
 select distinct
   -- id,
   -- deal_date,
@@ -3832,8 +3821,19 @@ from (
 ;
 
 
-
-
-
-
 select to_unix_timestamp(current_timestamp) as t,from_unixtime(to_unix_timestamp(current_timestamp),'yyyy-MM-dd HH:mm:ss') as t;
+
+
+
+show partitions eagle_dw.loan_base_stat;
+
+set hive.exec.dynamici.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions=5000;
+set hivevar:compute_date=2020-05-01;
+
+
+
+
+
+
