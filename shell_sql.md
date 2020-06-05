@@ -1418,7 +1418,7 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 
 SHOW FUNCTIONS LIKE '*key*';
-DESC FUNCTION EXTENDED datediff;
+DESC FUNCTION EXTENDED sha256;
 ```
 
 
