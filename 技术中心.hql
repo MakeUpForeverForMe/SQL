@@ -3830,7 +3830,7 @@ show partitions ods_new_s.repay_schedule_tmp;
 set hive.exec.dynamici.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-06-05;
+set hivevar:compute_date=2020-06-04;
 
 
 truncate table ods_new_s.linkman_info_tmp;

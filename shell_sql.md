@@ -1054,6 +1054,8 @@ select
 -- distribute by      控制 Map 中的数据如何进入 Reduce
 -- cluster by         具有 distribute by 与 sort by 的功能，只能倒叙
 
+
+set spark.yarn.executor.memoryOverhead=2g;                                         -- 设置 Spark 的堆外内存
 set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
 set hive.exec.dynamici.partition=true;                                             -- 设置 动态分区
 set hive.exec.dynamic.partition.mode=nonstrict;                                    -- 设置 动态分区为非严格模式
