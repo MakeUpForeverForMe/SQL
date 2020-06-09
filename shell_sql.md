@@ -1007,11 +1007,11 @@ select repeat('a',10);
 
 -- 进制转换测试
 select
-  '中国'                                   as `10 进制`,
-  hex('中国')                              as `10 --> 16 进制`,
-  conv(hex('中国'),16,2)                   as `16 --> 2  进制`,
-  conv(conv(hex('中国'),16,2),2,16)        as `2  --> 16 进制`,
-  unhex(conv(conv(hex('中国'),16,2),2,16)) as `16 --> 10 进制`
+  '中国'                                   as `10 进制`,        -- 中国
+  hex('中国')                              as `10 ——> 16 进制`, -- E4B8ADE59BBD
+  conv(hex('中国'),16,2)                   as `16 ——> 2  进制`, -- 111001001011100010101101111001011001101110111101
+  conv(conv(hex('中国'),16,2),2,16)        as `2  ——> 16 进制`, -- E4B8ADE59BBD
+  unhex(conv(conv(hex('中国'),16,2),2,16)) as `16 ——> 10 进制`  -- 中国
 ;
 ```
 
@@ -1054,8 +1054,9 @@ select
 -- distribute by      控制 Map 中的数据如何进入 Reduce
 -- cluster by         具有 distribute by 与 sort by 的功能，只能倒叙
 
-
-set spark.yarn.executor.memoryOverhead=2g;                                         -- 设置 Spark 的堆外内存
+set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存
+set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
+set spark.executor.heartbeatInterval=60s;                                          -- 设置 Spark Executor 通信超时时间
 set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
 set hive.exec.dynamici.partition=true;                                             -- 设置 动态分区
 set hive.exec.dynamic.partition.mode=nonstrict;                                    -- 设置 动态分区为非严格模式
@@ -1405,6 +1406,7 @@ DROP FUNCTION IF EXISTS encrypt_aes;
 DROP FUNCTION IF EXISTS decrypt_aes;
 DROP FUNCTION IF EXISTS json_array_to_array;
 DROP FUNCTION IF EXISTS datefmt;
+DROP FUNCTION IF EXISTS age_birth;
 DROP FUNCTION IF EXISTS age_idno;
 DROP FUNCTION IF EXISTS sex_idno;
 DROP FUNCTION IF EXISTS is_empty;
@@ -1414,15 +1416,17 @@ CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USIN
 CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'   USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'            USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
 SHOW FUNCTIONS LIKE 'default*';
+DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*key*';
-DESC FUNCTION EXTENDED encrypt_aes;
+SHOW FUNCTIONS LIKE '*age*';
+DESC FUNCTION EXTENDED age_birth;
 ```
 
 

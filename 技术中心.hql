@@ -3836,4 +3836,27 @@ set hivevar:compute_date=2020-06-04;
 truncate table ods_new_s.linkman_info_tmp;
 
 
+select * from ods_new_s.customer_info;
+show partitions ods_new_s.customer_info;
+
+select
+  product_id,
+  count(1) as cnt
+from ods_new_s.customer_info
+group by product_id
+;
+
+
+select
+  count(1) as cnt
+from ods_new_s.customer_info
+;
+
+select
+  count(1) as cnt
+from ods_new_s.user_info
+;
+
+
+
 
