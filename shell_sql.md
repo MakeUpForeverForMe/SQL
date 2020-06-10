@@ -248,6 +248,32 @@ shift 5 左移5个参数
 
 ### 2.1.7 Shell 中 grep 的用法
 ```shell
+-a 不要忽略二进制数据。
+-A<显示列数> 除了显示符合范本样式的那一行之外，并显示该行之后的内容。
+-b 在显示符合范本样式的那一行之外，并显示该行之前的内容。
+-c 计算符合范本样式的列数。
+-C<显示列数>或-<显示列数>  除了显示符合范本样式的那一列之外，并显示该列之前后的内容。
+-d<进行动作> 当指定要查找的是目录而非文件时，必须使用这项参数，否则grep命令将回报信息并停止动作。
+-e<范本样式> 指定字符串作为查找文件内容的范本样式。
+-E 将范本样式为延伸的普通表示法来使用，意味着使用能使用扩展正则表达式。
+-f<范本文件> 指定范本文件，其内容有一个或多个范本样式，让grep查找符合范本条件的文件内容，格式为每一列的范本样式。
+-F 将范本样式视为固定字符串的列表。
+-G 将范本样式视为普通的表示法来使用。
+-h 在显示符合范本样式的那一列之前，不标示该列所属的文件名称。
+-H 在显示符合范本样式的那一列之前，标示该列的文件名称。
+-i 忽略字符大小写的差别。
+-l 列出文件内容符合指定的范本样式的文件名称。
+-L 列出文件内容不符合指定的范本样式的文件名称。
+-n 在显示符合范本样式的那一列之前，标示出该列的编号。
+-q 不显示任何信息。
+-R/-r 此参数的效果和指定“-d recurse”参数相同。
+-s 不显示错误信息。
+-v 反转查找。
+-w 只显示全字符合的列。
+-x 只显示全列符合的列。
+-y 此参数效果跟“-i”相同。
+-o 只输出文件中匹配到的部分。
+
 grep -wq file_name # 完全匹配字符所在行并不输出任何信息，只输出匹配结果
 ```
 
@@ -989,6 +1015,15 @@ g.V(8360).in('belongs').valueMap()
 -- HQL 学习
 -- union 与 union all 相比 多了去重排序的功能
 
+DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
+DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
+CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
+
+-- order by           全局有序，需要指定 hive.mapred.mode=nostrict 非严格模式
+-- sort by            Reduce 有序，可指定 mapred.reduce.tasks=n 设置 Reduce 数量
+-- distribute by      控制 Map 中的数据如何进入 Reduce
+-- cluster by         具有 distribute by 与 sort by 的功能，只能倒叙
+
 -- 查看分区
 show partitions ods_wefix.t_ad_query_water_json;
 
@@ -1043,16 +1078,6 @@ select
 --     CHAR    (Note: Only available starting with Hive 0.13.0) -- 固定长度值，最长 255
 --   其他
 --  */
-
--- DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
--- DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
--- CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
-
-
--- order by           全局有序，需要指定 hive.mapred.mode=nostrict 非严格模式
--- sort by            Reduce 有序，可指定 mapred.reduce.tasks=n 设置 Reduce 数量
--- distribute by      控制 Map 中的数据如何进入 Reduce
--- cluster by         具有 distribute by 与 sort by 的功能，只能倒叙
 
 set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存

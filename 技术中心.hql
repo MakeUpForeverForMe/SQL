@@ -3825,12 +3825,12 @@ select to_unix_timestamp(current_timestamp) as t,from_unixtime(to_unix_timestamp
 
 
 
-show partitions ods_new_s.repay_schedule_tmp;
+show partitions dw_new.loan_base;
 
 set hive.exec.dynamici.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-06-04;
+set hivevar:compute_date=2020-05-29;
 
 
 truncate table ods_new_s.linkman_info_tmp;
