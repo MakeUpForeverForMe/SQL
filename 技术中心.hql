@@ -3825,7 +3825,7 @@ select to_unix_timestamp(current_timestamp) as t,from_unixtime(to_unix_timestamp
 
 
 
-show partitions dw_new.loan_base;
+show partitions ods.ecas_loan;
 
 set hive.exec.dynamici.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
