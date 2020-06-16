@@ -1049,23 +1049,27 @@ show partitions ods_wefix.t_ad_query_water_json;
 DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
 DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
 CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
+-- 删除表
+DROP TABLE IF EXISTS test;
 -- 创建临时表
 CREATE TEMPORARY TABLE IF NOT EXISTS test(
   id int COMMENT 'id',
   name string COMMENT '名称'
-) COMMENT
-PARTITION BY (biz_date string COMMENT '日期')
+) COMMENT '测试表'
 ;
 -- 表重命名
-ALTER TABLE test RENAME TO tet;
+ALTER TABLE test RENAME TO tet; ALTER TABLE tet RENAME TO test;
 -- 添加字段
-ALTER TABLE tet ADD COLUMNS (t_1 string comment '测试');
+ALTER TABLE test ADD COLUMNS (t_1 string comment '测试');
+-- 修改字段
+ALTER TABLE test CHANGE COLUMN t_1 t string AFTER id;
 -- 删除字段
-ALTER TABLE tet REPLACE COLUMNS(id bigint, name string);
+ALTER TABLE test REPLACE COLUMNS (id int COMMENT 'id', name string COMMENT '名称');
 -- 增加分区
-ALTER TABLE tet ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
+ALTER TABLE test ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
 -- 删除分区
-ALTER TABLE tet DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+ALTER TABLE test DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+
 
 -- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
 -- space(Int n) 空格字符串函数：返回长度为 n 的字符串

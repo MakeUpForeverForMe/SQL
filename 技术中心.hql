@@ -4079,12 +4079,17 @@ from ods.ecas_repay_schedule
 ;
 
 
+select count(1) as cnt
+from ods_new_s.customer_info
+;
 
+select count(1) as cnt
+from ods.ecas_msg_log
+;
 
-
-
-
-
+select count(1) as cnt
+from ods.ecas_msg_log_bak
+;
 
 
 
