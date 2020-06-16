@@ -3827,11 +3827,6 @@ select to_unix_timestamp(current_timestamp) as t,from_unixtime(to_unix_timestamp
 
 show partitions ods.ecas_loan;
 
-set hive.exec.dynamici.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
-set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-05-29;
-
 
 truncate table ods_new_s.linkman_info_tmp;
 
@@ -3856,6 +3851,239 @@ select
   count(1) as cnt
 from ods_new_s.user_info
 ;
+
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term,
+  loan_term_repaid,
+  loan_term_remain,
+  overdue_days,
+  overdue_terms_count,
+  loan_init_principal,
+  remain_principal
+  ,overdue_days
+  ,effective_time
+  ,expire_time
+  ,to_date(expire_time) as expire_date
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+where due_bill_no = '1000000106'
+  -- and loan_active_date = '2020-06-01'
+  -- and to_date(expire_time) = '3000-12-31'
+order by effective_time
+;
+
+
+
+
+select distinct
+  *
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+where due_bill_no = '1000000106'
+  -- and loan_active_date = '2020-06-01'
+  -- and to_date(expire_time) = '3000-12-31'
+order by effective_time
+;
+
+select distinct
+  *
+from ods_new_s.repay_schedule
+-- from ods_new_s.loan_info_tmp
+where due_bill_no = '1000000106'
+  -- and loan_active_date = '2020-06-01'
+  -- and to_date(expire_time) = '3000-12-31'
+order by loan_term,effective_time
+;
+
+
+select min(d_date)
+from ods.ecas_loan
+-- where due_bill_no = '1000000106'
+-- order by d_date
+;
+
+
+
+
+set hive.exec.dynamici.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions=5000;
+set hivevar:compute_date=2020-06-01;
+
+
+
+select min(d_date) as d_date
+from ods.ecas_repay_hst
+;
+
+select min(d_date) as d_date
+from ods.ecas_repay_schedule
+;
+
+select count(1) as cnt
+from ods.ecas_repay_schedule
+where d_date = '2020-06-01'
+;
+
+select count(1) as cnt
+from ods.ecas_repay_schedule
+where d_date = date_sub('2020-06-01',1)
+;
+
+select count(1) as cnt
+from
+(
+select distinct
+  due_bill_no                         as due_bill_no,
+  loan_init_prin                      as loan_init_principal,
+  loan_init_term                      as loan_init_term,
+  curr_term                           as loan_term,
+  start_interest_date                 as start_interest_date,
+  pmt_due_date                        as should_repay_date,
+  origin_pmt_due_date                 as should_repay_date_history,
+  grace_date                          as grace_date,
+  due_term_prin                       as should_repay_principal,
+  due_term_int                        as should_repay_interest,
+  due_penalty                         as should_repay_penalty,
+  due_term_fee                        as should_repay_term_fee,
+  due_svc_fee                         as should_repay_svc_fee,
+  due_mult_amt                        as should_repay_mult_amt,
+  reduced_amt                         as reduce_amount,
+  reduce_term_prin                    as reduce_principal,
+  reduce_term_int                     as reduce_interest,
+  reduce_term_fee                     as reduce_term_fee,
+  reduce_svc_fee                      as reduce_svc_fee,
+  reduce_penalty                      as reduce_penalty,
+  reduce_mult_amt                     as reduce_mult_amt,
+  is_empty(cast(lst_upd_time as string),cast(lst_upd_user as string)) as update_time
+from ods.ecas_repay_schedule
+where due_bill_no = 'DD0002303620191101143800dfc047'
+order by due_bill_no,loan_term,update_time
+-- where d_date = '2020-06-01'
+-- where d_date = date_sub('2020-06-01',1)
+) as tmp
+;
+
+
+select count(1) as cnt
+from
+(
+select
+  product_id,
+  due_bill_no,
+  schedule_id,
+  out_side_schedule_no,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  start_interest_date,
+  should_repay_date,
+  should_repay_date_history,
+  grace_date,
+  should_repay_principal,
+  should_repay_interest,
+  should_repay_penalty,
+  should_repay_term_fee,
+  should_repay_svc_fee,
+  should_repay_mult_amt,
+  reduce_amount,
+  reduce_principal,
+  reduce_interest,
+  reduce_term_fee,
+  reduce_svc_fee,
+  reduce_penalty,
+  reduce_mult_amt,
+  effective_time,
+  expire_time
+from ods_new_s.repay_schedule
+where due_bill_no = 'DD0002303620191101143800dfc047'
+-- -- where d_date = '2020-06-01'
+-- where d_date = date_sub('2020-06-01',1)
+) as tmp
+;
+
+
+
+
+
+
+
+
+select count(1) as cnt
+-- from ods_new_s.repay_detail
+from ods_new_s.repay_detail_tmp
+;
+
+show partitions ods_new_s.repay_detail;
+
+select
+count(1) as cnt
+from
+(
+select
+  biz_date,
+  product_id,
+  due_bill_no,
+  repay_term,
+  loan_status_cn,
+  overdue_days,
+  bnp_type_cn,
+  repay_amount,
+  batch_date,
+  create_time,
+  update_time
+from ods_new_s.repay_detail
+order by biz_date,product_id,due_bill_no,repay_term
+) as tmp
+limit 10
+;
+
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  start_interest_date,
+  should_repay_date,
+  should_repay_date_history,
+  grace_date,
+  should_repay_principal,
+  should_repay_interest,
+  should_repay_penalty,
+  reduce_amount,
+  reduce_principal,
+  reduce_interest,
+  reduce_penalty,
+  effective_time,
+  expire_time
+from ods_new_s.repay_schedule
+-- group by due_bill_no,loan_term
+-- having count(distinct due_bill_no,loan_term) > 1
+order by product_id,due_bill_no,loan_term
+limit 100
+;
+
+
+
+select count(1) as cnt
+from ods.ecas_repay_schedule
+;
+
+
+
+
+
+
+
 
 
 

@@ -1020,14 +1020,23 @@ g.V(8360).in('belongs').valueMap()
 
 
 # 4、SQL 语句
+
+## 4.0 数仓
+### 4.0.1 数仓分层
+| 模型层次 |        英文全称        |   中文名   |                                                                                                                                          层次定义                                                                                                                                          |
+|----------|------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ODL      | Operational Data Layer | 操作数据层 | 该层级主要功能是存储从源系统直接获得的数据（数据从数据结构、数据之间的逻辑关系上都与源系统基本保持一致）                                                                                                                                                                                   |
+| IDL      | Integrated Data Layer  | 集成数据层 | 该层的主要功能是基于主题域的划分，面向业务主题、以数据为驱动设计模型，并且基于3NF建模，完成数据整合，提供统一的基础数据来源。                                                                                                                                                              |
+| CDL      | Component Data Layer   | 元件数据层 | 面向分析主题的、统一的数据访问层，所有的基础数据、业务规则和业务实体的基础指标库以及多维模型都在这里统一计算口径、统一建模，大量基础指标库以及多维模型在该层实现。该层级以分析需求为驱动进行模型设计，实现跨业务主题域数据的关联计算或者轻度汇总计算，因此会有大数据量的多表关联汇总计算。 |
+| MDL      | Mart Data Layer        | 数据集市层 | 该层次主要功能是加工多维度冗余的宽表（解决复杂的查询）、多维分析的汇总表。                                                                                                                                                                                                                 |
+| ADL      | Application Data Layer | 应用数据层 | 该层级的主要功能是满足业务方的需求；在该层级实现报表（海豚、星空、邮件报表）、自助取数等需求。                                                                                                                                                                                             |
+| DIM      | Dimension Data Layer   | 维度数据层 | 该层主要存储简单、静态、代码类的维表，包括从OLTP层抽取转换维表、根据业务或分析需求构建的维表以及仓库技术维表如日期维表等。                                                                                                                                                                 |
+| REF      |                        | 数据接口层 | 该层级独立于其他层级之外，其来源可以是任意层级，主要存放的是在与其他组对接的时候提供给对方的数据                                                                                                                                                                                           |
+
 ## 4.1 SQL 函数及通用语句
 ```sql
 -- HQL 学习
 -- union 与 union all 相比 多了去重排序的功能
-
-DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
-DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
-CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
 
 -- order by           全局有序，需要指定 hive.mapred.mode=nostrict 非严格模式
 -- sort by            Reduce 有序，可指定 mapred.reduce.tasks=n 设置 Reduce 数量
@@ -1037,12 +1046,26 @@ CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
 -- 查看分区
 show partitions ods_wefix.t_ad_query_water_json;
 
+DROP DATABASE IF EXISTS database cascade;      -- 级联删除，即：删除数据库的同时删除库中的表
+DROP DATABASE IF EXISTS database restrict;     -- 限制删除，即：删除数据库时有限制，需要先删除库中的表
+CREATE DATABASE IF NOT EXISTS dm_report_asset; -- 创建数据库
+-- 创建临时表
+CREATE TEMPORARY TABLE IF NOT EXISTS test(
+  id int COMMENT 'id',
+  name string COMMENT '名称'
+) COMMENT
+PARTITION BY (biz_date string COMMENT '日期')
+;
 -- 表重命名
-ALTER TABLE dwd_inter.event_client_source RENAME TO dwd_inter.event_client_source_old;
+ALTER TABLE test RENAME TO tet;
+-- 添加字段
+ALTER TABLE tet ADD COLUMNS (t_1 string comment '测试');
+-- 删除字段
+ALTER TABLE tet REPLACE COLUMNS(id bigint, name string);
 -- 增加分区
-ALTER TABLE ods_wefix.t_ad_query_water_json ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
+ALTER TABLE tet ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
 -- 删除分区
-ALTER TABLE dm_cf.unfraud_recommend_wefix DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+ALTER TABLE tet DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
 
 -- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
 -- space(Int n) 空格字符串函数：返回长度为 n 的字符串
@@ -1461,7 +1484,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*age*';
-DESC FUNCTION EXTENDED is_empty;
+DESC FUNCTION EXTENDED to_date;
 ```
 
 
