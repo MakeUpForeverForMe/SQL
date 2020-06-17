@@ -3914,7 +3914,6 @@ from ods.ecas_loan
 set hive.exec.dynamici.partition=true;
 set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions=5000;
-set hivevar:compute_date=2020-06-01;
 
 
 
@@ -4091,5 +4090,21 @@ select count(1) as cnt
 from ods.ecas_msg_log_bak
 ;
 
+select min(d_date) as cnt
+from ods.ecas_loan
+;
+
+
+select min(deal_date) as cnt
+from ods.nms_interface_resp_log
+;
+
+
+select min(datefmt(update_time,'ms','yyyy-MM-dd')) as cnt
+from ods.ecas_msg_log
+;
+
+
+set hivevar:compute_date=2020-06-16;
 
 
