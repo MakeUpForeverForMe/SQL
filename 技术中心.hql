@@ -4105,6 +4105,120 @@ from ods.ecas_msg_log
 ;
 
 
-set hivevar:compute_date=2020-06-16;
+set hivevar:compute_date=2020-06-12;
+
+
+
+
+select
+  msg_type,
+  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')                                                            as create_time,
+  unix_timestamp(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss'))                                            as create_time_unix,
+  sha256(get_json_object(original_msg,'$.idNo'),'idNumber',1)                                                as id_no,
+  get_json_object(original_msg,'$.creditId')                                                                 as credit_id,
+  get_json_object(original_msg,'$.loanOrderId')                                                              as loan_order_id,
+  cast(get_json_object(original_msg,'$.loanAmount')/100 as decimal(10,4))                                    as loan_amount,
+  is_empty(get_json_object(original_msg,'$.totalInstallment'),0)                                             as loan_terms,
+  get_json_object(original_msg,'$.loanUsage')                                                                as loan_usage,
+  get_json_object(original_msg,'$.repayType')                                                                as repay_type,
+  cast(is_empty(get_json_object(original_msg,'$.loanRating'),0)/1000000 as decimal(10,8))                    as loan_rating,
+  cast(is_empty(get_json_object(original_msg,'$.penaltyInterestRate'),0)/1000000 as decimal(10,8))           as penalty_interest_rate,
+  regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\',''),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}') as original_msg
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+  and get_json_object(original_msg,'$.loanOrderId') = 'DD000230362020060902050017e077'
+;
+
+
+select
+  min(sync_date)
+  -- min(create_time)
+from ods_new_s.loan_info
+where user_hash_no is null
+limit 10
+;
+
+select distinct due_bill_no
+from ods_new_s.loan_info
+where user_hash_no is null and due_bill_no like 'DD%'
+limit 10
+;
+
+
+select distinct *
+from ods_new_s.customer_info
+where user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a6e2125ee'
+;
+
+
+select distinct *
+from ods_new_s.loan_apply
+where due_bill_no = 'DD000230362020060902050017e077'
+   or user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a6e2125ee'
+;
+
+
+
+select distinct *
+from ods.ecas_loan
+where due_bill_no = '1120061515293978098957'
+;
+
+select distinct *
+from ods.ecas_loan_asset
+where due_bill_no = '1120061515293978098957'
+;
+
+
+
+select distinct
+  acq_id,
+  d_date,
+  p_type
+from ods.ecas_loan
+where p_type = 'lx'
+  and d_date is null
+;
+
+
+select
+  max(d_date)
+from ods.ecas_loan
+where p_type = 'lx'
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-99-99')
+;
+
+
+
+
+select
+  biz_date,
+  count(distinct due_bill_no) as cnt,
+  count(due_bill_no) as apply_num,
+  sum(loan_amount) as amt_sum
+from ods_new_s.loan_apply
+where product_id in ('001801','001802')
+group by biz_date
+order by biz_date
+;
+
+
+select
+  biz_date,
+  count(distinct due_bill_no) as cnt,
+  count(due_bill_no) as apply_num,
+  sum(loan_amount) as amt_sum
+from (
+  select distinct
+    biz_date,
+    due_bill_no,
+    loan_amount
+  from ods_new_s.loan_apply
+  where product_id in ('001801','001802')
+) as tmp
+group by biz_date
+order by biz_date
+;
+
 
 

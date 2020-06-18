@@ -1116,8 +1116,9 @@ select
 --   其他
 --  */
 
-set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
+set spark.executor.memory=4g;                                                      -- 设置 Spark Executor 的内存
+set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存
 set spark.executor.heartbeatInterval=60s;                                          -- 设置 Spark Executor 通信超时时间
 set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
 set hive.exec.dynamici.partition=true;                                             -- 设置 动态分区
