@@ -4105,7 +4105,7 @@ from ods.ecas_msg_log
 ;
 
 
-set hivevar:compute_date=2020-06-12;
+set hivevar:compute_date=2020-06-18;
 
 
 
@@ -4153,8 +4153,10 @@ where user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a
 
 select distinct *
 from ods_new_s.loan_apply
-where due_bill_no = 'DD000230362020060902050017e077'
-   or user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a6e2125ee'
+where product_id in ()
+due_bill_no = '1120061118351026472250'
+   -- or user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a6e2125ee'
+limit 10
 ;
 
 
@@ -4168,7 +4170,6 @@ select distinct *
 from ods.ecas_loan_asset
 where due_bill_no = '1120061515293978098957'
 ;
-
 
 
 select distinct
@@ -4195,9 +4196,11 @@ select
   biz_date,
   count(distinct due_bill_no) as cnt,
   count(due_bill_no) as apply_num,
+  sum(loan_amount_apply) as amt_sum_apply,
   sum(loan_amount) as amt_sum
 from ods_new_s.loan_apply
 where product_id in ('001801','001802')
+  and apply_status = 1
 group by biz_date
 order by biz_date
 ;
@@ -4215,6 +4218,7 @@ from (
     loan_amount
   from ods_new_s.loan_apply
   where product_id in ('001801','001802')
+    and apply_status = 1
 ) as tmp
 group by biz_date
 order by biz_date
@@ -4222,3 +4226,18 @@ order by biz_date
 
 
 
+select distinct *
+from ods_new_s.loan_apply
+where product_id in ('001801','001802')
+  and due_bill_no = '1120061118351026472250'
+   -- or user_hash_no = 'a_079a49407de852b365e18936f88b0bf2fd7b3f5e31c0dbdcba5ad83a6e2125ee'
+limit 10
+;
+
+
+set hivevar:compute_date=2020-06-18;
+
+select distinct
+  sync_date
+from ods_new_s.loan_info
+;
