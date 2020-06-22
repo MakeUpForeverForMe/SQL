@@ -1116,6 +1116,7 @@ select
 --   其他
 --  */
 
+set spark.driver.memory=4g;                                                        -- 设置 Spark Driver 的内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
 set spark.executor.memory=4g;                                                      -- 设置 Spark Executor 的内存
 set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存

@@ -4235,9 +4235,180 @@ limit 10
 ;
 
 
-set hivevar:compute_date=2020-06-18;
+set hivevar:compute_date=2020-06-01;
 
 select distinct
-  sync_date
+  cust_id,
+  age,
+  due_bill_no,
+  effective_time,
+  expire_time,
+  is_settled,
+  product_id
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+where is_settled = 'no'
+  and (age is null or cust_id is null)
+order by product_id,due_bill_no
+-- limit 10
+;
+
+
++---------+------+--------------------------------+------------------+
+| cust_id | age  | due_bill_no                    | product_id       |
++---------+------+--------------------------------+------------------+
+| NULL    | NULL | APP-20200527103659000007       | 001702           |
+| NULL    | NULL | APP-20200606195954000001       | 001702           |
+| NULL    | NULL | APP-20200606213939000001       | 001702           |
+| NULL    | NULL | APP-20200612152419000001       | 001702           |
+| NULL    | NULL | APP-20200613162750000001       | 001702           |
+| NULL    | NULL | APP-20200615155459000001       | 001702           |
+| NULL    | NULL | APP-20200616211125000001       | 001702           |
+| NULL    | NULL | 1120060216004289090275         | 001801           |
+| NULL    | NULL | 1120060215213608230275         | 001802           |
+| NULL    | NULL | DD0002303620200307225700e545de | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200308222600ebbea9 | DIDI201908161538 |
+| NULL    | NULL | DD00023036202003191421004c1251 | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200404090400770962 | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200409104700bfb018 | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200501162300e1b938 | DIDI201908161538 |
+| NULL    | NULL | DD00023036202006200043006b9756 | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200620005800c9557f | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200620124900b9e3de | DIDI201908161538 |
+| NULL    | NULL | DD00023036202006220043005dc7f6 | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200622005000999a7e | DIDI201908161538 |
+| NULL    | NULL | DD00023036202006220101003aaa9a | DIDI201908161538 |
+| NULL    | NULL | DD0002303620200622011700548432 | DIDI201908161538 |
++---------+------+--------------------------------+------------------+
+
+select distinct
+  *
+from ods_new_s.loan_info
+where due_bill_no in ('1120060216004289090275','1120060215213608230275')
+order by product_id,due_bill_no,loan_term,loan_term_repaid,effective_time
+;
+
+select
+  count(1)
 from ods_new_s.loan_info
 ;
+
+
+select
+  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')                                                  as create_time,
+  datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss')                                                  as update_time,
+  sha256(get_json_object(original_msg,'$.idNo'),'idNumber',1)                                      as id_no,
+  get_json_object(original_msg,'$.loanOrderId')                                                    as loan_order_id,
+  cast(get_json_object(original_msg,'$.loanAmount')/100 as decimal(10,4))                          as loan_amount,
+  is_empty(get_json_object(original_msg,'$.totalInstallment'),0)                                   as loan_terms,
+  get_json_object(original_msg,'$.loanUsage')                                                      as loan_usage
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+  and get_json_object(original_msg,'$.loanOrderId') = 'DD00023036202006220043005dc7f6'
+;
+
+
+
+select
+  create_time,
+  update_time,
+  get_json_object(loan_apply.original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') as due_bill_no
+from (
+  select
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+    datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss') as update_time,
+    -- regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\\\{','\\\{'),'\\\}\\\\\"','\\\}'),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'\\\\','') as original_msg
+    regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\{','\{'),'\}\\\\\"','\}'),'\"\{','\{'),'\}\"','\}'),'\\\\','') as original_msg
+  from ods.ecas_msg_log
+  where msg_type = 'WIND_CONTROL_CREDIT'
+    and original_msg is not null
+) as tmp
+where get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') in ('1120060216004289090275','1120060215213608230275')
+;
+
+select
+  count(1)
+from ods.ecas_msg_log
+where msg_type = 'WIND_CONTROL_CREDIT'
+  and original_msg is not null
+  and datefmt(update_time,'ms','yyyy-MM-dd') = '2020-06-02'
+;
+
+select distinct
+  *
+from ods_new_s.loan_apply
+where 1 = 1
+  -- and cust_id is null
+  -- and biz_date = '2020-06-02'
+  -- and product_id in ('001801','001802')
+  and due_bill_no = 'DD00023036202006220043005dc7f6'
+;
+
+
+select distinct
+  user_hash_no,
+  age,
+  due_bill_no,
+  effective_time,
+  expire_time,
+  product_id
+from ods_new_s.loan_info
+where is_settled = 'no'
+  and to_date(effective_time) <= date_add('2020-06-01',1)
+  -- and due_bill_no in ('1120060216004289090275','1120060215213608230275')
+  and (age is null or cust_id is null)
+limit 10
+;
+
+select distinct
+  product_code                      as product_id,
+  due_bill_no                       as due_bill_no,
+  purpose                           as loan_usage,
+  active_date                       as loan_active_date,
+  cycle_day                         as cycle_day,
+  loan_expire_date                  as loan_expire_date,
+  loan_type                         as loan_type,
+  case loan_type
+  when 'R'    then '消费转分期'
+  when 'C'    then '现金分期'
+  when 'B'    then '账单分期'
+  when 'P'    then 'POS分期'
+  when 'M'    then '大额分期（专项分期）'
+  when 'MCAT' then '随借随还'
+  when 'MCEP' then '等额本金'
+  when 'MCEI' then '等额本息'
+  else loan_type
+  end                               as loan_type_cn,
+  loan_init_term                    as loan_init_term,
+  curr_term                         as loan_term,
+  repay_term                        as loan_term_repaid,
+  remain_term                       as loan_term_remain,
+  loan_status                       as loan_status,
+  case loan_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else loan_status
+  end                               as loan_status_cn,
+  terminal_reason_cd                as loan_out_reason,
+  loan_settle_reason                as paid_out_type,
+  paid_out_date                     as paid_out_date,
+  terminal_date                     as terminal_date,
+  case
+  when d_date = '2020-02-21' and sync_date    = 'ZhongHang'  then capital_plan_no
+  when d_date = '2020-02-27' and capital_type = '2020-02-28' then capital_type
+  when d_date = '2020-02-28' and capital_type = '2020-02-29' then capital_type
+  when d_date = '2020-02-29' and capital_type = '2020-03-01' then capital_type
+  else sync_date end                as sync_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')  as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as update_time,
+  p_type,
+  d_date
+from ods.ecas_loan
+where 1 = 1
+  and d_date is not null
+  and due_bill_no = '1120060216004289090275'
+order by d_date
+;
+
