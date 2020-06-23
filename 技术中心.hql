@@ -4254,32 +4254,6 @@ order by product_id,due_bill_no
 ;
 
 
-+---------+------+--------------------------------+------------------+
-| cust_id | age  | due_bill_no                    | product_id       |
-+---------+------+--------------------------------+------------------+
-| NULL    | NULL | APP-20200527103659000007       | 001702           |
-| NULL    | NULL | APP-20200606195954000001       | 001702           |
-| NULL    | NULL | APP-20200606213939000001       | 001702           |
-| NULL    | NULL | APP-20200612152419000001       | 001702           |
-| NULL    | NULL | APP-20200613162750000001       | 001702           |
-| NULL    | NULL | APP-20200615155459000001       | 001702           |
-| NULL    | NULL | APP-20200616211125000001       | 001702           |
-| NULL    | NULL | 1120060216004289090275         | 001801           |
-| NULL    | NULL | 1120060215213608230275         | 001802           |
-| NULL    | NULL | DD0002303620200307225700e545de | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200308222600ebbea9 | DIDI201908161538 |
-| NULL    | NULL | DD00023036202003191421004c1251 | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200404090400770962 | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200409104700bfb018 | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200501162300e1b938 | DIDI201908161538 |
-| NULL    | NULL | DD00023036202006200043006b9756 | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200620005800c9557f | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200620124900b9e3de | DIDI201908161538 |
-| NULL    | NULL | DD00023036202006220043005dc7f6 | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200622005000999a7e | DIDI201908161538 |
-| NULL    | NULL | DD00023036202006220101003aaa9a | DIDI201908161538 |
-| NULL    | NULL | DD0002303620200622011700548432 | DIDI201908161538 |
-+---------+------+--------------------------------+------------------+
 
 select distinct
   *
@@ -4412,3 +4386,9 @@ where 1 = 1
 order by d_date
 ;
 
+select
+  min(deal_date) as deal_date
+from ods.nms_interface_resp_log
+where sta_service_method_name = 'setupCustCredit'
+  and standard_req_msg is not null
+;
