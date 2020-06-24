@@ -42,7 +42,7 @@
 | 星连 | 10.80.16.5  | root        | Xfx2018@)!*      |         |
 | 星云 | 10.80.16.21 | root        | EXYeaGVQZpsr@CR& |         |
 | 风控 | 10.80.16.42 | root        | 8x3V1lrbkS       | 旧      |
-| 风控 | 10.80.16.65 | root        | Risk_Reader001   | 新      |
+| 风控 | 10.80.16.65 | selectuser  | Risk_Reader001   | 新      |
 | 核心 | 10.80.16.9  | root        | !mAkJTMI%lH5ONDw | 旧      |
 | 核心 | 10.80.16.10 | root        | LZWkT2lxze6x%1V( | 新      |
 | 核心 | 10.80.16.25 | root        | LZWkT2lxze6x%1V( | 回放    |

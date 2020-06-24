@@ -4191,6 +4191,13 @@ where p_type = 'lx'
 
 
 
+select
+  min(d_date)
+from ods.ecas_loan
+where 1 = 1
+;
+
+
 
 select
   biz_date,
@@ -4206,25 +4213,6 @@ order by biz_date
 ;
 
 
-select
-  biz_date,
-  count(distinct due_bill_no) as cnt,
-  count(due_bill_no) as apply_num,
-  sum(loan_amount) as amt_sum
-from (
-  select distinct
-    biz_date,
-    due_bill_no,
-    loan_amount
-  from ods_new_s.loan_apply
-  where product_id in ('001801','001802')
-    and apply_status = 1
-) as tmp
-group by biz_date
-order by biz_date
-;
-
-
 
 select distinct *
 from ods_new_s.loan_apply
@@ -4235,7 +4223,25 @@ limit 10
 ;
 
 
-set hivevar:compute_date=2020-06-01;
+set hivevar:compute_date=2020-05-27;
+
+select distinct
+  cust_id,
+  age,
+  due_bill_no,
+  loan_active_date,
+  effective_time,
+  expire_time,
+  is_settled,
+  product_id
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+where is_settled = 'no'
+  and (age is null or cust_id is null)
+order by product_id,loan_active_date,due_bill_no
+-- limit 10
+;
+
 
 select distinct
   cust_id,
@@ -4247,39 +4253,134 @@ select distinct
   product_id
 from ods_new_s.loan_info
 -- from ods_new_s.loan_info_tmp
-where is_settled = 'no'
-  and (age is null or cust_id is null)
+-- where product_id in ('001701','001702')
+where due_bill_no like 'APP%'
 order by product_id,due_bill_no
 -- limit 10
 ;
 
 
-
 select distinct
   *
 from ods_new_s.loan_info
-where due_bill_no in ('1120060216004289090275','1120060215213608230275')
+where 1 = 1
+  -- and due_bill_no = 'DD000230362020062312200069197d'
+  and due_bill_no in (
+    'APP-20200527103659000007',
+    'APP-20200606213939000001',
+    'APP-20200612152419000001',
+    'APP-20200613162750000001',
+    'APP-20200615155459000001',
+    'APP-20200616211125000001',
+    'APP-20200606195954000001'
+  )
 order by product_id,due_bill_no,loan_term,loan_term_repaid,effective_time
 ;
 
-select
-  count(1)
-from ods_new_s.loan_info
+select distinct
+  cust_id,
+  user_hash_no,
+  pre_apply_no,
+  apply_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  loan_usage,
+  loan_usage_cn,
+  repay_type,
+  repay_type_cn,
+  interest_rate,
+  penalty_rate,
+  apply_status,
+  apply_resut_msg,
+  issue_time,
+  loan_amount,
+  create_time,
+  biz_date,
+  product_id
+from ods_new_s.loan_apply
+where 1 = 1
+  -- and cust_id is null
+  -- and biz_date = '2020-06-02'
+  -- and product_id in ('001801','001802')
+  -- and due_bill_no = 'DD00023036202006220043005dc7f6'
+  and due_bill_no in (
+    'DD000230362020062312200069197d',
+    'DD0002303620200623124900b216c6',
+    'DD0002303620200623130800f274a8',
+    'DD000230362020062313400019c012',
+    'DD0002303620200623140000da43c3',
+    'DD0002303620200624005800b6c6a2',
+    'DD000230362020062401000025e8b0',
+    'DD00023036202006240115005f6a93',
+    'DD0002303620200624012900d6d9fe'
+  )
 ;
 
 
 select
-  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')                                                  as create_time,
-  datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss')                                                  as update_time,
-  sha256(get_json_object(original_msg,'$.idNo'),'idNumber',1)                                      as id_no,
-  get_json_object(original_msg,'$.loanOrderId')                                                    as loan_order_id,
-  cast(get_json_object(original_msg,'$.loanAmount')/100 as decimal(10,4))                          as loan_amount,
-  is_empty(get_json_object(original_msg,'$.totalInstallment'),0)                                   as loan_terms,
-  get_json_object(original_msg,'$.loanUsage')                                                      as loan_usage
+  datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss')                         as create_time,
+  datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss')                         as update_time,
+  sha256(get_json_object(original_msg,'$.idNo'),'idNumber',1)             as id_no,
+  get_json_object(original_msg,'$.loanOrderId')                           as loan_order_id,
+  cast(get_json_object(original_msg,'$.loanAmount')/100 as decimal(10,4)) as loan_amount,
+  is_empty(get_json_object(original_msg,'$.totalInstallment'),0)          as loan_terms,
+  get_json_object(original_msg,'$.loanUsage')                             as loan_usage
 from ods.ecas_msg_log
 where msg_type = 'LOAN_APPLY'
   and original_msg is not null
-  and get_json_object(original_msg,'$.loanOrderId') = 'DD00023036202006220043005dc7f6'
+  -- and get_json_object(original_msg,'$.loanOrderId') = 'DD000230362020062312200069197d'
+  and get_json_object(original_msg,'$.loanOrderId') in (
+    'DD000230362020062312200069197d',
+    'DD0002303620200623124900b216c6',
+    'DD0002303620200623130800f274a8',
+    'DD000230362020062313400019c012',
+    'DD0002303620200623140000da43c3',
+    'DD0002303620200624005800b6c6a2',
+    'DD000230362020062401000025e8b0',
+    'DD00023036202006240115005f6a93',
+    'DD0002303620200624012900d6d9fe'
+  )
+;
+
+
+
+select distinct
+  loan_apply.cust_id,
+  loan_apply.user_hash_no,
+  loan_apply.due_bill_no,
+  age_birth(customer_info.birthday,to_date(loan_apply.issue_time)) as age,
+  loan_apply.product_id
+from (
+  select distinct
+    user_hash_no,
+    issue_time,
+    cust_id,
+    due_bill_no,
+    product_id
+  from ods_new_s.loan_apply
+  where 1 = 1
+    and due_bill_no in (
+      'DD000230362020062312200069197d',
+      'DD0002303620200623124900b216c6',
+      'DD0002303620200623130800f274a8',
+      'DD000230362020062313400019c012',
+      'DD0002303620200623140000da43c3',
+      'DD0002303620200624005800b6c6a2',
+      'DD000230362020062401000025e8b0',
+      'DD00023036202006240115005f6a93',
+      'DD0002303620200624012900d6d9fe'
+    )
+) as loan_apply
+left join (
+  select distinct
+    birthday,
+    cust_id,
+    product_id
+  from ods_new_s.customer_info
+) as customer_info
+on loan_apply.product_id = customer_info.product_id and loan_apply.cust_id = customer_info.cust_id
 ;
 
 
@@ -4309,15 +4410,6 @@ where msg_type = 'WIND_CONTROL_CREDIT'
   and datefmt(update_time,'ms','yyyy-MM-dd') = '2020-06-02'
 ;
 
-select distinct
-  *
-from ods_new_s.loan_apply
-where 1 = 1
-  -- and cust_id is null
-  -- and biz_date = '2020-06-02'
-  -- and product_id in ('001801','001802')
-  and due_bill_no = 'DD00023036202006220043005dc7f6'
-;
 
 
 select distinct
@@ -4328,10 +4420,12 @@ select distinct
   expire_time,
   product_id
 from ods_new_s.loan_info
-where is_settled = 'no'
-  and to_date(effective_time) <= date_add('2020-06-01',1)
+where 1 = 1
+  and is_settled = 'no'
+  -- and to_date(effective_time) <= date_add('2020-06-01',1)
   -- and due_bill_no in ('1120060216004289090275','1120060215213608230275')
-  and (age is null or cust_id is null)
+  -- and (age is null or cust_id is null)
+  and due_bill_no = 'APP-20200613162750000001'
 limit 10
 ;
 
@@ -4382,9 +4476,13 @@ select distinct
 from ods.ecas_loan
 where 1 = 1
   and d_date is not null
-  and due_bill_no = '1120060216004289090275'
-order by d_date
+  -- and due_bill_no = '1120060216004289090275'
+  and due_bill_no like 'APP%'
+order by loan_active_date,due_bill_no,d_date
 ;
+
+
+
 
 select
   min(deal_date) as deal_date
@@ -4392,3 +4490,99 @@ from ods.nms_interface_resp_log
 where sta_service_method_name = 'setupCustCredit'
   and standard_req_msg is not null
 ;
+
+select distinct original_msg
+from ods.ecas_msg_log
+where msg_type = 'LOAN_APPLY'
+  and original_msg is not null
+limit 10
+;
+
+
+select age_birth('2020-06-24','2000-06-01') as a,age_birth('2000-06-01','2020-06-24') as b;
+
+
+
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(1) as cnt
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+;
+
+
+
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(1) as cnt
+from ods.ecas_loan
+;
+
+
+
+select distinct
+  due_bill_no,
+  datefmt(lst_upd_time,'ms','yyyy-MM-dd') as update_time,
+  d_date
+from ods.ecas_loan
+where d_date != 'bak'
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+  and d_date not between date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),-1) and date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),1)
+limit 20
+;
+
+select distinct
+  product_code                      as product_id,
+  due_bill_no                       as due_bill_no,
+  purpose                           as loan_usage,
+  active_date                       as loan_active_date,
+  cycle_day                         as cycle_day,
+  case loan_type
+  when 'R'    then '消费转分期'
+  when 'C'    then '现金分期'
+  when 'B'    then '账单分期'
+  when 'P'    then 'POS分期'
+  when 'M'    then '大额分期（专项分期）'
+  when 'MCAT' then '随借随还'
+  when 'MCEP' then '等额本金'
+  when 'MCEI' then '等额本息'
+  else loan_type
+  end                               as loan_type_cn,
+  loan_init_term                    as loan_init_term,
+  curr_term                         as loan_term,
+  repay_term                        as loan_term_repaid,
+  remain_term                       as loan_term_remain,
+  case loan_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else loan_status
+  end                               as loan_status_cn,
+  paid_out_date                     as paid_out_date,
+  case
+  when d_date = '2020-02-21' and sync_date    = 'ZhongHang'  then capital_plan_no
+  when d_date = '2020-02-27' and capital_type = '2020-02-28' then capital_type
+  when d_date = '2020-02-28' and capital_type = '2020-02-29' then capital_type
+  when d_date = '2020-02-29' and capital_type = '2020-03-01' then capital_type
+  else sync_date end                as sync_date,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as update_time,
+  d_date
+from ods.ecas_loan
+where 1 = 1
+  and d_date != 'bak'
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+  -- and d_date not between date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),-1) and date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),1)
+  and due_bill_no = 'APP-20200527103659000007'
+order by d_date
+;
+
+
+select distinct
+  product_id,
+  effective_time
+-- from ods_new_s.loan_info
+from ods_new_s.loan_info_tmp
+order by effective_time desc
+limit 10
+;
+
