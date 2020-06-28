@@ -4223,7 +4223,103 @@ limit 10
 ;
 
 
-set hivevar:compute_date=2020-05-27;
+set spark.executor.memoryOverhead=4g;
+set spark.executor.memory=4g;
+set hive.auto.convert.join=false;
+set hive.exec.dynamici.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions.pernode=500;
+set hive.exec.max.dynamic.partitions=1500;
+
+set hivevar:compute_date=2020-06-01;
+
+insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
+-- insert overwrite table ods_new_s.loan_info_bak partition(is_settled,product_id)
+select
+  -- *
+  -- count(1) as total
+  -- max(sync_date) as sync_date
+  user_hash_no,
+  cust_id,
+  age,
+  loan_id,
+  due_bill_no,
+  contract_no,
+  apply_no,
+  loan_usage,
+  register_date,
+  request_time,
+  loan_active_date,
+  cycle_day,
+  loan_expire_date,
+  loan_type,
+  loan_type_cn,
+  loan_init_term,
+  loan_term,
+  loan_term_repaid,
+  loan_term_remain,
+  loan_status,
+  loan_status_cn,
+  loan_out_reason,
+  paid_out_type,
+  paid_out_date,
+  terminal_date,
+  loan_init_principal,
+  loan_init_interest_rate,
+  loan_init_interest,
+  loan_init_term_fee_rate,
+  loan_init_term_fee,
+  loan_init_svc_fee_rate,
+  loan_init_svc_fee,
+  loan_init_penalty_rate,
+  paid_amount,
+  paid_principal,
+  paid_interest,
+  paid_penalty,
+  paid_svc_fee,
+  paid_term_fee,
+  paid_mult,
+  remain_amount,
+  remain_principal,
+  remain_interest,
+  overdue_principal,
+  overdue_interest,
+  overdue_svc_fee,
+  overdue_term_fee,
+  overdue_penalty,
+  overdue_mult_amt,
+  overdue_date,
+  overdue_days,
+  first_overdue_date,
+  dpd_begin_date,
+  dpd_days,
+  dpd_days_count,
+  dpd_days_max,
+  collect_out_date,
+  overdue_term,
+  overdue_terms_count,
+  overdue_terms_max,
+  overdue_principal_accumulate,
+  overdue_principal_max,
+  mob,
+  sync_date,
+  null as d_date,
+  effective_time,
+  expire_time,
+  is_settled,
+  product_id
+-- from ods_new_s.loan_info
+from ods_new_s.loan_info_bak
+where 1 = 1
+  and is_settled = 'no'
+  -- and to_date(effective_time) <= date_add('${compute_date}',1)
+  -- and (sync_date <= date_add('${compute_date}',1) or sync_date is null)
+  -- and sync_date = to_date(effective_time)
+  -- and sync_date = '${compute_date}'
+-- limit 5
+;
+
+
 
 select distinct
   cust_id,
@@ -4235,6 +4331,7 @@ select distinct
   is_settled,
   product_id
 from ods_new_s.loan_info
+-- from ods_new_s.loan_info_bak
 -- from ods_new_s.loan_info_tmp
 where is_settled = 'no'
   and (age is null or cust_id is null)
@@ -4260,19 +4357,38 @@ order by product_id,due_bill_no
 ;
 
 
+
+select distinct
+  to_date(effective_time) as effective_time,
+  product_id
+from ods_new_s.loan_info_bak
+order by effective_time desc
+limit 10
+;
+
+select
+  aa
+from (
+  select null as aa union all
+  select 1 as aa union all
+  select 20 as aa
+) as tmp
+where 1 = 1
+  and (aa < 10 or aa is null)
+;
+
 select distinct
   *
 from ods_new_s.loan_info
 where 1 = 1
   -- and due_bill_no = 'DD000230362020062312200069197d'
   and due_bill_no in (
-    'APP-20200527103659000007',
-    'APP-20200606213939000001',
-    'APP-20200612152419000001',
-    'APP-20200613162750000001',
-    'APP-20200615155459000001',
-    'APP-20200616211125000001',
-    'APP-20200606195954000001'
+    'DD0002303620200307225700e545de',
+    'DD0002303620200308222600ebbea9',
+    'DD00023036202003191421004c1251',
+    'DD0002303620200404090400770962',
+    'DD0002303620200409104700bfb018',
+    'DD0002303620200501162300e1b938'
   )
 order by product_id,due_bill_no,loan_term,loan_term_repaid,effective_time
 ;
@@ -4306,15 +4422,14 @@ where 1 = 1
   -- and product_id in ('001801','001802')
   -- and due_bill_no = 'DD00023036202006220043005dc7f6'
   and due_bill_no in (
-    'DD000230362020062312200069197d',
-    'DD0002303620200623124900b216c6',
-    'DD0002303620200623130800f274a8',
-    'DD000230362020062313400019c012',
-    'DD0002303620200623140000da43c3',
-    'DD0002303620200624005800b6c6a2',
-    'DD000230362020062401000025e8b0',
-    'DD00023036202006240115005f6a93',
-    'DD0002303620200624012900d6d9fe'
+    'DD000230362020062713350090ed89',
+    'DD0002303620200628011300289c07'
+    -- 'DD0002303620200307225700e545de',
+    -- 'DD0002303620200308222600ebbea9',
+    -- 'DD00023036202003191421004c1251',
+    -- 'DD0002303620200404090400770962',
+    -- 'DD0002303620200409104700bfb018',
+    -- 'DD0002303620200501162300e1b938'
   )
 ;
 
@@ -4327,21 +4442,22 @@ select
   cast(get_json_object(original_msg,'$.loanAmount')/100 as decimal(10,4)) as loan_amount,
   is_empty(get_json_object(original_msg,'$.totalInstallment'),0)          as loan_terms,
   get_json_object(original_msg,'$.loanUsage')                             as loan_usage
+  -- original_msg
 from ods.ecas_msg_log
 where msg_type = 'LOAN_APPLY'
   and original_msg is not null
   -- and get_json_object(original_msg,'$.loanOrderId') = 'DD000230362020062312200069197d'
   and get_json_object(original_msg,'$.loanOrderId') in (
-    'DD000230362020062312200069197d',
-    'DD0002303620200623124900b216c6',
-    'DD0002303620200623130800f274a8',
-    'DD000230362020062313400019c012',
-    'DD0002303620200623140000da43c3',
-    'DD0002303620200624005800b6c6a2',
-    'DD000230362020062401000025e8b0',
-    'DD00023036202006240115005f6a93',
-    'DD0002303620200624012900d6d9fe'
+    'DD000230362020062713350090ed89',
+    'DD0002303620200628011300289c07'
+    -- 'DD0002303620200307225700e545de',
+    -- 'DD0002303620200308222600ebbea9',
+    -- 'DD00023036202003191421004c1251',
+    -- 'DD0002303620200404090400770962',
+    -- 'DD0002303620200409104700bfb018',
+    -- 'DD0002303620200501162300e1b938'
   )
+limit 1
 ;
 
 
@@ -4477,7 +4593,17 @@ from ods.ecas_loan
 where 1 = 1
   and d_date is not null
   -- and due_bill_no = '1120060216004289090275'
-  and due_bill_no like 'APP%'
+  -- and due_bill_no like 'APP%'
+  and due_bill_no in (
+    'DD000230362020062713350090ed89',
+    'DD0002303620200628011300289c07'
+    -- 'DD0002303620200307225700e545de',
+    -- 'DD0002303620200308222600ebbea9',
+    -- 'DD00023036202003191421004c1251',
+    -- 'DD0002303620200404090400770962',
+    -- 'DD0002303620200409104700bfb018',
+    -- 'DD0002303620200501162300e1b938'
+  )
 order by loan_active_date,due_bill_no,d_date
 ;
 
@@ -4502,21 +4628,85 @@ limit 10
 select age_birth('2020-06-24','2000-06-01') as a,age_birth('2000-06-01','2020-06-24') as b;
 
 
+select distinct
+  d_date
+from ods.ecas_loan
+order by d_date
+;
+
+
 
 select
   count(distinct due_bill_no) as due_bill_no,
-  count(1) as cnt
+  count(1) as total
+from (
+  select distinct
+    product_code                      as product_id,
+    loan_id                           as loan_id,
+    due_bill_no                       as due_bill_no,
+    contract_no                       as contract_no,
+    apply_no                          as apply_no,
+    purpose                           as loan_usage,
+    register_date                     as register_date,
+    request_time                      as request_time,
+    active_date                       as loan_active_date,
+    cycle_day                         as cycle_day,
+    loan_expire_date                  as loan_expire_date,
+    loan_type                         as loan_type,
+    loan_init_term                    as loan_init_term,
+    curr_term                         as loan_term,
+    repay_term                        as loan_term_repaid,
+    remain_term                       as loan_term_remain,
+    loan_status                       as loan_status,
+    terminal_reason_cd                as loan_out_reason,
+    loan_settle_reason                as paid_out_type,
+    paid_out_date                     as paid_out_date,
+    terminal_date                     as terminal_date,
+    loan_init_prin                    as loan_init_principal,
+    interest_rate                     as loan_init_interest_rate,
+    totle_int                         as loan_init_interest,
+    term_fee_rate                     as loan_init_term_fee_rate,
+    totle_term_fee                    as loan_init_term_fee,
+    svc_fee_rate                      as loan_init_svc_fee_rate,
+    totle_svc_fee                     as loan_init_svc_fee,
+    penalty_rate                      as loan_init_penalty_rate,
+    paid_principal                    as paid_principal,
+    paid_interest                     as paid_interest,
+    paid_penalty                      as paid_penalty,
+    paid_svc_fee                      as paid_svc_fee,
+    paid_term_fee                     as paid_term_fee,
+    paid_mult                         as paid_mult,
+    overdue_prin                      as overdue_principal,
+    overdue_interest                  as overdue_interest,
+    overdue_svc_fee                   as overdue_svc_fee,
+    overdue_term_fee                  as overdue_term_fee,
+    overdue_penalty                   as overdue_penalty,
+    overdue_mult_amt                  as overdue_mult_amt,
+    overdue_date                      as overdue_date,
+    overdue_days                      as overdue_days,
+    max_dpd                           as dpd_days_max,
+    collect_out_date                  as collect_out_date,
+    overdue_term                      as overdue_term,
+    count_overdue_term                as overdue_terms_count,
+    max_overdue_term                  as overdue_terms_max,
+    max_overdue_prin                  as overdue_principal_max
+  from ods.ecas_loan
+  where 1 = 1
+    and d_date != 'bak'
+    and d_date is not null
+    and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+) as ecas_loan
+;
+
+
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(1) as total
 from ods_new_s.loan_info
 -- from ods_new_s.loan_info_tmp
 ;
 
 
-
-select
-  count(distinct due_bill_no) as due_bill_no,
-  count(1) as cnt
-from ods.ecas_loan
-;
 
 
 

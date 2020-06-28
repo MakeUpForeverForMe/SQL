@@ -1116,6 +1116,7 @@ select
 --   其他
 --  */
 
+set mapreduce.job.queuename=root.default;                                          -- 设置 Yarn 对列
 set spark.driver.memory=4g;                                                        -- 设置 Spark Driver 的内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
 set spark.executor.memory=4g;                                                      -- 设置 Spark Executor 的内存
@@ -1514,7 +1515,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*concat*';
+show functions in _impala_builtins like '*date_add*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
