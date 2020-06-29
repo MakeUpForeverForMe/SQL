@@ -4231,7 +4231,7 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=500;
 set hive.exec.max.dynamic.partitions=1500;
 
-set hivevar:compute_date=2020-06-01;
+set hivevar:compute_date=2020-06-27;
 
 insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
 -- insert overwrite table ods_new_s.loan_info_bak partition(is_settled,product_id)
@@ -4351,7 +4351,9 @@ select distinct
 from ods_new_s.loan_info
 -- from ods_new_s.loan_info_tmp
 -- where product_id in ('001701','001702')
-where due_bill_no like 'APP%'
+where 1 = 1
+  -- and due_bill_no like 'APP%'
+  and due_bill_no = 'APP-20200527103659000007'
 order by product_id,due_bill_no
 -- limit 10
 ;
@@ -4383,15 +4385,20 @@ from ods_new_s.loan_info
 where 1 = 1
   -- and due_bill_no = 'DD000230362020062312200069197d'
   and due_bill_no in (
-    'DD0002303620200307225700e545de',
-    'DD0002303620200308222600ebbea9',
-    'DD00023036202003191421004c1251',
-    'DD0002303620200404090400770962',
-    'DD0002303620200409104700bfb018',
-    'DD0002303620200501162300e1b938'
+    '1000000325',
+    '1000000275',
+    '1000000145'
+    -- 'DD0002303620200307225700e545de',
+    -- 'DD0002303620200308222600ebbea9',
+    -- 'DD00023036202003191421004c1251',
+    -- 'DD0002303620200404090400770962',
+    -- 'DD0002303620200409104700bfb018',
+    -- 'DD0002303620200501162300e1b938'
   )
 order by product_id,due_bill_no,loan_term,loan_term_repaid,effective_time
 ;
+
+
 
 select distinct
   cust_id,
@@ -4702,8 +4709,59 @@ from (
 select
   count(distinct due_bill_no) as due_bill_no,
   count(1) as total
-from ods_new_s.loan_info
--- from ods_new_s.loan_info_tmp
+from (
+  select distinct
+    product_id,
+    loan_id,
+    due_bill_no,
+    contract_no,
+    apply_no,
+    loan_usage,
+    register_date,
+    request_time,
+    loan_active_date,
+    cycle_day,
+    loan_expire_date,
+    loan_type,
+    loan_init_term,
+    loan_term,
+    loan_term_repaid,
+    loan_term_remain,
+    loan_status,
+    loan_out_reason,
+    paid_out_type,
+    paid_out_date,
+    terminal_date,
+    loan_init_principal,
+    loan_init_interest_rate,
+    loan_init_interest,
+    loan_init_term_fee_rate,
+    loan_init_term_fee,
+    loan_init_svc_fee_rate,
+    loan_init_svc_fee,
+    loan_init_penalty_rate,
+    paid_principal,
+    paid_interest,
+    paid_penalty,
+    paid_svc_fee,
+    paid_term_fee,
+    paid_mult,
+    overdue_principal,
+    overdue_interest,
+    overdue_svc_fee,
+    overdue_term_fee,
+    overdue_penalty,
+    overdue_mult_amt,
+    overdue_date,
+    overdue_days,
+    dpd_days_max,
+    collect_out_date,
+    overdue_term,
+    overdue_terms_count,
+    overdue_terms_max,
+    overdue_principal_max
+  from ods_new_s.loan_info
+) as loan_info
 ;
 
 
@@ -4776,3 +4834,413 @@ order by effective_time desc
 limit 10
 ;
 
+
+
+set hivevar:compute_date=2020-06-27;
+
+set spark.executor.memoryOverhead=4g;
+set spark.executor.memory=4g;
+set hive.auto.convert.join=false;
+set hive.exec.dynamici.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+set hive.exec.max.dynamic.partitions.pernode=500;
+set hive.exec.max.dynamic.partitions=1500;
+
+insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
+select distinct *
+from ods_new_s.loan_info
+where 1 = 1
+  and is_settled = 'no'
+;
+
+
+
+
+
+
+-- 查找 ods_new_s 借据表少了3条数据
+select
+  count(1) as cnt
+from (
+  select distinct
+    ecas_loan.*
+    -- loan_info.*
+  from (
+    select distinct
+      product_code                                     as product_id,
+      loan_id                                          as loan_id,
+      due_bill_no                                      as due_bill_no,
+      contract_no                                      as contract_no,
+      apply_no                                         as apply_no,
+      purpose                                          as loan_usage,
+      register_date                                    as register_date,
+      datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as request_time,
+      active_date                                      as loan_active_date,
+      cycle_day                                        as cycle_day,
+      loan_expire_date                                 as loan_expire_date,
+      loan_type                                        as loan_type,
+      loan_init_term                                   as loan_init_term,
+      curr_term                                        as loan_term,
+      repay_term                                       as loan_term_repaid,
+      remain_term                                      as loan_term_remain,
+      loan_status                                      as loan_status,
+      terminal_reason_cd                               as loan_out_reason,
+      loan_settle_reason                               as paid_out_type,
+      paid_out_date                                    as paid_out_date,
+      terminal_date                                    as terminal_date,
+      loan_init_prin                                   as loan_init_principal,
+      interest_rate                                    as loan_init_interest_rate,
+      totle_int                                        as loan_init_interest,
+      term_fee_rate                                    as loan_init_term_fee_rate,
+      totle_term_fee                                   as loan_init_term_fee,
+      svc_fee_rate                                     as loan_init_svc_fee_rate,
+      totle_svc_fee                                    as loan_init_svc_fee,
+      penalty_rate                                     as loan_init_penalty_rate,
+      paid_principal                                   as paid_principal,
+      paid_interest                                    as paid_interest,
+      paid_penalty                                     as paid_penalty,
+      paid_svc_fee                                     as paid_svc_fee,
+      paid_term_fee                                    as paid_term_fee,
+      paid_mult                                        as paid_mult,
+      overdue_prin                                     as overdue_principal,
+      overdue_interest                                 as overdue_interest,
+      overdue_svc_fee                                  as overdue_svc_fee,
+      overdue_term_fee                                 as overdue_term_fee,
+      overdue_penalty                                  as overdue_penalty,
+      overdue_mult_amt                                 as overdue_mult_amt,
+      overdue_date                                     as overdue_date,
+      overdue_days                                     as overdue_days,
+      max_dpd                                          as dpd_days_max,
+      collect_out_date                                 as collect_out_date,
+      overdue_term                                     as overdue_term,
+      count_overdue_term                               as overdue_terms_count,
+      max_overdue_term                                 as overdue_terms_max,
+      max_overdue_prin                                 as overdue_principal_max
+    from ods.ecas_loan
+    where 1 = 1
+      and d_date != 'bak'
+      and d_date is not null
+      and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+  ) as ecas_loan
+  left join (
+    select distinct
+      product_id,
+      loan_id,
+      due_bill_no,
+      contract_no,
+      apply_no,
+      loan_usage,
+      register_date,
+      request_time,
+      loan_active_date,
+      cycle_day,
+      loan_expire_date,
+      loan_type,
+      loan_init_term,
+      loan_term,
+      loan_term_repaid,
+      loan_term_remain,
+      loan_status,
+      loan_out_reason,
+      paid_out_type,
+      paid_out_date,
+      terminal_date,
+      loan_init_principal,
+      loan_init_interest_rate,
+      loan_init_interest,
+      loan_init_term_fee_rate,
+      loan_init_term_fee,
+      loan_init_svc_fee_rate,
+      loan_init_svc_fee,
+      loan_init_penalty_rate,
+      paid_principal,
+      paid_interest,
+      paid_penalty,
+      paid_svc_fee,
+      paid_term_fee,
+      paid_mult,
+      overdue_principal,
+      overdue_interest,
+      overdue_svc_fee,
+      overdue_term_fee,
+      overdue_penalty,
+      overdue_mult_amt,
+      overdue_date,
+      overdue_days,
+      dpd_days_max,
+      collect_out_date,
+      overdue_term,
+      overdue_terms_count,
+      overdue_terms_max,
+      overdue_principal_max
+    from ods_new_s.loan_info
+  ) as loan_info
+  on    is_empty(cast(ecas_loan.product_id              as string),       '') = is_empty(cast(loan_info.product_id              as string),       '')
+    and is_empty(cast(ecas_loan.loan_id                 as string),       '') = is_empty(cast(loan_info.loan_id                 as string),       '')
+    and is_empty(cast(ecas_loan.due_bill_no             as string),       '') = is_empty(cast(loan_info.due_bill_no             as string),       '')
+    and is_empty(cast(ecas_loan.contract_no             as string),       '') = is_empty(cast(loan_info.contract_no             as string),       '')
+    and is_empty(cast(ecas_loan.apply_no                as string),       '') = is_empty(cast(loan_info.apply_no                as string),       '')
+    and is_empty(cast(ecas_loan.loan_usage              as string),       '') = is_empty(cast(loan_info.loan_usage              as string),       '')
+    and is_empty(cast(ecas_loan.register_date           as string),       '') = is_empty(cast(loan_info.register_date           as string),       '')
+    and is_empty(cast(ecas_loan.request_time            as timestamp),    '') = is_empty(cast(loan_info.request_time            as timestamp),    '')
+    and is_empty(cast(ecas_loan.loan_active_date        as string),       '') = is_empty(cast(loan_info.loan_active_date        as string),       '')
+    and is_empty(cast(ecas_loan.cycle_day               as decimal(2,0)), '') = is_empty(cast(loan_info.cycle_day               as decimal(2,0)), '')
+    and is_empty(cast(ecas_loan.loan_expire_date        as string),       '') = is_empty(cast(loan_info.loan_expire_date        as string),       '')
+    and is_empty(cast(ecas_loan.loan_type               as string),       '') = is_empty(cast(loan_info.loan_type               as string),       '')
+    and is_empty(cast(ecas_loan.loan_init_term          as decimal(3,0)), '') = is_empty(cast(loan_info.loan_init_term          as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.loan_term               as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term               as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.loan_term_repaid        as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term_repaid        as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.loan_term_remain        as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term_remain        as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.loan_status             as string),       '') = is_empty(cast(loan_info.loan_status             as string),       '')
+    and is_empty(cast(ecas_loan.loan_out_reason         as string),       '') = is_empty(cast(loan_info.loan_out_reason         as string),       '')
+    and is_empty(cast(ecas_loan.paid_out_type           as string),       '') = is_empty(cast(loan_info.paid_out_type           as string),       '')
+    and is_empty(cast(ecas_loan.paid_out_date           as string),       '') = is_empty(cast(loan_info.paid_out_date           as string),       '')
+    and is_empty(cast(ecas_loan.terminal_date           as string),       '') = is_empty(cast(loan_info.terminal_date           as string),       '')
+    and is_empty(cast(ecas_loan.loan_init_principal     as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_principal     as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.loan_init_interest_rate as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_interest_rate as decimal(15,8)),'')
+    and is_empty(cast(ecas_loan.loan_init_interest      as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_interest      as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.loan_init_term_fee_rate as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_term_fee_rate as decimal(15,8)),'')
+    and is_empty(cast(ecas_loan.loan_init_term_fee      as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_term_fee      as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.loan_init_svc_fee_rate  as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_svc_fee_rate  as decimal(15,8)),'')
+    and is_empty(cast(ecas_loan.loan_init_svc_fee       as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_svc_fee       as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.loan_init_penalty_rate  as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_penalty_rate  as decimal(15,8)),'')
+    and is_empty(cast(ecas_loan.paid_principal          as decimal(15,4)),'') = is_empty(cast(loan_info.paid_principal          as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.paid_interest           as decimal(15,4)),'') = is_empty(cast(loan_info.paid_interest           as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.paid_penalty            as decimal(15,4)),'') = is_empty(cast(loan_info.paid_penalty            as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.paid_svc_fee            as decimal(15,4)),'') = is_empty(cast(loan_info.paid_svc_fee            as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.paid_term_fee           as decimal(15,4)),'') = is_empty(cast(loan_info.paid_term_fee           as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.paid_mult               as decimal(15,4)),'') = is_empty(cast(loan_info.paid_mult               as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_principal       as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_principal       as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_interest        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_interest        as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_svc_fee         as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_svc_fee         as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_term_fee        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_term_fee        as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_penalty         as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_penalty         as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_mult_amt        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_mult_amt        as decimal(15,4)),'')
+    and is_empty(cast(ecas_loan.overdue_date            as string),       '') = is_empty(cast(loan_info.overdue_date            as string),       '')
+    and is_empty(cast(ecas_loan.overdue_days            as decimal(5,0)), '') = is_empty(cast(loan_info.overdue_days            as decimal(5,0)), '')
+    and is_empty(cast(ecas_loan.dpd_days_max            as decimal(4,0)), '') = is_empty(cast(loan_info.dpd_days_max            as decimal(4,0)), '')
+    and is_empty(cast(ecas_loan.collect_out_date        as string),       '') = is_empty(cast(loan_info.collect_out_date        as string),       '')
+    and is_empty(cast(ecas_loan.overdue_term            as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_term            as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.overdue_terms_count     as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_terms_count     as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.overdue_terms_max       as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_terms_max       as decimal(3,0)), '')
+    and is_empty(cast(ecas_loan.overdue_principal_max   as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_principal_max   as decimal(15,4)),'')
+  where loan_info.due_bill_no is null
+) as tmp
+limit 10
+;
+
+insert overwrite table ods_new_s.loan_info_bak partition(is_settled,product_id)
+select *
+from ods_new_s.loan_info
+-- where 1 = 1
+--   and due_bill_no in (
+--     '1000000325',
+--     '1000000275',
+--     '1000000145'
+--   )
+-- limit 10
+;
+
+select distinct
+  product_code                      as product_id,
+  loan_id                           as loan_id,
+  due_bill_no                       as due_bill_no,
+  contract_no                       as contract_no,
+  apply_no                          as apply_no,
+  purpose                           as loan_usage,
+  register_date                     as register_date,
+  request_time                      as request_time,
+  active_date                       as loan_active_date,
+  cycle_day                         as cycle_day,
+  loan_expire_date                  as loan_expire_date,
+  loan_type                         as loan_type,
+  case loan_type
+  when 'R'    then '消费转分期'
+  when 'C'    then '现金分期'
+  when 'B'    then '账单分期'
+  when 'P'    then 'POS分期'
+  when 'M'    then '大额分期（专项分期）'
+  when 'MCAT' then '随借随还'
+  when 'MCEP' then '等额本金'
+  when 'MCEI' then '等额本息'
+  else loan_type
+  end                               as loan_type_cn,
+  loan_init_term                    as loan_init_term,
+  curr_term                         as loan_term,
+  repay_term                        as loan_term_repaid,
+  remain_term                       as loan_term_remain,
+  loan_status                       as loan_status,
+  case loan_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else loan_status
+  end                               as loan_status_cn,
+  terminal_reason_cd                as loan_out_reason,
+  loan_settle_reason                as paid_out_type,
+  case loan_settle_reason
+  when 'NORMAL_SETTLE'  then '正常结清'
+  when 'OVERDUE_SETTLE' then '逾期结清'
+  when 'PRE_SETTLE'     then '提前结清'
+  when 'REFUND'         then '退车'
+  when 'REDEMPTION'     then '赎回'
+  else loan_settle_reason
+  end                               as paid_out_type_cn,
+  paid_out_date                     as paid_out_date,
+  terminal_date                     as terminal_date,
+  loan_init_prin                    as loan_init_principal,
+  interest_rate                     as loan_init_interest_rate,
+  totle_int                         as loan_init_interest,
+  term_fee_rate                     as loan_init_term_fee_rate,
+  totle_term_fee                    as loan_init_term_fee,
+  svc_fee_rate                      as loan_init_svc_fee_rate,
+  totle_svc_fee                     as loan_init_svc_fee,
+  penalty_rate                      as loan_init_penalty_rate,
+  paid_principal                    as paid_principal,
+  paid_interest                     as paid_interest,
+  paid_penalty                      as paid_penalty,
+  paid_svc_fee                      as paid_svc_fee,
+  paid_term_fee                     as paid_term_fee,
+  paid_mult                         as paid_mult,
+  overdue_prin                      as overdue_principal,
+  overdue_interest                  as overdue_interest,
+  overdue_svc_fee                   as overdue_svc_fee,
+  overdue_term_fee                  as overdue_term_fee,
+  overdue_penalty                   as overdue_penalty,
+  overdue_mult_amt                  as overdue_mult_amt,
+  overdue_date                      as overdue_date,
+  overdue_days                      as overdue_days,
+  max_dpd                           as dpd_days_max,
+  collect_out_date                  as collect_out_date,
+  overdue_term                      as overdue_term,
+  count_overdue_term                as overdue_terms_count,
+  max_overdue_term                  as overdue_terms_max,
+  max_overdue_prin                  as overdue_principal_max,
+  case
+  when d_date = '2020-02-21' and sync_date = 'ZhongHang' then capital_plan_no
+  when d_date = '2020-02-27' and capital_type = '2020-02-28' then capital_type
+  when d_date = '2020-02-28' and capital_type = '2020-02-29' then capital_type
+  when d_date = '2020-02-29' and capital_type = '2020-03-01' then capital_type
+  else sync_date end                as sync_date,
+  cast(datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as create_time,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp) as update_time,
+  d_date                            as d_date
+from ods.ecas_loan
+where 1 = 1
+  and d_date in ('2020-06-10','2020-06-11','2020-06-12')
+  and loan_id in (
+    '000015783984211admin000018000000',
+    '000015849648221admin000068000041',
+    '000015764976211admin003103000040'
+  )
+order by product_id,due_bill_no,loan_id,d_date,update_time
+;
+
+
+select *
+from ods_new_s.loan_info
+where 1 = 1
+  and due_bill_no in (
+    '1000000325',
+    '1000000275',
+    '1000000145'
+  )
+order by product_id,due_bill_no,loan_id,d_date,effective_time,expire_time
+limit 10
+;
+
+
+
+
+select due_bill_no
+from ods_new_s.loan_info
+where 1 = 1
+  and expire_time = '3000-12-31 00:00:00'
+group by due_bill_no
+having count(due_bill_no) > 1
+limit 10
+;
+
+
+
+
+
+select distinct
+  *
+-- from ods_new_s.loan_info
+-- from ods_new_s.loan_info_tmp
+from ods_new_s.loan_info_bak
+-- where product_id in ('001701','001702')
+where 1 = 1
+  -- and due_bill_no like 'APP%'
+  -- and due_bill_no = 'APP-20200527103659000007'
+  and due_bill_no = '1000000193'
+order by product_id,due_bill_no,loan_term,loan_term_repaid,effective_time
+  -- ,s_d_date
+-- limit 10
+;
+
+select distinct
+  product_code                      as product_id,
+  due_bill_no                       as due_bill_no,
+  purpose                           as loan_usage,
+  active_date                       as loan_active_date,
+  cycle_day                         as cycle_day,
+  case loan_type
+  when 'R'    then '消费转分期'
+  when 'C'    then '现金分期'
+  when 'B'    then '账单分期'
+  when 'P'    then 'POS分期'
+  when 'M'    then '大额分期（专项分期）'
+  when 'MCAT' then '随借随还'
+  when 'MCEP' then '等额本金'
+  when 'MCEI' then '等额本息'
+  else loan_type
+  end                               as loan_type_cn,
+  loan_init_term                    as loan_init_term,
+  curr_term                         as loan_term,
+  repay_term                        as loan_term_repaid,
+  remain_term                       as loan_term_remain,
+  case loan_status
+  when 'N' then '正常'
+  when 'O' then '逾期'
+  when 'F' then '已还清'
+  else loan_status
+  end                               as loan_status_cn,
+  paid_out_date                     as paid_out_date,
+  overdue_days                      as overdue_days,
+  case
+  when d_date = '2020-02-21' and sync_date    = 'ZhongHang'  then capital_plan_no
+  when d_date = '2020-02-27' and capital_type = '2020-02-28' then capital_type
+  when d_date = '2020-02-28' and capital_type = '2020-02-29' then capital_type
+  when d_date = '2020-02-29' and capital_type = '2020-03-01' then capital_type
+  else sync_date end                as sync_date,
+  cast(datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as timestamp)  as update_time,
+  d_date
+from ods.ecas_loan
+where 1 = 1
+  and d_date != 'bak'
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+  -- and d_date not between date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),-1) and date_add(datefmt(lst_upd_time,'ms','yyyy-MM-dd'),1)
+  -- and due_bill_no = 'APP-20200527103659000007'
+  and due_bill_no = '1000000193'
+order by d_date
+;
+
+
+
+
+select distinct
+  product_code as product_id,
+  register_date,
+  active_date
+from ods.ecas_loan
+where 1 = 1
+  and d_date != 'bak'
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
+  -- and due_bill_no = 'APP-20200527103659000007'
+  -- and due_bill_no = '1000000193'
+  and register_date < active_date
+order by product_id,register_date,active_date
+limit 50
+;
