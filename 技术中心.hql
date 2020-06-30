@@ -4326,6 +4326,8 @@ select distinct
   age,
   due_bill_no,
   loan_active_date,
+  s_d_date,
+  e_d_date,
   effective_time,
   expire_time,
   is_settled,
@@ -4335,8 +4337,18 @@ from ods_new_s.loan_info
 -- from ods_new_s.loan_info_tmp
 where is_settled = 'no'
   and (age is null or cust_id is null)
-order by product_id,loan_active_date,due_bill_no
+order by product_id,loan_active_date,due_bill_no,effective_time
 -- limit 10
+;
+
+
+
+
+
+
+select distinct
+  msg_type
+from ods.ecas_msg_log
 ;
 
 
@@ -5145,8 +5157,8 @@ where 1 = 1
     '1000000275',
     '1000000145'
   )
-order by product_id,due_bill_no,loan_id,d_date,effective_time,expire_time
-limit 10
+order by product_id,due_bill_no,loan_id,s_d_date,effective_time,expire_time
+-- limit 10
 ;
 
 
@@ -5244,3 +5256,39 @@ where 1 = 1
 order by product_id,register_date,active_date
 limit 50
 ;
+
+
+
+select
+  msg_log_id,
+  create_time,
+  datefmt(get_json_object(original_msg,'$.timeStamp'),'ms','yyyy-MM-dd HH:mm:ss') as time_stamp,
+  original_msg
+from (
+  select
+    msg_log_id,
+    -- original_msg
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+    -- datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss') as update_time,
+    -- regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\\\{','\\\{'),'\\\}\\\\\"','\\\}'),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'\\\\\\\\\\\\\"','\\\"'),'\\\\\"','\\\"'),'\\\\\\\\','\\\\') as original_msg
+    regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\{','\{'),'\}\\\\\"','\}'),'\"\{','\{'),'\}\"','\}'),'\\\\\\\\\\\\\"','\"'),'\\\\\"','\"'),'\\\\\\\\','\\\\') as original_msg
+  from ods.ecas_msg_log
+  where 1 = 1
+    and original_msg is not null
+    and msg_type = 'GZ_CREDIT_APPLY'
+    and msg_log_id = '000015923841001admin000077000007'
+    -- and msg_type = 'GZ_CREDIT_RESULT'
+    -- and msg_log_id = '000015923841001admin000027000003'
+    -- and msg_type = 'GZ_LOAN_APPLY'
+    -- and msg_log_id = '000015925551001admin000077000010'
+    -- and msg_type = 'GZ_LOAN_RESULT'
+    -- and msg_log_id = '000015925551001admin000027000012'
+) as loan_result
+where 1 = 1
+  -- and get_json_object(original_msg,'$.data.applyNo') = 'APP-20200617165113000001'
+  -- and get_json_object(original_msg,'$.reqContent.jsonReq.content.applyNo') = 'APP-20200617165113000001'
+  -- and get_json_object(original_msg,'$.applyNo') = 'APP-20200617165113000001'
+limit 1
+;
+
+
