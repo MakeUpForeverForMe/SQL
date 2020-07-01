@@ -1493,7 +1493,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*age*';
-DESC FUNCTION EXTENDED avg;
+DESC FUNCTION EXTENDED is_empty;
 ```
 
 
@@ -1515,7 +1515,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*date_add*';
+show functions in _impala_builtins like '*count*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';

@@ -4231,83 +4231,11 @@ set hive.exec.dynamic.partition.mode=nonstrict;
 set hive.exec.max.dynamic.partitions.pernode=500;
 set hive.exec.max.dynamic.partitions=1500;
 
-set hivevar:compute_date=2020-06-27;
+set hivevar:compute_date=2020-03-01;
 
 insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
 -- insert overwrite table ods_new_s.loan_info_bak partition(is_settled,product_id)
-select
-  -- *
-  -- count(1) as total
-  -- max(sync_date) as sync_date
-  user_hash_no,
-  cust_id,
-  age,
-  loan_id,
-  due_bill_no,
-  contract_no,
-  apply_no,
-  loan_usage,
-  register_date,
-  request_time,
-  loan_active_date,
-  cycle_day,
-  loan_expire_date,
-  loan_type,
-  loan_type_cn,
-  loan_init_term,
-  loan_term,
-  loan_term_repaid,
-  loan_term_remain,
-  loan_status,
-  loan_status_cn,
-  loan_out_reason,
-  paid_out_type,
-  paid_out_date,
-  terminal_date,
-  loan_init_principal,
-  loan_init_interest_rate,
-  loan_init_interest,
-  loan_init_term_fee_rate,
-  loan_init_term_fee,
-  loan_init_svc_fee_rate,
-  loan_init_svc_fee,
-  loan_init_penalty_rate,
-  paid_amount,
-  paid_principal,
-  paid_interest,
-  paid_penalty,
-  paid_svc_fee,
-  paid_term_fee,
-  paid_mult,
-  remain_amount,
-  remain_principal,
-  remain_interest,
-  overdue_principal,
-  overdue_interest,
-  overdue_svc_fee,
-  overdue_term_fee,
-  overdue_penalty,
-  overdue_mult_amt,
-  overdue_date,
-  overdue_days,
-  first_overdue_date,
-  dpd_begin_date,
-  dpd_days,
-  dpd_days_count,
-  dpd_days_max,
-  collect_out_date,
-  overdue_term,
-  overdue_terms_count,
-  overdue_terms_max,
-  overdue_principal_accumulate,
-  overdue_principal_max,
-  mob,
-  sync_date,
-  null as d_date,
-  effective_time,
-  expire_time,
-  is_settled,
-  product_id
+select *
 -- from ods_new_s.loan_info
 from ods_new_s.loan_info_bak
 where 1 = 1
@@ -4397,9 +4325,12 @@ from ods_new_s.loan_info
 where 1 = 1
   -- and due_bill_no = 'DD000230362020062312200069197d'
   and due_bill_no in (
-    '1000000325',
-    '1000000275',
-    '1000000145'
+    -- '1000000325',
+    -- '1000000275',
+    -- '1000000145'
+    'DD00023036202006301318009e2aae',
+    'DD0002303620200701003700c3389b',
+    'DD0002303620200701013900f45c09'
     -- 'DD0002303620200307225700e545de',
     -- 'DD0002303620200308222600ebbea9',
     -- 'DD00023036202003191421004c1251',
@@ -4441,8 +4372,9 @@ where 1 = 1
   -- and product_id in ('001801','001802')
   -- and due_bill_no = 'DD00023036202006220043005dc7f6'
   and due_bill_no in (
-    'DD000230362020062713350090ed89',
-    'DD0002303620200628011300289c07'
+    'DD00023036202006301318009e2aae',
+    'DD0002303620200701003700c3389b',
+    'DD0002303620200701013900f45c09'
     -- 'DD0002303620200307225700e545de',
     -- 'DD0002303620200308222600ebbea9',
     -- 'DD00023036202003191421004c1251',
@@ -5288,6 +5220,19 @@ where 1 = 1
   -- and get_json_object(original_msg,'$.data.applyNo') = 'APP-20200617165113000001'
   -- and get_json_object(original_msg,'$.reqContent.jsonReq.content.applyNo') = 'APP-20200617165113000001'
   -- and get_json_object(original_msg,'$.applyNo') = 'APP-20200617165113000001'
+limit 1
+;
+
+
+
+
+select distinct
+  product_code as product_id,
+  register_date,
+  active_date,
+  null
+from ods.ecas_loan
+where d_date = ''
 limit 1
 ;
 
