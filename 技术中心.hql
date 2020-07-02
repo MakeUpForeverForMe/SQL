@@ -5225,15 +5225,183 @@ limit 1
 
 
 
+select
+  count(1) as cnt
+from (
+  select distinct
+    -- ecas_repay_schedule.*
+    repay_schedule.*
+  from (
+    select distinct
+      product_code         as product_id,
+      due_bill_no          as due_bill_no,
+      schedule_id          as schedule_id,
+      out_side_schedule_no as out_side_schedule_no,
+      loan_init_prin       as loan_init_principal,
+      loan_init_term       as loan_init_term,
+      curr_term            as loan_term,
+      start_interest_date  as start_interest_date,
+      pmt_due_date         as should_repay_date,
+      origin_pmt_due_date  as should_repay_date_history,
+      grace_date           as grace_date,
+      due_term_prin        as should_repay_principal,
+      due_term_int         as should_repay_interest,
+      due_penalty          as should_repay_penalty,
+      due_term_fee         as should_repay_term_fee,
+      due_svc_fee          as should_repay_svc_fee,
+      due_mult_amt         as should_repay_mult_amt,
+      reduced_amt          as reduce_amount,
+      reduce_term_prin     as reduce_principal,
+      reduce_term_int      as reduce_interest,
+      reduce_term_fee      as reduce_term_fee,
+      reduce_svc_fee       as reduce_svc_fee,
+      reduce_penalty       as reduce_penalty,
+      reduce_mult_amt      as reduce_mult_amt
+    from ods.ecas_repay_schedule
+    where 1 = 1
+      and d_date is not null
+      and d_date not in ('2025-06-02','2025-06-05','2025-06-06','9999-09-09','9999-99-99')
+  ) as ecas_repay_schedule
+  left join (
+    select distinct
+      product_id,
+      due_bill_no,
+      schedule_id,
+      out_side_schedule_no,
+      loan_init_principal,
+      loan_init_term,
+      loan_term,
+      start_interest_date,
+      should_repay_date,
+      should_repay_date_history,
+      grace_date,
+      should_repay_principal,
+      should_repay_interest,
+      should_repay_penalty,
+      should_repay_term_fee,
+      should_repay_svc_fee,
+      should_repay_mult_amt,
+      reduce_amount,
+      reduce_principal,
+      reduce_interest,
+      reduce_term_fee,
+      reduce_svc_fee,
+      reduce_penalty,
+      reduce_mult_amt
+    from ods_new_s.repay_schedule
+  ) as repay_schedule
+  on  is_empty(cast(ecas_repay_schedule.product_id                as string),       '') = is_empty(cast(repay_schedule.product_id                as string),       '')
+    and is_empty(cast(ecas_repay_schedule.schedule_id               as string),       '') = is_empty(cast(repay_schedule.schedule_id               as string),       '')
+    and is_empty(cast(ecas_repay_schedule.out_side_schedule_no      as string),       '') = is_empty(cast(repay_schedule.out_side_schedule_no      as string),       '')
+    and is_empty(cast(ecas_repay_schedule.due_bill_no               as string),       '') = is_empty(cast(repay_schedule.due_bill_no               as string),       '')
+    and is_empty(cast(ecas_repay_schedule.loan_init_principal       as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.loan_init_principal       as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.loan_init_term            as decimal(3,0)), 0 ) = is_empty(cast(repay_schedule.loan_init_term            as decimal(3,0)), 0 )
+    and is_empty(cast(ecas_repay_schedule.loan_term                 as decimal(3,0)), 0 ) = is_empty(cast(repay_schedule.loan_term                 as decimal(3,0)), 0 )
+    and is_empty(cast(ecas_repay_schedule.start_interest_date       as string),       '') = is_empty(cast(repay_schedule.start_interest_date       as string),       '')
+    and is_empty(cast(ecas_repay_schedule.should_repay_date         as string),       '') = is_empty(cast(repay_schedule.should_repay_date         as string),       '')
+    and is_empty(cast(ecas_repay_schedule.should_repay_date_history as string),       '') = is_empty(cast(repay_schedule.should_repay_date_history as string),       '')
+    and is_empty(cast(ecas_repay_schedule.grace_date                as string),       '') = is_empty(cast(repay_schedule.grace_date                as string),       '')
+    and is_empty(cast(ecas_repay_schedule.should_repay_principal    as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_principal    as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.should_repay_interest     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_interest     as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.should_repay_penalty      as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_penalty      as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.should_repay_term_fee     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_term_fee     as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.should_repay_svc_fee      as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_svc_fee      as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.should_repay_mult_amt     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_mult_amt     as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_amount             as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_amount             as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_principal          as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_principal          as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_interest           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_interest           as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_term_fee           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_term_fee           as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_svc_fee            as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_svc_fee            as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_penalty            as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_penalty            as decimal(15,4)),0 )
+    and is_empty(cast(ecas_repay_schedule.reduce_mult_amt           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_mult_amt           as decimal(15,4)),0 )
+  where repay_schedule.due_bill_no is null
+) as tmp
+limit 10
+;
+
 
 select distinct
-  product_code as product_id,
-  register_date,
-  active_date,
-  null
-from ods.ecas_loan
-where d_date = ''
-limit 1
+  product_code         as product_id,
+  due_bill_no          as due_bill_no,
+  schedule_id          as schedule_id,
+  out_side_schedule_no as out_side_schedule_no,
+  loan_init_prin       as loan_init_principal,
+  loan_init_term       as loan_init_term,
+  curr_term            as loan_term,
+  start_interest_date  as start_interest_date,
+  pmt_due_date         as should_repay_date,
+  origin_pmt_due_date  as should_repay_date_history,
+  grace_date           as grace_date,
+  due_term_prin        as should_repay_principal,
+  due_term_int         as should_repay_interest,
+  due_penalty          as should_repay_penalty,
+  due_term_fee         as should_repay_term_fee,
+  due_svc_fee          as should_repay_svc_fee,
+  due_mult_amt         as should_repay_mult_amt,
+  reduced_amt          as reduce_amount,
+  reduce_term_prin     as reduce_principal,
+  reduce_term_int      as reduce_interest,
+  reduce_term_fee      as reduce_term_fee,
+  reduce_svc_fee       as reduce_svc_fee,
+  reduce_penalty       as reduce_penalty,
+  reduce_mult_amt      as reduce_mult_amt
+from ods.ecas_repay_schedule
+where 1 = 1
+  and d_date is not null
+  and d_date not in ('2025-06-02','2025-06-05','2025-06-06','9999-09-09','9999-99-99')
+  and product_code = '001801'
+  and due_bill_no = '1120061416432440667346'
 ;
+
+
+
+select distinct
+  product_id,
+  due_bill_no,
+  schedule_id,
+  out_side_schedule_no,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  start_interest_date,
+  should_repay_date,
+  should_repay_date_history,
+  grace_date,
+  should_repay_principal,
+  should_repay_interest,
+  should_repay_penalty,
+  should_repay_term_fee,
+  should_repay_svc_fee,
+  should_repay_mult_amt,
+  reduce_amount,
+  reduce_principal,
+  reduce_interest,
+  reduce_term_fee,
+  reduce_svc_fee,
+  reduce_penalty,
+  reduce_mult_amt
+from ods_new_s.repay_schedule
+where 1 = 1
+  and is_settled = 'no'
+  and product_id = '001801'
+  and due_bill_no = '1120061416432440667346'
+;
+
+select
+  *
+  -- cast(date_add(overdue_date_start,cast(overdue_days as int) - 1) as string) as overdue_date,
+  -- effective_time
+from ods_new_s.loan_info
+-- from ods_new_s.loan_info_bak
+where 1 = 1
+  and is_settled = 'no'
+  and product_id = '001602'
+  and due_bill_no = '1000000264'
+order by effective_time
+;
+
+select is_empty('3.75',cast(1 as int)) as a;
+
+
 
 

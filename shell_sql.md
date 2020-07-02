@@ -1477,6 +1477,7 @@ DROP FUNCTION IF EXISTS age_birth;
 DROP FUNCTION IF EXISTS age_idno;
 DROP FUNCTION IF EXISTS sex_idno;
 DROP FUNCTION IF EXISTS is_empty;
+DROP FUNCTION IF EXISTS is_empty2;
 DROP FUNCTION IF EXISTS sha256;
 
 CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
@@ -1487,13 +1488,14 @@ CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'   USIN
 CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'            USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty2           AS 'com.weshare.udf.IsEmptyGenericUDF'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*age*';
-DESC FUNCTION EXTENDED is_empty;
+DESC FUNCTION EXTENDED is_empty2;
 ```
 
 
