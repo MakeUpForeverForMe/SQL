@@ -14,7 +14,7 @@
 | cm6           | web   | http://10.80.1.47:7180/cmf/home                | admin | admin        |           |
 | cm5           | web   | http://10.80.0.20:7180/cmf/home                | admin | admin        |           |
 | hue6          | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |           |
-| hue5          | web   | http://10.80.0.20:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |           |
+| hue5          | web   | http://10.80.0.20:8889/hue/editor/?type=impala | admin | admin        |           |
 | streamsets    | web   | http://10.80.1.172:18630/                      | admin | admin        |           |
 
 ### 1.1.2 测试
@@ -1494,8 +1494,8 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*age*';
-DESC FUNCTION EXTENDED is_empty2;
+SHOW FUNCTIONS LIKE '*map*';
+DESC FUNCTION EXTENDED map;
 ```
 
 
