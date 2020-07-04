@@ -5322,9 +5322,11 @@ limit 10
 ;
 
 
-select is_empty2(map('a',10));
+select is_empty(cast(10 as string),cast(20 as string)) as tmp;
 
-select is_empty(10,0);
+select is_empty(null);
+
+
 
 select
   distinct
@@ -5460,3 +5462,14 @@ select distinct
 from ods_new_s.loan_apply
 order by product_id,loan_terms
 ;
+
+
+select
+  sum(a) as sm
+from (
+  select 1 as a union all
+  select null as a
+) as tmp
+;
+
+
