@@ -5524,5 +5524,19 @@ where 1> 0
   and sta_service_method_name = 'loanApply'
 ;
 
+select
+  -- datefmt(min(nvl(update_time,'1594108088000')),'ms','yyyy-MM-dd HH:mm:ss') as update_time
+  -- min(nvl(update_time,'1594108088000'))
+  is_empty(update_time,'1594108088000')
+from ods.ecas_msg_log
+where msg_type = 'GZ_CREDIT_APPLY'
+;
 
+select
+  msg_type,
+  datefmt(min(update_time),'ms','yyyy-MM-dd HH:mm:ss') as update_time
+from ods.ecas_msg_log
+group by msg_type
+-- limit 1
+;
 

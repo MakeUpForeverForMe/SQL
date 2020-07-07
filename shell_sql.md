@@ -1116,6 +1116,9 @@ select
 --   其他
 --  */
 
+
+set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
+set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
 set mapreduce.job.queuename=root.default;                                          -- 设置 Yarn 对列
 set spark.driver.memory=4g;                                                        -- 设置 Spark Driver 的内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
@@ -1467,7 +1470,7 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+ADD JAR hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
 
 DROP FUNCTION IF EXISTS encrypt_aes;
 DROP FUNCTION IF EXISTS decrypt_aes;
