@@ -1495,7 +1495,7 @@ CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*map*';
+SHOW FUNCTIONS LIKE '*with*';
 DESC FUNCTION EXTENDED is_empty;
 ```
 

@@ -5540,3 +5540,100 @@ group by msg_type
 -- limit 1
 ;
 
+
+explain
+select
+  count(1) as cnt
+from ods_new_s.user_info
+where to_date(update_time) = "${compute_date}"
+;
+
+
+
+explain
+select distinct
+  loan_apply.cust_id,
+  loan_apply.user_hash_no,
+  loan_apply.due_bill_no,
+  age_birth(customer_info.birthday,to_date(loan_apply.issue_time)) as age,
+  loan_apply.product_id
+from (
+  select distinct
+    user_hash_no,
+    issue_time,
+    cust_id,
+    due_bill_no,
+    product_id
+  from ods_new_s.loan_apply
+  where 1 = 1
+    and due_bill_no in (
+      'DD000230362020062312200069197d',
+      'DD0002303620200623124900b216c6',
+      'DD0002303620200623130800f274a8',
+      'DD000230362020062313400019c012',
+      'DD0002303620200623140000da43c3',
+      'DD0002303620200624005800b6c6a2',
+      'DD000230362020062401000025e8b0',
+      'DD00023036202006240115005f6a93',
+      'DD0002303620200624012900d6d9fe'
+    )
+) as loan_apply
+left join (
+  select distinct
+    birthday,
+    cust_id as cust_id,
+    cust_id as cust_id_1,
+    product_id
+  from ods_new_s.customer_info
+) as customer_info
+on loan_apply.product_id = customer_info.product_id and loan_apply.cust_id = customer_info.cust_id
+;
+
+
+
+-- 1000001011,1000000726 apply_status 为空
+select distinct
+  -- biz_date
+  -- ,
+  product_id
+  -- ,due_bill_no
+  ,apply_status
+  -- ,apply_resut_msg
+  -- ,loan_amount_apply
+  -- ,loan_amount
+from ods_new_s.loan_apply
+where 1 > 0
+  -- and apply_status is null
+order by product_id,apply_status
+;
+
+
+
+select case
+  when 1 = 1 then 1
+  when 2 = 2 then 2
+  else 3
+  end as test
+;
+
+
+
+select
+  map_tmp.a,
+  map_tmp.b
+from (
+  select 1 as a,2 as b
+) a
+LATERAL VIEW explode (
+  map(
+    'a', a,
+    'b', b
+  )
+) map_tmp as a,b
+;
+
+
+
+
+
+
