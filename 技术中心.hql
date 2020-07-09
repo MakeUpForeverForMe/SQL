@@ -5636,4 +5636,106 @@ LATERAL VIEW explode (
 
 
 
+select size(map('a','','b',''));
+
+
+
+select
+  count(distinct due_bill_no) as due_bill_no_cnt,
+  count(1) as cnt
+from (
+  select
+    cust_id,
+    user_hash_no,
+    birthday,
+    pre_apply_no,
+    apply_id,
+    due_bill_no,
+    loan_apply_time,
+    loan_amount_apply,
+    loan_terms,
+    loan_usage,
+    loan_usage_cn,
+    repay_type,
+    repay_type_cn,
+    interest_rate,
+    penalty_rate,
+    apply_status,
+    apply_resut_msg,
+    issue_time,
+    loan_amount
+  from ods_new_s.loan_apply
+  where 1 > 0
+    and biz_date = '2020-07-04'
+  -- group by
+  --   cust_id,
+  --   user_hash_no,
+  --   birthday,
+  --   pre_apply_no,
+  --   apply_id,
+  --   due_bill_no,
+  --   loan_apply_time,
+  --   loan_amount_apply,
+  --   loan_terms,
+  --   loan_usage,
+  --   loan_usage_cn,
+  --   repay_type,
+  --   repay_type_cn,
+  --   interest_rate,
+  --   penalty_rate,
+  --   apply_status,
+  --   apply_resut_msg,
+  --   issue_time,
+  --   loan_amount
+  -- having count(due_bill_no) > 1
+) as tmp
+limit 10
+;
+
+
+select
+  biz_date,
+  due_bill_no
+from ods_new_s.loan_apply
+where 1 > 0
+  -- and biz_date = '2020-07-04'
+group by biz_date,due_bill_no
+having count(due_bill_no) > 1
+order by biz_date
+limit 10
+;
+
+
+
+select
+  cust_id,
+  user_hash_no,
+  birthday,
+  pre_apply_no,
+  apply_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  loan_usage,
+  loan_usage_cn,
+  repay_type,
+  repay_type_cn,
+  interest_rate,
+  penalty_rate,
+  apply_status,
+  apply_resut_msg,
+  issue_time,
+  loan_amount,
+  create_time,
+  biz_date,
+  product_id
+from ods_new_s.loan_apply
+where 1 > 0
+  and due_bill_no = '1000000003'
+;
+
+
+
+select count(1) from ods_new_s.loan_apply;
 
