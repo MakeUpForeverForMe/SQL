@@ -4264,7 +4264,8 @@ from ods_new_s.loan_info
 -- from ods_new_s.loan_info_bak
 -- from ods_new_s.loan_info_tmp
 where is_settled = 'no'
-  and (age is null or cust_id is null)
+  -- and (age is null or cust_id is null)
+  and product_id is null
 order by product_id,loan_active_date,due_bill_no,effective_time
 -- limit 10
 ;
@@ -4293,7 +4294,8 @@ from ods_new_s.loan_info
 -- where product_id in ('001701','001702')
 where 1 = 1
   -- and due_bill_no like 'APP%'
-  and due_bill_no = 'APP-20200527103659000007'
+  -- and due_bill_no = 'APP-20200527103659000007'
+  and due_bill_no = '1120061423001155568783'
 order by product_id,due_bill_no
 -- limit 10
 ;
@@ -4370,18 +4372,18 @@ where 1 = 1
   -- and cust_id is null
   -- and biz_date = '2020-06-02'
   -- and product_id in ('001801','001802')
-  -- and due_bill_no = 'DD00023036202006220043005dc7f6'
-  and due_bill_no in (
-    'DD00023036202006301318009e2aae',
-    'DD0002303620200701003700c3389b',
-    'DD0002303620200701013900f45c09'
+  and due_bill_no = '1120061423001155568783'
+  -- and due_bill_no in (
+  --   'DD00023036202006301318009e2aae',
+  --   'DD0002303620200701003700c3389b',
+  --   'DD0002303620200701013900f45c09'
     -- 'DD0002303620200307225700e545de',
     -- 'DD0002303620200308222600ebbea9',
     -- 'DD00023036202003191421004c1251',
     -- 'DD0002303620200404090400770962',
     -- 'DD0002303620200409104700bfb018',
     -- 'DD0002303620200501162300e1b938'
-  )
+  -- )
 ;
 
 
@@ -4429,15 +4431,25 @@ from (
   from ods_new_s.loan_apply
   where 1 = 1
     and due_bill_no in (
-      'DD000230362020062312200069197d',
-      'DD0002303620200623124900b216c6',
-      'DD0002303620200623130800f274a8',
-      'DD000230362020062313400019c012',
-      'DD0002303620200623140000da43c3',
-      'DD0002303620200624005800b6c6a2',
-      'DD000230362020062401000025e8b0',
-      'DD00023036202006240115005f6a93',
-      'DD0002303620200624012900d6d9fe'
+      '1120061109235923622066',
+      '1120061416135655454375',
+      '1120061321015527872702',
+      '1120061321380414085504',
+      '1120061416332264597768',
+      '1120061321051677104424',
+      '1120061321090073942253',
+      '1120061111582997914149',
+      '1120061020464401568885',
+      '1120061321173840667451'
+      -- 'DD000230362020062312200069197d',
+      -- 'DD0002303620200623124900b216c6',
+      -- 'DD0002303620200623130800f274a8',
+      -- 'DD000230362020062313400019c012',
+      -- 'DD0002303620200623140000da43c3',
+      -- 'DD0002303620200624005800b6c6a2',
+      -- 'DD000230362020062401000025e8b0',
+      -- 'DD00023036202006240115005f6a93',
+      -- 'DD0002303620200624012900d6d9fe'
     )
 ) as loan_apply
 left join (
@@ -4455,7 +4467,7 @@ on loan_apply.product_id = customer_info.product_id and loan_apply.cust_id = cus
 select
   create_time,
   update_time,
-  get_json_object(loan_apply.original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') as due_bill_no
+  get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') as due_bill_no
 from (
   select
     datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
@@ -4466,7 +4478,19 @@ from (
   where msg_type = 'WIND_CONTROL_CREDIT'
     and original_msg is not null
 ) as tmp
-where get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') in ('1120060216004289090275','1120060215213608230275')
+where get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') in (
+
+      '1120061109235923622066',
+      '1120061416135655454375',
+      '1120061321015527872702',
+      '1120061321380414085504',
+      '1120061416332264597768',
+      '1120061321051677104424',
+      '1120061321090073942253',
+      '1120061111582997914149',
+      '1120061020464401568885',
+      '1120061321173840667451'
+)
 ;
 
 select
@@ -5728,6 +5752,7 @@ select
   issue_time,
   loan_amount,
   create_time,
+  update_time,
   biz_date,
   product_id
 from ods_new_s.loan_apply
@@ -5738,4 +5763,46 @@ where 1 > 0
 
 
 select count(1) from ods_new_s.loan_apply;
+
+invalidate metadata ods_new_s.repay_detail;
+invalidate metadata ods_new_s.repay_schedule;
+
+
+
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_PARTITION__');
+
+
+
+
+
+
+
+
+select distinct
+  user_hash_no,
+  apply_id,
+  biz_date as loan_apply_date,
+  loan_amount_apply,
+  loan_terms,
+  apply_status,
+  to_date(issue_time) as loan_approval_date,
+  loan_amount,
+  product_id
+from ods_new_s.loan_apply
+where 1 > 0
+  -- and product_id = 'DIDI201908161538'
+  and product_id in ('001601','001602','001603')
+  and loan_amount_apply != 0
+  -- and loan_approval_num_person != 0
+limit 10
+;
+
+
+
+
+
+"    年前，流量创新业务线。保证服务器、集群正常运行，保证数据质量，从而保证 星源与WeFix 的数据质量。通过达芬奇等工具保证数据可以及时的展现到业务人员面前
+    年后，研发中心。建设数据中台4.0。整合现有的数据中台1.0、2.0、3.0，同时是指更易于使用。同时可以更好的服务于各个系统及需求人员。"
+
+
 
