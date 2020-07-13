@@ -5406,40 +5406,47 @@ order by
 
 
 select
-  distinct
+  -- distinct
   -- *
-  -- count(1) as cnt
+  count(1) as cnt
+  -- max(s_d_date) as s_d_date
 
-  product_id,
-  due_bill_no,
-  schedule_id,
-  out_side_schedule_no,
-  loan_init_principal,
-  loan_init_term,
-  loan_term,
-  start_interest_date,
-  should_repay_date,
-  should_repay_date_history,
-  grace_date,
-  should_repay_principal,
-  should_repay_interest,
-  should_repay_penalty,
-  should_repay_term_fee,
-  should_repay_svc_fee,
-  should_repay_mult_amt,
-  reduce_amount,
-  reduce_principal,
-  reduce_interest,
-  reduce_term_fee,
-  reduce_svc_fee,
-  reduce_penalty,
-  reduce_mult_amt
-from ods_new_s.repay_schedule
+  -- product_id,
+  -- due_bill_no,
+  -- schedule_id,
+  -- out_side_schedule_no,
+  -- loan_init_principal,
+  -- loan_init_term,
+  -- loan_term,
+  -- start_interest_date,
+  -- should_repay_date,
+  -- should_repay_date_history,
+  -- grace_date,
+  -- should_repay_principal,
+  -- should_repay_interest,
+  -- should_repay_penalty,
+  -- should_repay_term_fee,
+  -- should_repay_svc_fee,
+  -- should_repay_mult_amt,
+  -- reduce_amount,
+  -- reduce_principal,
+  -- reduce_interest,
+  -- reduce_term_fee,
+  -- reduce_svc_fee,
+  -- reduce_penalty,
+  -- reduce_mult_amt
+from
+-- ods_new_s.loan_info
+ods_new_s.loan_info_tmp
+-- ods_new_s.repay_schedule
+-- ods_new_s.repay_schedule_tmp
+-- ods_new_s.repay_schedule_bak
 where 1 = 1
   and is_settled = 'no'
-  and product_id = 'DIDI201908161538'
-  and due_bill_no = 'DD0002303620191011102400eafd91'
-order by schedule_id
+  -- and product_id = 'DIDI201908161538'
+  -- and due_bill_no = 'DD0002303620191011102400eafd91'
+-- distribute by product_id,loan_active_date,should_repay_date
+-- order by schedule_id
 -- limit 20
 ;
 
@@ -5800,9 +5807,6 @@ limit 10
 
 
 
-
-"    年前，流量创新业务线。保证服务器、集群正常运行，保证数据质量，从而保证 星源与WeFix 的数据质量。通过达芬奇等工具保证数据可以及时的展现到业务人员面前
-    年后，研发中心。建设数据中台4.0。整合现有的数据中台1.0、2.0、3.0，同时是指更易于使用。同时可以更好的服务于各个系统及需求人员。"
 
 
 
