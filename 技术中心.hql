@@ -4826,176 +4826,7 @@ where 1 = 1
 
 
 
--- 查找 ods_new_s 借据表少了3条数据
-select
-  count(1) as cnt
-from (
-  select distinct
-    ecas_loan.*
-    -- loan_info.*
-  from (
-    select distinct
-      product_code                                     as product_id,
-      loan_id                                          as loan_id,
-      due_bill_no                                      as due_bill_no,
-      contract_no                                      as contract_no,
-      apply_no                                         as apply_no,
-      purpose                                          as loan_usage,
-      register_date                                    as register_date,
-      datefmt(request_time,'ms','yyyy-MM-dd HH:mm:ss') as request_time,
-      active_date                                      as loan_active_date,
-      cycle_day                                        as cycle_day,
-      loan_expire_date                                 as loan_expire_date,
-      loan_type                                        as loan_type,
-      loan_init_term                                   as loan_init_term,
-      curr_term                                        as loan_term,
-      repay_term                                       as loan_term_repaid,
-      remain_term                                      as loan_term_remain,
-      loan_status                                      as loan_status,
-      terminal_reason_cd                               as loan_out_reason,
-      loan_settle_reason                               as paid_out_type,
-      paid_out_date                                    as paid_out_date,
-      terminal_date                                    as terminal_date,
-      loan_init_prin                                   as loan_init_principal,
-      interest_rate                                    as loan_init_interest_rate,
-      totle_int                                        as loan_init_interest,
-      term_fee_rate                                    as loan_init_term_fee_rate,
-      totle_term_fee                                   as loan_init_term_fee,
-      svc_fee_rate                                     as loan_init_svc_fee_rate,
-      totle_svc_fee                                    as loan_init_svc_fee,
-      penalty_rate                                     as loan_init_penalty_rate,
-      paid_principal                                   as paid_principal,
-      paid_interest                                    as paid_interest,
-      paid_penalty                                     as paid_penalty,
-      paid_svc_fee                                     as paid_svc_fee,
-      paid_term_fee                                    as paid_term_fee,
-      paid_mult                                        as paid_mult,
-      overdue_prin                                     as overdue_principal,
-      overdue_interest                                 as overdue_interest,
-      overdue_svc_fee                                  as overdue_svc_fee,
-      overdue_term_fee                                 as overdue_term_fee,
-      overdue_penalty                                  as overdue_penalty,
-      overdue_mult_amt                                 as overdue_mult_amt,
-      overdue_date                                     as overdue_date,
-      overdue_days                                     as overdue_days,
-      max_dpd                                          as dpd_days_max,
-      collect_out_date                                 as collect_out_date,
-      overdue_term                                     as overdue_term,
-      count_overdue_term                               as overdue_terms_count,
-      max_overdue_term                                 as overdue_terms_max,
-      max_overdue_prin                                 as overdue_principal_max
-    from ods.ecas_loan
-    where 1 = 1
-      and d_date != 'bak'
-      and d_date is not null
-      and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-12-31','3030-06-05','9999-09-09','9999-99-99')
-  ) as ecas_loan
-  left join (
-    select distinct
-      product_id,
-      loan_id,
-      due_bill_no,
-      contract_no,
-      apply_no,
-      loan_usage,
-      register_date,
-      request_time,
-      loan_active_date,
-      cycle_day,
-      loan_expire_date,
-      loan_type,
-      loan_init_term,
-      loan_term,
-      loan_term_repaid,
-      loan_term_remain,
-      loan_status,
-      loan_out_reason,
-      paid_out_type,
-      paid_out_date,
-      terminal_date,
-      loan_init_principal,
-      loan_init_interest_rate,
-      loan_init_interest,
-      loan_init_term_fee_rate,
-      loan_init_term_fee,
-      loan_init_svc_fee_rate,
-      loan_init_svc_fee,
-      loan_init_penalty_rate,
-      paid_principal,
-      paid_interest,
-      paid_penalty,
-      paid_svc_fee,
-      paid_term_fee,
-      paid_mult,
-      overdue_principal,
-      overdue_interest,
-      overdue_svc_fee,
-      overdue_term_fee,
-      overdue_penalty,
-      overdue_mult_amt,
-      overdue_date,
-      overdue_days,
-      dpd_days_max,
-      collect_out_date,
-      overdue_term,
-      overdue_terms_count,
-      overdue_terms_max,
-      overdue_principal_max
-    from ods_new_s.loan_info
-  ) as loan_info
-  on    is_empty(cast(ecas_loan.product_id              as string),       '') = is_empty(cast(loan_info.product_id              as string),       '')
-    and is_empty(cast(ecas_loan.loan_id                 as string),       '') = is_empty(cast(loan_info.loan_id                 as string),       '')
-    and is_empty(cast(ecas_loan.due_bill_no             as string),       '') = is_empty(cast(loan_info.due_bill_no             as string),       '')
-    and is_empty(cast(ecas_loan.contract_no             as string),       '') = is_empty(cast(loan_info.contract_no             as string),       '')
-    and is_empty(cast(ecas_loan.apply_no                as string),       '') = is_empty(cast(loan_info.apply_no                as string),       '')
-    and is_empty(cast(ecas_loan.loan_usage              as string),       '') = is_empty(cast(loan_info.loan_usage              as string),       '')
-    and is_empty(cast(ecas_loan.register_date           as string),       '') = is_empty(cast(loan_info.register_date           as string),       '')
-    and is_empty(cast(ecas_loan.request_time            as timestamp),    '') = is_empty(cast(loan_info.request_time            as timestamp),    '')
-    and is_empty(cast(ecas_loan.loan_active_date        as string),       '') = is_empty(cast(loan_info.loan_active_date        as string),       '')
-    and is_empty(cast(ecas_loan.cycle_day               as decimal(2,0)), '') = is_empty(cast(loan_info.cycle_day               as decimal(2,0)), '')
-    and is_empty(cast(ecas_loan.loan_expire_date        as string),       '') = is_empty(cast(loan_info.loan_expire_date        as string),       '')
-    and is_empty(cast(ecas_loan.loan_type               as string),       '') = is_empty(cast(loan_info.loan_type               as string),       '')
-    and is_empty(cast(ecas_loan.loan_init_term          as decimal(3,0)), '') = is_empty(cast(loan_info.loan_init_term          as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.loan_term               as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term               as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.loan_term_repaid        as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term_repaid        as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.loan_term_remain        as decimal(3,0)), '') = is_empty(cast(loan_info.loan_term_remain        as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.loan_status             as string),       '') = is_empty(cast(loan_info.loan_status             as string),       '')
-    and is_empty(cast(ecas_loan.loan_out_reason         as string),       '') = is_empty(cast(loan_info.loan_out_reason         as string),       '')
-    and is_empty(cast(ecas_loan.paid_out_type           as string),       '') = is_empty(cast(loan_info.paid_out_type           as string),       '')
-    and is_empty(cast(ecas_loan.paid_out_date           as string),       '') = is_empty(cast(loan_info.paid_out_date           as string),       '')
-    and is_empty(cast(ecas_loan.terminal_date           as string),       '') = is_empty(cast(loan_info.terminal_date           as string),       '')
-    and is_empty(cast(ecas_loan.loan_init_principal     as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_principal     as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.loan_init_interest_rate as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_interest_rate as decimal(15,8)),'')
-    and is_empty(cast(ecas_loan.loan_init_interest      as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_interest      as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.loan_init_term_fee_rate as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_term_fee_rate as decimal(15,8)),'')
-    and is_empty(cast(ecas_loan.loan_init_term_fee      as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_term_fee      as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.loan_init_svc_fee_rate  as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_svc_fee_rate  as decimal(15,8)),'')
-    and is_empty(cast(ecas_loan.loan_init_svc_fee       as decimal(15,4)),'') = is_empty(cast(loan_info.loan_init_svc_fee       as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.loan_init_penalty_rate  as decimal(15,8)),'') = is_empty(cast(loan_info.loan_init_penalty_rate  as decimal(15,8)),'')
-    and is_empty(cast(ecas_loan.paid_principal          as decimal(15,4)),'') = is_empty(cast(loan_info.paid_principal          as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.paid_interest           as decimal(15,4)),'') = is_empty(cast(loan_info.paid_interest           as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.paid_penalty            as decimal(15,4)),'') = is_empty(cast(loan_info.paid_penalty            as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.paid_svc_fee            as decimal(15,4)),'') = is_empty(cast(loan_info.paid_svc_fee            as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.paid_term_fee           as decimal(15,4)),'') = is_empty(cast(loan_info.paid_term_fee           as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.paid_mult               as decimal(15,4)),'') = is_empty(cast(loan_info.paid_mult               as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_principal       as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_principal       as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_interest        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_interest        as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_svc_fee         as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_svc_fee         as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_term_fee        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_term_fee        as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_penalty         as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_penalty         as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_mult_amt        as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_mult_amt        as decimal(15,4)),'')
-    and is_empty(cast(ecas_loan.overdue_date            as string),       '') = is_empty(cast(loan_info.overdue_date            as string),       '')
-    and is_empty(cast(ecas_loan.overdue_days            as decimal(5,0)), '') = is_empty(cast(loan_info.overdue_days            as decimal(5,0)), '')
-    and is_empty(cast(ecas_loan.dpd_days_max            as decimal(4,0)), '') = is_empty(cast(loan_info.dpd_days_max            as decimal(4,0)), '')
-    and is_empty(cast(ecas_loan.collect_out_date        as string),       '') = is_empty(cast(loan_info.collect_out_date        as string),       '')
-    and is_empty(cast(ecas_loan.overdue_term            as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_term            as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.overdue_terms_count     as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_terms_count     as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.overdue_terms_max       as decimal(3,0)), '') = is_empty(cast(loan_info.overdue_terms_max       as decimal(3,0)), '')
-    and is_empty(cast(ecas_loan.overdue_principal_max   as decimal(15,4)),'') = is_empty(cast(loan_info.overdue_principal_max   as decimal(15,4)),'')
-  where loan_info.due_bill_no is null
-) as tmp
-limit 10
-;
+
 
 insert overwrite table ods_new_s.loan_info_bak partition(is_settled,product_id)
 select *
@@ -5248,102 +5079,6 @@ limit 1
 ;
 
 
-explain
-select
-  -- *
-  count(1) as cnt
-from (
-  select distinct
-    ecas_repay_schedule.*
-  from (
-    select distinct
-      product_code         as product_id,
-      due_bill_no          as due_bill_no,
-      schedule_id          as schedule_id,
-      case product_code
-      when 'DIDI201908161538' then null
-      else out_side_schedule_no end as out_side_schedule_no,
-      loan_init_prin       as loan_init_principal,
-      loan_init_term       as loan_init_term,
-      curr_term            as loan_term,
-      start_interest_date  as start_interest_date,
-      pmt_due_date         as should_repay_date,
-      origin_pmt_due_date  as should_repay_date_history,
-      grace_date           as grace_date,
-      due_term_prin        as should_repay_principal,
-      due_term_int         as should_repay_interest,
-      due_penalty          as should_repay_penalty,
-      due_term_fee         as should_repay_term_fee,
-      due_svc_fee          as should_repay_svc_fee,
-      due_mult_amt         as should_repay_mult_amt,
-      reduced_amt          as reduce_amount,
-      reduce_term_prin     as reduce_principal,
-      reduce_term_int      as reduce_interest,
-      reduce_term_fee      as reduce_term_fee,
-      reduce_svc_fee       as reduce_svc_fee,
-      reduce_penalty       as reduce_penalty,
-      reduce_mult_amt      as reduce_mult_amt
-    from ods.ecas_repay_schedule
-    where 1 = 1
-      and d_date is not null
-      and d_date not in ('2025-06-02','2025-06-05','2025-06-06','9999-09-09','9999-99-99')
-  ) as ecas_repay_schedule
-  left join (
-    select distinct
-      product_id,
-      due_bill_no,
-      schedule_id,
-      out_side_schedule_no,
-      loan_init_principal,
-      loan_init_term,
-      loan_term,
-      start_interest_date,
-      should_repay_date,
-      should_repay_date_history,
-      grace_date,
-      should_repay_principal,
-      should_repay_interest,
-      should_repay_penalty,
-      should_repay_term_fee,
-      should_repay_svc_fee,
-      should_repay_mult_amt,
-      reduce_amount,
-      reduce_principal,
-      reduce_interest,
-      reduce_term_fee,
-      reduce_svc_fee,
-      reduce_penalty,
-      reduce_mult_amt
-    from ods_new_s.repay_schedule
-  ) as repay_schedule
-  on  is_empty(cast(ecas_repay_schedule.product_id                as string),       '') = is_empty(cast(repay_schedule.product_id                as string),       '')
-  and is_empty(cast(ecas_repay_schedule.schedule_id               as string),       '') = is_empty(cast(repay_schedule.schedule_id               as string),       '')
-  and is_empty(cast(ecas_repay_schedule.out_side_schedule_no      as string),       '') = is_empty(cast(repay_schedule.out_side_schedule_no      as string),       '')
-  and is_empty(cast(ecas_repay_schedule.due_bill_no               as string),       '') = is_empty(cast(repay_schedule.due_bill_no               as string),       '')
-  and is_empty(cast(ecas_repay_schedule.loan_init_principal       as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.loan_init_principal       as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.loan_init_term            as decimal(3,0)), 0 ) = is_empty(cast(repay_schedule.loan_init_term            as decimal(3,0)), 0 )
-  and is_empty(cast(ecas_repay_schedule.loan_term                 as decimal(3,0)), 0 ) = is_empty(cast(repay_schedule.loan_term                 as decimal(3,0)), 0 )
-  and is_empty(cast(ecas_repay_schedule.start_interest_date       as string),       '') = is_empty(cast(repay_schedule.start_interest_date       as string),       '')
-  and is_empty(cast(ecas_repay_schedule.should_repay_date         as string),       '') = is_empty(cast(repay_schedule.should_repay_date         as string),       '')
-  and is_empty(cast(ecas_repay_schedule.should_repay_date_history as string),       '') = is_empty(cast(repay_schedule.should_repay_date_history as string),       '')
-  and is_empty(cast(ecas_repay_schedule.grace_date                as string),       '') = is_empty(cast(repay_schedule.grace_date                as string),       '')
-  and is_empty(cast(ecas_repay_schedule.should_repay_principal    as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_principal    as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.should_repay_interest     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_interest     as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.should_repay_penalty      as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_penalty      as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.should_repay_term_fee     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_term_fee     as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.should_repay_svc_fee      as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_svc_fee      as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.should_repay_mult_amt     as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.should_repay_mult_amt     as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_amount             as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_amount             as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_principal          as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_principal          as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_interest           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_interest           as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_term_fee           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_term_fee           as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_svc_fee            as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_svc_fee            as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_penalty            as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_penalty            as decimal(15,4)),0 )
-  and is_empty(cast(ecas_repay_schedule.reduce_mult_amt           as decimal(15,4)),0 ) = is_empty(cast(repay_schedule.reduce_mult_amt           as decimal(15,4)),0 )
-  where repay_schedule.due_bill_no is null
-) as tmp
-limit 10
-;
 
 
 select is_empty(cast(10 as string),cast(20 as string)) as tmp;
@@ -5771,9 +5506,6 @@ where 1 > 0
 
 select count(1) from ods_new_s.loan_apply;
 
-invalidate metadata ods_new_s.repay_detail;
-invalidate metadata ods_new_s.repay_schedule;
-
 
 
 ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_PARTITION__');
@@ -5807,6 +5539,21 @@ limit 10
 
 
 
+-- invalidate metadata
+invalidate metadata
+ods_new_s.loan_info
+-- ods_new_s.repay_detail
+-- ods_new_s.repay_schedule
+;
+
+select
+  count(1) as cnt
+from
+ods_new_s.loan_info
+-- ods_new_s.repay_schedule
+-- ods_new_s.repay_schedule_tmp
+-- ods_new_s.repay_schedule_bak
+;
 
 
 
