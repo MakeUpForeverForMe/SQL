@@ -5541,10 +5541,9 @@ limit 10
 
 -- invalidate metadata
 invalidate metadata
-ods_new_s.loan_info
--- ods_new_s.repay_detail
--- ods_new_s.repay_schedule
-;
+invalidate metadata ods_new_s.loan_info;
+invalidate metadata ods_new_s.repay_detail;
+invalidate metadata ods_new_s.repay_schedule;
 
 select
   count(1) as cnt
@@ -5554,6 +5553,18 @@ ods_new_s.loan_info
 -- ods_new_s.repay_schedule_tmp
 -- ods_new_s.repay_schedule_bak
 ;
+
+
+
+set hivevar:asset=_asset;
+set hivevar:asset=;
+
+select
+  *
+from ods.ecas_loan${asset}
+limit 1
+;
+
 
 
 
