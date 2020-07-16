@@ -5568,3 +5568,92 @@ limit 1
 
 
 
+select distinct
+  product_code                        as product_id,
+  due_bill_no                         as due_bill_no,
+  schedule_id                         as schedule_id,
+  case
+  when product_code = 'DIDI201908161538' and d_date = '2020-02-27' then null
+  when product_code = 'DIDI201908161538' and d_date = '2020-02-28' then null
+  when product_code = 'DIDI201908161538' and d_date = '2020-02-29' then null
+  when product_code = 'DIDI201908161538' and d_date = '2020-03-01' then null
+  else out_side_schedule_no end       as out_side_schedule_no,
+  loan_init_prin                      as loan_init_principal,
+  loan_init_term                      as loan_init_term,
+  curr_term                           as loan_term,
+  start_interest_date                 as start_interest_date,
+  pmt_due_date                        as should_repay_date,
+  origin_pmt_due_date                 as should_repay_date_history,
+  grace_date                          as grace_date,
+  due_term_prin                       as should_repay_principal,
+  due_term_int                        as should_repay_interest,
+  due_penalty                         as should_repay_penalty,
+  due_term_fee                        as should_repay_term_fee,
+  due_svc_fee                         as should_repay_svc_fee,
+  due_mult_amt                        as should_repay_mult_amt,
+  reduced_amt                         as reduce_amount,
+  reduce_term_prin                    as reduce_principal,
+  reduce_term_int                     as reduce_interest,
+  reduce_term_fee                     as reduce_term_fee,
+  reduce_svc_fee                      as reduce_svc_fee,
+  reduce_penalty                      as reduce_penalty,
+  reduce_mult_amt                     as reduce_mult_amt,
+  is_empty(create_time,create_user)   as create_time,
+  is_empty(lst_upd_time,lst_upd_user) as update_time,
+  t_d_date
+  -- d_date                              as d_date,
+  -- lag(d_date) over(order by d_date)   as lag_d_date
+from ods.ecas_repay_schedule
+join (
+  select
+    schedule_id as schedule_id_tmp,
+    max(d_date) as t_d_date
+  from ods.ecas_repay_schedule
+  where 1 > 0
+    and d_date < '2020-03-01'
+  group by schedule_id
+) as ecas_repay_schedule_tmp
+on ecas_repay_schedule.schedule_id = ecas_repay_schedule_tmp.schedule_id_tmp
+where 1 > 0
+  -- and d_date is not null
+  -- and d_date not in ('bak','2025-06-02','2025-06-05','2025-06-06','9999-09-09','9999-99-99')
+  and schedule_id = '000015758928301admin003103000031'
+;
+
+
+select
+  -- due_bill_no,
+  schedule_id,
+  -- d_date
+  max(d_date)
+  -- ,lag(d_date) over(partition by schedule_id order by d_date) as lag_d_date
+from ods.ecas_repay_schedule
+where 1 > 0
+  -- and d_date is not null
+  -- and d_date not in ('bak','2025-06-02','2025-06-05','2025-06-06','9999-09-09','9999-99-99')
+  and d_date < '2020-03-02'
+  -- and due_bill_no = '1000000054'
+  -- and schedule_id = '000015758928301admin003103000031'
+group by
+  -- d_date,
+  -- due_bill_no,
+  schedule_id
+order by
+  -- due_bill_no,
+  schedule_id
+  -- d_date desc
+limit 100
+;
+
+
+select
+  schedule_id,
+  max(d_date)
+from ods.ecas_repay_schedule
+where 1 > 0
+  and d_date < '2020-03-02'
+group by schedule_id
+;
+
+insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
+select * from ods_new_s.loan_info_bak;
