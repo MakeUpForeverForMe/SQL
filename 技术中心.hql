@@ -82,7 +82,7 @@ dd_loan_apply as (
     -- and deal_date <= '${VAR:deal_date}'
   ) as b
 )
--- INSERT OVERWRITE TABLE dwb.dwb_dd_log_detail PARTITION(d_date)
+-- INSERT OVERWRITE TABLE dwb.dwb_dd_log_detail partition(d_date)
 select
   ecif.ecif_no        as ecif,
   name                as name,
@@ -130,7 +130,7 @@ select idtype,imageStatus,imageUrl,sftp,linkman_info from dwb.dwb_dd_log_detail 
  * 业务数据库客户信息表
  */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_bussiness_customer_info PARTITION(d_date)
+-- INSERT OVERWRITE TABLE dwb.dwb_bussiness_customer_info partition(d_date)
 select
   org                 as org,
   channel             as channel,
@@ -171,7 +171,7 @@ left join (select ecif_no,id_no from ecif_core.ecif_customer) as ecif_customer o
  * 银行卡信息
  */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_bank_card_info PARTITION(d_date)
+-- INSERT OVERWRITE TABLE dwb.dwb_bank_card_info partition(d_date)
 select
   card_id               as card_id,
   cust_id               as cust_id,
@@ -207,7 +207,7 @@ select distinct bank_no,bank_name,province,city from dwb.dwb_bank_card_info limi
  * 银行卡变更信息表
  */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_bind_card_change PARTITION(d_date)
+-- INSERT OVERWRITE TABLE dwb.dwb_bind_card_change partition(d_date)
 select
   change_id                 as change_id,
   org                       as org,
@@ -260,7 +260,7 @@ select * from ods.ecas_msg_log where deal_date <= '"+partitionDate+"' and msg_ty
  * 老账户核心实还表
 */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_repay_hst PARTITION(p_type)
+-- INSERT OVERWRITE TABLE dwb.dwb_repay_hst partition(p_type)
 select
   ccs_repay_hst.payment_id                                                   as payment_id,
   ccs_loan.loan_id                                                           as loan_id,
@@ -308,7 +308,7 @@ left join (
  * 借据信息表
  */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_loan PARTITION(d_date,p_type)
+-- INSERT OVERWRITE TABLE dwb.dwb_loan partition(d_date,p_type)
 select
   ecif_id,
   loan_id,
@@ -473,7 +473,7 @@ group by ecif_id,
  * 凤金ccs_order
  */
 -- impala 执行
--- INSERT OVERWRITE TABLE dwb.dwb_order PARTITION(d_date,p_type)
+-- INSERT OVERWRITE TABLE dwb.dwb_order partition(d_date,p_type)
 select
   ecif_no             as ecif_id,
   channel_id          as channel_id,
@@ -1577,7 +1577,7 @@ limit 10;
 
 
 
--- INSERT OVERWRITE TABLE ods_new_s.credit_apply PARTITION(biz_date)
+-- INSERT OVERWRITE TABLE ods_new_s.credit_apply partition(biz_date)
 select
   null                                                            as capital_id,           -- '资金方编号'
   null                                                            as channel_id,           -- '渠道方编号'
@@ -2956,7 +2956,7 @@ refresh ods_new_s.loan_info_tmp;
 select * from ods_new_s.loan_info_tmp;
 
 
-ALTER TABLE ods_new_s.loan_info DROP IF EXISTS PARTITION (is_settled = 'is');
+ALTER TABLE ods_new_s.loan_info DROP IF EXISTS partition (is_settled = 'is');
 
 select distinct
   due_bill_no,
@@ -5508,7 +5508,7 @@ select count(1) from ods_new_s.loan_apply;
 
 
 
-ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS partition (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_partition__');
 
 
 
@@ -5655,5 +5655,228 @@ where 1 > 0
 group by schedule_id
 ;
 
-insert overwrite table ods_new_s.loan_info partition(is_settled,product_id)
-select * from ods_new_s.loan_info_bak;
+
+
+select
+  count(1) as cnt
+from ods_new_s.repay_schedule_bak
+
+
+
+select
+  distinct
+  -- product_id
+  apply_status,
+  apply_resut_msg
+  -- ,
+  -- count(nvl(loan_amount,'a')) as loan_amount
+  -- *
+  -- case
+  -- when nvl(loan_amount,0) != 0 then 1
+  -- when apply_status = 1 then 4
+  -- when apply_status = 2 then 5
+  -- else 2 end as apply_status,
+  -- case
+  -- when nvl(loan_amount,0) != 0 then '放款成功'
+  -- when apply_status = 1 then '用信通过'
+  -- when apply_status = 2 then '用信失败'
+  -- else '放款失败' end as apply_resut_msg
+from
+ods_new_s.loan_apply
+-- ods_new_s.loan_apply_tmp
+where 1 > 0
+  and product_id in ('001801','001802')
+  -- and apply_status is null
+  -- and loan_amount = 0
+  -- and loan_amount is null
+;
+
+invalidate metadata ods_new_s.loan_apply;
+invalidate metadata ods_new_s.loan_apply_tmp;
+
+insert overwrite table ods_new_s.loan_apply_tmp partition(biz_date,product_id)
+-- select distinct
+--   apply_status,
+--   apply_resut_msg
+-- from (
+select
+  cust_id,
+  user_hash_no,
+  birthday,
+  pre_apply_no,
+  apply_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  loan_usage,
+  loan_usage_cn,
+  repay_type,
+  repay_type_cn,
+  interest_rate,
+  penalty_rate,
+  case
+  when nvl(loan_amount,0) != 0 then 1
+  when apply_status = 1 then 4
+  when apply_status = 2 then 5
+  else 2 end as apply_status,
+  case
+  when nvl(loan_amount,0) != 0 then '放款成功'
+  when apply_status = 1 then '用信通过'
+  when apply_status = 2 then '用信失败'
+  else '放款失败' end as apply_resut_msg,
+  issue_time,
+  loan_amount,
+  risk_level,
+  risk_score,
+  ori_request,
+  ori_response,
+  create_time,
+  update_time,
+  biz_date,
+  product_id
+from
+ods_new_s.loan_apply
+-- ods_new_s.loan_apply_tmp
+where 1 > 0
+  and product_id in ('001801','001802')
+-- limit 10
+-- ) as tmp
+;
+
+insert overwrite table ods_new_s.loan_apply partition(biz_date,product_id)
+select * from ods_new_s.loan_apply_tmp;
+
+
+select size(map('age',1));
+
+
+
+drop table test_map;
+create table test_map(
+  ts string,
+  gx map<string,int> comment '测试'
+)
+STORED AS PARQUET;
+
+insert into table test_map
+select 'a',map('age',1) union all
+select 'a',map('age',15) union all
+select 'a',map('age',20) union all
+select 'a',map('age',21)
+;
+
+drop table test_map1;
+create table test_map1(
+  ts string,
+  gx string comment '测试'
+)
+STORED AS PARQUET;
+
+insert into table test_map1
+select * from test_map;
+
+invalidate metadata test_map;
+select size(gx) from test_map;
+
+
+
+
+
+select
+  distinct
+
+  -- payment_id,
+  -- due_bill_no,
+  -- acct_nbr,
+  -- acct_type,
+  -- bnp_type,
+  -- repay_amt,
+  -- batch_date,
+  -- create_time,
+  -- create_user,
+  -- lst_upd_time,
+  -- lst_upd_user,
+  -- jpa_version,
+  -- term,
+  -- org,
+  -- order_id,
+  -- txn_seq,
+  -- txn_date,
+  -- overdue_days,
+  -- loan_status
+  biz_date,
+  sum(repay_amount) over(partition by biz_date) as repay_amount
+  -- due_bill_no,
+  -- loan_status_cn,
+  -- overdue_days,
+  -- biz_date,
+  -- product_id
+from
+ods_new_s.repay_detail
+-- ods.ecas_repay_hst
+where 1 > 0
+  -- and due_bill_no in (
+  --   '1120061017361786522786',
+  --   '1120061211013462742786'
+  -- )
+  -- and overdue_days > 0
+  and product_id in ('001801','001802')
+  -- and loan_status in ('F','O','N')
+-- limit 10
+;
+
+
+
+select
+  biz_date,
+  loan_status_cn,
+  sum(repay_amount) as repay_amount
+from
+ods_new_s.repay_detail
+where 1 > 0
+  and product_id in ('001801','001802')
+group by biz_date,loan_status_cn
+order by biz_date,loan_status_cn
+;
+
+
+
+
+select
+  distinct
+  *
+  -- schedule_id,
+  -- max(d_date)
+from
+ods_new_s.repay_schedule
+where 1 > 0
+  -- and d_date < '2020-03-02'
+  and due_bill_no in (
+    '1120061017361786522786',
+    '1120061211013462742786'
+  )
+-- group by schedule_id
+;
+
+
+select
+  distinct
+  *
+from
+ods_new_s.loan_info
+where 1 > 0
+  -- and d_date < '2020-03-02'
+  and due_bill_no in (
+    '1120061017361786522786',
+    '1120061211013462742786'
+  )
+order by due_bill_no,s_d_date
+;
+
+
+
+
+
+
+
