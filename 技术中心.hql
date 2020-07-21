@@ -5878,5 +5878,306 @@ order by due_bill_no,s_d_date
 
 
 
+invalidate metadata ods.ecas_order;
+
+-- select
+--   count(1) as cnt
+-- from (
+select
+  distinct
+  order_id,
+  apply_no,
+  due_bill_no,
+  ori_order_id,
+  term,
+  channel_id,
+  pay_channel,
+  command_type,
+  order_status,
+  datefmt(cast(order_time as string),'ms','yyyy-MM-dd HH:mm:ss') as order_time,
+  repay_serial_no,
+  service_id,
+  assign_repay_ind,
+  repay_way,
+  txn_type,
+  txn_amt,
+  original_txn_amt,
+  success_amt,
+  currency,
+  code,
+  message,
+  response_code,
+  response_message,
+  business_date,
+  send_time,
+  datefmt(cast(opt_datetime as string),'ms','yyyy-MM-dd HH:mm:ss') as opt_datetime,
+  setup_date,
+  loan_usage,
+  purpose,
+  online_flag,
+  online_allow,
+  order_pay_no,
+  bank_trade_no,
+  bank_trade_time,
+  bank_trade_act_no,
+  bank_trade_act_name,
+  service_sn,
+  outer_no,
+  confirm_flag,
+  datefmt(cast(txn_time as string),'ms','yyyy-MM-dd HH:mm:ss') as txn_time,
+  txn_date,
+  bank_trade_act_phone,
+  capital_plan_no,
+  memo,
+  nvl(datefmt(cast(create_time as string),'ms','yyyy-MM-dd HH:mm:ss'),cast(business_date as timestamp)) as create_time,
+  nvl(datefmt(cast(lst_upd_time as string),'ms','yyyy-MM-dd HH:mm:ss'),cast(business_date as timestamp)) as lst_upd_time,
+  d_date
+from ods.ecas_order
+where 1 > 0
+  and d_date is not null
+  and d_date not in ('bak','2025-06-05','2025-06-06','2028-06-14','2030-06-05','2030-06-06','3030-06-05','3030-06-06','9999-09-09','9999-99-99')
+  -- and d_date in ('2020-01-24','2020-02-01','2020-02-03','2020-02-07')
+  -- and to_date(nvl(datefmt(cast(lst_upd_time as string),'ms','yyyy-MM-dd HH:mm:ss'),cast(business_date as timestamp))) = ''
+  -- and ori_order_id is not null
+  and datefmt(cast(txn_time as string),'ms','yyyy-MM-dd') != txn_date
+  -- and apply_no != bank_trade_no
+  -- and setup_date != datefmt(create_time,'ms','yyyy-MM-dd')
+  -- and order_time is null
+  -- and create_time is null
+  -- and txn_date is null
+  -- and confirm_flag is null
+  -- and service_sn is null
+-- txn_time
+limit 10
+-- ) as tmp
+;
+
+
+invalidate metadata ods_new_s.order_info;
+select
+  *
+from ods_new_s.order_info
+where 1 > 0
+  and biz_date in ('2020-01-24','2020-02-01','2020-02-03','2020-02-07')
+limit 10;
+
+
+-- datefmt(order_time,'ms','yyyy-MM-dd HH:mm:ss') as order_time,
+-- datefmt(opt_datetime,'ms','yyyy-MM-dd HH:mm:ss') as opt_datetime,
+-- datefmt(txn_time,'ms','yyyy-MM-dd HH:mm:ss') as txn_time,
+-- datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+-- datefmt(lst_upd_time,'ms','yyyy-MM-dd HH:mm:ss') as lst_upd_time,
+
+
+
+
+
+-- 1150847
+select
+  issue_date,
+  count(due_bill_no) as cnt,
+  sum(loan_amount) as loan_amount
+from (
+  select distinct
+    due_bill_no,
+    to_date(issue_time) as issue_date,
+    loan_amount
+  from ods_new_s.loan_apply
+  where 1  > 0
+    and apply_status = 1
+    -- and product_id = 'DIDI201908161538'
+    and product_id = '001801'
+) as tmp
+group by issue_date
+order by issue_date
+;
+
+-- 1152153
+select
+  product_id,
+  loan_active_date         as loan_active_date,
+  count(due_bill_no)       as loan_num,
+  sum(loan_init_principal) as loan_amount
+from (
+  select distinct
+    product_id,
+    loan_active_date,
+    due_bill_no,
+    loan_init_principal
+  from ods_new_s.loan_info
+  where 1 > 0
+    -- and product_id = 'DIDI201908161538'
+    and product_id = '001801'
+    -- and product_id = '001802'
+    -- and product_id in ('001801','001802')
+) as loan_active_num
+group by loan_active_date,product_id
+order by loan_active_date,product_id
+;
+
+
+
+
+-- 1399027
+
+-- DIDI201908161538  46084
+-- 001601            173
+-- 001602            232
+-- 001603            566
+-- 001702            9
+-- 001801            1228909
+-- 001802            123054
+
+-- DIDI201908161538  9928
+-- 001601            139
+-- 001602            195
+-- 001603            480
+-- 001702            7
+-- 001801            1150847
+-- 001802            110030
+select
+  product_id,
+  count(distinct due_bill_no) as cnt
+from ods_new_s.loan_apply
+where 1  > 0
+  and apply_status = 1
+group by product_id
+order by product_id
+;
+
+
+-- 1273114
+
+-- DIDI201908161538  9933
+-- 001601            139
+-- 001602            195
+-- 001603            491
+-- 001702            11
+-- 001801            1152153
+-- 001802            110192
+select
+  product_id,
+  count(distinct due_bill_no) as cnt
+from ods_new_s.loan_info
+group by product_id
+;
+
+
+
+select least('2020-07-14','2020-07-01 10:10:10') as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
+select min(array("2020-07-14 21:35:01",null));
+select
+  a
+  -- min(a)
+from (
+  select array("2020-07-14 21:35:01",null) as a
+  -- select 'zzz' as a union all
+  -- select 'aaa' as a
+) as tmp
+;
+
+if(get_json_object(loan_apply.original_msg,'$.reqContent.reqMsgCreateDate') > loan_apply.create_time,loan_apply.create_time,loan_apply.create_time)
+set hivevar:compute_date=2020-07-06;
+-- set hivevar:compute_date=2020-06-10;
+  select distinct
+    datefmt(create_time,'ms','yyyy-MM-dd') as create_date,
+    get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanDate')
+    least(
+      nvl(datefmt(create_time,'ms','yyyy-MM-dd'),'9999-99-99'),
+      nvl(get_json_object(
+        regexp_replace(
+          regexp_replace(
+            regexp_replace(
+              regexp_replace(
+                regexp_replace(
+                  regexp_replace(
+                    regexp_replace(
+                      original_msg,'\\\\\"\\\{','\\\{'
+                    ),'\\\}\\\\\"','\\\}'
+                  ),'\\\"\\\{','\\\{'
+                ),'\\\}\\\"','\\\}'
+              ),'\\\\\\\\\\\\\"','\\\"'
+            ),'\\\\\"','\\\"'
+          ),'\\\\\\\\','\\\\'
+        ),'$.reqContent.jsonReq.content.reqData.loanDate'
+      ),'9999-99-99'
+    )) as biz_date
+    -- regexp_replace(
+    --   regexp_replace(
+    --     regexp_replace(
+    --       regexp_replace(
+    --         regexp_replace(
+    --           regexp_replace(
+    --             regexp_replace(
+    --               original_msg,'\\\\\"\{','\{'
+    --             ),'\}\\\\\"','\}'
+    --           ),'\"\{','\{'
+    --         ),'\}\"','\}'
+    --       ),'\\\\\\\\\\\\\"','\"'
+    --     ),'\\\\\"','\"'
+    --   ),'\\\\\\\\','\\\\'
+    -- ) as original_msg
+  from ods.ecas_msg_log
+  where 1 > 0
+    and msg_type = 'WIND_CONTROL_CREDIT'
+    and original_msg is not null
+    -- and datefmt(update_time,'ms','yyyy-MM-dd') = '${compute_date}'
+order by create_date,biz_date
+;
+
+
+
+
+
+
+select distinct
+  create_date,
+  to_date(get_json_object(original_msg,'$.reqContent.reqMsgCreateDate')) as reqMsgCreateDate,
+  -- get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.endDate') as endDate,
+  get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanDate') as loanDate,
+  to_date(get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanTime')) as loanTime,
+  to_date(datefmt(get_json_object(original_msg,'$.reqContent.jsonReq.timeStamp'),'ms','yyyy-MM-dd HH:mm:ss')) as time_stamp
+from (
+  select
+    datefmt(create_time,'ms','yyyy-MM-dd') as create_date,
+    regexp_replace(
+      regexp_replace(
+        regexp_replace(
+          regexp_replace(
+            regexp_replace(
+              regexp_replace(
+                regexp_replace(
+                  original_msg,'\\\\\"\\\{','\\\{'
+                ),'\\\}\\\\\"','\\\}'
+              ),'\\\"\\\{','\\\{'
+            ),'\\\}\\\"','\\\}'
+          ),'\\\\\\\\\\\\\"','\\\"'
+        ),'\\\\\"','\\\"'
+      ),'\\\\\\\\','\\\\'
+    ) as original_msg
+    -- regexp_replace(
+    --   regexp_replace(
+    --     regexp_replace(
+    --       regexp_replace(
+    --         regexp_replace(
+    --           regexp_replace(
+    --             regexp_replace(
+    --               original_msg,'\\\\\"\{','\{'
+    --             ),'\}\\\\\"','\}'
+    --           ),'\"\{','\{'
+    --         ),'\}\"','\}'
+    --       ),'\\\\\\\\\\\\\"','\"'
+    --     ),'\\\\\"','\"'
+    --   ),'\\\\\\\\','\\\\'
+    -- ) as original_msg
+  from ods.ecas_msg_log
+  where 1 > 0
+    and msg_type = 'WIND_CONTROL_CREDIT'
+    and original_msg is not null
+) as tmp
+order by create_date,reqMsgCreateDate
+;
+
+
 
 
