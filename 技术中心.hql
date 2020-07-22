@@ -6064,7 +6064,7 @@ group by product_id
 
 
 
-select least('2020-07-14','2020-07-01 10:10:10') as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
+select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
 select min(array("2020-07-14 21:35:01",null));
 select
   a
@@ -6078,106 +6078,50 @@ from (
 
 if(get_json_object(loan_apply.original_msg,'$.reqContent.reqMsgCreateDate') > loan_apply.create_time,loan_apply.create_time,loan_apply.create_time)
 set hivevar:compute_date=2020-07-06;
--- set hivevar:compute_date=2020-06-10;
+-- set hivevar:compute_date=2020-06-17;
   select distinct
-    datefmt(create_time,'ms','yyyy-MM-dd') as create_date,
-    get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanDate')
-    least(
-      nvl(datefmt(create_time,'ms','yyyy-MM-dd'),'9999-99-99'),
-      nvl(get_json_object(
-        regexp_replace(
-          regexp_replace(
-            regexp_replace(
-              regexp_replace(
-                regexp_replace(
-                  regexp_replace(
-                    regexp_replace(
-                      original_msg,'\\\\\"\\\{','\\\{'
-                    ),'\\\}\\\\\"','\\\}'
-                  ),'\\\"\\\{','\\\{'
-                ),'\\\}\\\"','\\\}'
-              ),'\\\\\\\\\\\\\"','\\\"'
-            ),'\\\\\"','\\\"'
-          ),'\\\\\\\\','\\\\'
-        ),'$.reqContent.jsonReq.content.reqData.loanDate'
-      ),'9999-99-99'
-    )) as biz_date
-    -- regexp_replace(
-    --   regexp_replace(
-    --     regexp_replace(
-    --       regexp_replace(
-    --         regexp_replace(
-    --           regexp_replace(
-    --             regexp_replace(
-    --               original_msg,'\\\\\"\{','\{'
-    --             ),'\}\\\\\"','\}'
-    --           ),'\"\{','\{'
-    --         ),'\}\"','\}'
-    --       ),'\\\\\\\\\\\\\"','\"'
-    --     ),'\\\\\"','\"'
-    --   ),'\\\\\\\\','\\\\'
-    -- ) as original_msg
-  from ods.ecas_msg_log
-  where 1 > 0
-    and msg_type = 'WIND_CONTROL_CREDIT'
-    and original_msg is not null
-    -- and datefmt(update_time,'ms','yyyy-MM-dd') = '${compute_date}'
-order by create_date,biz_date
-;
-
-
-
-
-
-
-select distinct
-  create_date,
-  to_date(get_json_object(original_msg,'$.reqContent.reqMsgCreateDate')) as reqMsgCreateDate,
-  -- get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.endDate') as endDate,
-  get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanDate') as loanDate,
-  to_date(get_json_object(original_msg,'$.reqContent.jsonReq.content.reqData.loanTime')) as loanTime,
-  to_date(datefmt(get_json_object(original_msg,'$.reqContent.jsonReq.timeStamp'),'ms','yyyy-MM-dd HH:mm:ss')) as time_stamp
-from (
-  select
-    datefmt(create_time,'ms','yyyy-MM-dd') as create_date,
-    regexp_replace(
+    least(create_date,datefmt(get_json_object(original_msg,'$.timeStamp'),'ms','yyyy-MM-dd')) as biz_date,
+  from (
+    select
+      datefmt(create_time,'ms','yyyy-MM-dd') as create_date,
+      -- regexp_replace(
+      --   regexp_replace(
+      --     regexp_replace(
+      --       original_msg,'\\\"\\\{','\\\{'
+      --     ),'\\\}\\\"','\\\}'
+      --   ),'\\\\\"','\\\"'
+      -- ) as original_msg
       regexp_replace(
         regexp_replace(
           regexp_replace(
-            regexp_replace(
-              regexp_replace(
-                regexp_replace(
-                  original_msg,'\\\\\"\\\{','\\\{'
-                ),'\\\}\\\\\"','\\\}'
-              ),'\\\"\\\{','\\\{'
-            ),'\\\}\\\"','\\\}'
-          ),'\\\\\\\\\\\\\"','\\\"'
-        ),'\\\\\"','\\\"'
-      ),'\\\\\\\\','\\\\'
-    ) as original_msg
-    -- regexp_replace(
-    --   regexp_replace(
-    --     regexp_replace(
-    --       regexp_replace(
-    --         regexp_replace(
-    --           regexp_replace(
-    --             regexp_replace(
-    --               original_msg,'\\\\\"\{','\{'
-    --             ),'\}\\\\\"','\}'
-    --           ),'\"\{','\{'
-    --         ),'\}\"','\}'
-    --       ),'\\\\\\\\\\\\\"','\"'
-    --     ),'\\\\\"','\"'
-    --   ),'\\\\\\\\','\\\\'
-    -- ) as original_msg
-  from ods.ecas_msg_log
-  where 1 > 0
-    and msg_type = 'WIND_CONTROL_CREDIT'
-    and original_msg is not null
-) as tmp
-order by create_date,reqMsgCreateDate
+            original_msg,'\"\{','\{'
+          ),'\}\"','\}'
+        ),'\\\\\"','\"'
+      ) as original_msg
+    from ods.ecas_msg_log
+    where 1 > 0
+      and msg_type = 'GZ_LOAN_APPLY'
+      and original_msg is not null
+  ) as tmp
+order by create_date
 ;
 
+
+
+
+invalidate metadata ods_new_s.loan_apply;
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(1) as cnt
+from ods_new_s.loan_apply
+;
+
+invalidate metadata ods_new_s.order_info;
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(1) as cnt
+from ods_new_s.order_info
+;
 
 
 
