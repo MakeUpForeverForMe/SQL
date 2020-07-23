@@ -6124,4 +6124,76 @@ from ods_new_s.order_info
 ;
 
 
+drop table test_map;
+create table test_map(
+  id string,
+  msg string
+);
+
+insert overwrite table test_map
+select 'a',concat('{',concat_ws(',',array('"age":1','"age":60')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":15')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":20')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":18')),'}')
+;
+
+
+invalidate metadata test_map;
+select id,msg from test_map;
+
+
+select
+  case loan_active_num.product_id
+  when '001601'           then '0016'
+  when '001602'           then '0016'
+  when '001603'           then '0016'
+  when '001702'           then '0017'
+  when '001801'           then '0018'
+  when '001802'           then '0018'
+  when 'DIDI201908161538' then 'DIDI'
+  else loan_active_num.product_id end      as product_id,
+  case loan_active_num.product_id
+  when '001601'           then '汇通'
+  when '001602'           then '汇通'
+  when '001603'           then '汇通'
+  when '001702'           then '瓜子'
+  when '001801'           then '乐信'
+  when '001802'           then '乐信'
+  when 'DIDI201908161538' then '滴滴'
+  else loan_active_num.product_id end      as product_name,
+  count(loan_active_num.due_bill_no)       as loan_num,
+  sum(loan_active_num.loan_init_principal) as loan_amount,
+  avg(loan_active_num.loan_init_principal) as avg_loan_amount
+from (
+  select distinct
+    product_id,
+    loan_init_term,
+    loan_init_principal,
+    due_bill_no
+  from ods_new_s.loan_info
+  where 1 > 0
+    -- and
+) as loan_active_num
+group by
+  case loan_active_num.product_id
+  when '001601'           then '0016'
+  when '001602'           then '0016'
+  when '001603'           then '0016'
+  when '001702'           then '0017'
+  when '001801'           then '0018'
+  when '001802'           then '0018'
+  when 'DIDI201908161538' then 'DIDI'
+  else loan_active_num.product_id end,
+  case loan_active_num.product_id
+  when '001601'           then '汇通'
+  when '001602'           then '汇通'
+  when '001603'           then '汇通'
+  when '001702'           then '瓜子'
+  when '001801'           then '乐信'
+  when '001802'           then '乐信'
+  when 'DIDI201908161538' then '滴滴'
+  else loan_active_num.product_id end
+order by product_id
+;
+
 
