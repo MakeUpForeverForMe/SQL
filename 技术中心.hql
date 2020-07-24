@@ -3734,7 +3734,7 @@ where due_bill_no = 'DD00023036201911281430009499a9'
 
 
 
-SELECT * FROM ods.ecas_loan
+select * FROM ods.ecas_loan
 WHERE d_date = to_date(date_sub(current_timestamp(),7))
 LIMIT 10;
 
@@ -6195,5 +6195,59 @@ group by
   else loan_active_num.product_id end
 order by product_id
 ;
+
+
+
+invalidate metadata ods_new_s.credit_apply;
+select distinct
+  product_id,
+  resp_code,
+  resp_msg
+from ods_new_s.credit_apply
+order by product_id,resp_code
+;
+
+
+invalidate metadata ods_new_s.loan_apply;
+select distinct
+  product_id,
+  apply_status,
+  apply_resut_msg
+from ods_new_s.loan_apply
+order by product_id,apply_status
+;
+
+
+
+
+select
+  distinct
+  -- create_time,
+  -- update_time
+  ret_msg,
+  to_date(create_time) as create_time,
+  datefmt(update_time,'ms','yyyy-MM-dd') as update_time
+from ods.t_personas
+where 1 > 0
+  and to_date(create_time) != datefmt(update_time,'ms','yyyy-MM-dd')
+-- limit 1
+;
+
+
+
+select
+  *
+  -- due_bill_no,
+  -- overdue_days
+from ods_new_s.loan_info
+where 1 > 0
+  -- and overdue_days > 100
+  and due_bill_no = '1000000279'
+  and (s_d_date <= '2020-06-01' or '2020-06-30' < e_d_date)
+order by s_d_date
+-- limit 1
+;
+
+
 
 
