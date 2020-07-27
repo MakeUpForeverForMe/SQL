@@ -6124,22 +6124,6 @@ from ods_new_s.order_info
 ;
 
 
-drop table test_map;
-create table test_map(
-  id string,
-  msg string
-);
-
-insert overwrite table test_map
-select 'a',concat('{',concat_ws(',',array('"age":1','"age":60')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":15')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":20')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":18')),'}')
-;
-
-
-invalidate metadata test_map;
-select id,msg from test_map;
 
 
 select
@@ -6248,6 +6232,47 @@ order by s_d_date
 -- limit 1
 ;
 
+
+
+
+select distinct
+  current_risk_control_status
+from dm.dm_watch_bill_snapshot
+;
+
+
+
+
+
+
+
+
+
+drop table test_map;
+create table test_map(
+  id string,
+  msg string
+);
+
+insert overwrite table test_map
+select 'a',concat('{',concat_ws(',',array('"age":1','"age":60')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":15')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":20')),'}') union all
+select 'a',concat('{',concat_ws(',',array('"age":18')),'}') union all
+select 'a',concat('[',concat_ws(',',array('"a"',1)),']')
+;
+
+
+invalidate metadata test_map;
+select id,msg from test_map;
+
+
+select concat(map('aa',1)) test_map;
+select concat(array('aa',1)) test_map;
+
+
+
+select date_sub('2020-07-27',2);
 
 
 
