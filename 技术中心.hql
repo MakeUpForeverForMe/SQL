@@ -6272,7 +6272,108 @@ select concat(array('aa',1)) test_map;
 
 
 
-select date_sub('2020-07-27',2);
+select date_sub('2020-07-27',3);
+
+
+select null + 1;
+
+
+invalidate metadata ods_new_s.loan_apply;
+select distinct
+  to_date(loan_apply_time) as loan_apply_date,
+  product_id,
+  apply_status,
+  to_date(issue_time) as issue_date
+from ods_new_s.loan_apply
+order by loan_apply_date,product_id,issue_date
+;
 
 
 
+
+select
+  min(should_repay_date) as should_repay_date,
+  product_id
+from ods_new_s.repay_schedule
+group by product_id
+order by should_repay_date,product_id
+;
+
+select
+  min(loan_active_date) as loan_active_date,
+  product_id
+from ods_new_s.loan_info
+group by product_id
+order by loan_active_date,product_id
+;
+
+
+
+select
+  *
+  -- due_bill_no,
+  -- s_d_date,
+  -- overdue_date_start,
+  -- overdue_days,
+  -- overdue_date,
+  -- product_id
+from ods_new_s.loan_info
+where 1 > 0
+  -- and product_id in ('001801','001802')
+  -- and overdue_days > 0
+  -- and due_bill_no = 'DD0002303620191023124800eb526b'
+  and due_bill_no = '1000000204'
+order by s_d_date,overdue_days
+-- limit 20
+;
+
+
+select
+  product_id,
+  sort_array(collect_set(overdue_days)) as overdue_days
+from ods_new_s.loan_info
+where 1 > 0
+  -- and product_id in ('001801','001802')
+  -- and overdue_days > 0
+  and due_bill_no = 'DD0002303620191023124800eb526b'
+  -- and due_bill_no = '1000000204'
+group by product_id
+-- limit 20
+;
+
+
+
+set hive.execution.engine=spark;
+select
+  concat('[',concat_ws(',',arr),']')
+from (
+  select array('a','b') as arr union all
+  select array('1','2') as arr
+) as tmp
+;
+
+
+
+invalidate metadata dw_new.dw_loan_base_stat_loan_num_day;
+select
+  *
+  -- count(1)
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  -- and biz_date <= '2019-11-13'
+  -- and biz_date = '2019-12-06'
+order by biz_date,product_id,loan_terms,loan_num
+;
+
+
+select
+  *
+from ods_new_s.repay_detail
+where 1 > 0
+  -- and product_id is null
+  and order_id = '000015958437001admin000077000009'
+  -- and payment_id = '000015958437001admin000077000010'
+;
+
+set hive.execution.engine=spark;
+set hive.execution.engine=mr;

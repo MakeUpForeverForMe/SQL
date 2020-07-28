@@ -1499,8 +1499,8 @@ CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*array*';
-DESC FUNCTION EXTENDED avg;
+SHOW FUNCTIONS LIKE '*concat_ws*';
+DESC FUNCTION EXTENDED concat_ws;
 ```
 
 
