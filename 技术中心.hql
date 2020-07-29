@@ -5508,7 +5508,7 @@ select count(1) from ods_new_s.loan_apply;
 
 
 
-ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS partition (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_partition__');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS partition (biz_date = '2020-07-08',product_id = '__HIVE_DEFAULT_PARTITION__');
 
 
 
@@ -6361,19 +6361,62 @@ select
 from dw_new.dw_loan_base_stat_loan_num_day
 where 1 > 0
   -- and biz_date <= '2019-11-13'
-  -- and biz_date = '2019-12-06'
+  and biz_date = '2020-06-16'
 order by biz_date,product_id,loan_terms,loan_num
 ;
 
 
+
+invalidate metadata ods_new_s.repay_detail;
 select
-  *
+  distinct
+  -- *
+  biz_date,
+  product_id
 from ods_new_s.repay_detail
 where 1 > 0
-  -- and product_id is null
-  and order_id = '000015958437001admin000077000009'
+  and product_id is null
+  -- and order_id = '000015958437001admin000077000009'
   -- and payment_id = '000015958437001admin000077000010'
 ;
 
 set hive.execution.engine=spark;
 set hive.execution.engine=mr;
+
+
+select month('2020-07-28') - month('2020-06-28');
+
+set hivevar:ST9=2020-07-01;
+
+
+
+select
+  *
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and overdue_days > 0
+limit 10
+;
+
+
+select
+  *
+from ods.ecas_loan
+where 1 > 0
+  and product_code in ('001801','001802')
+  and overdue_days > 0
+limit 10
+;
+
+
+
+
+select
+  *
+from dw_new.dw_loan_apply_stat_day
+where 1 > 0
+  and biz_date = '2020-06-02'
+  and product_id in ('001801','001802')
+;
+
