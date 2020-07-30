@@ -6380,6 +6380,16 @@ where 1 > 0
   -- and payment_id = '000015958437001admin000077000010'
 ;
 
+
+select
+  *
+from ods.ecas_loan
+where 1 > 0
+  and product_code in ('001801','001802')
+  and overdue_days > 0
+limit 10
+;
+
 set hive.execution.engine=spark;
 set hive.execution.engine=mr;
 
@@ -6402,13 +6412,46 @@ limit 10
 
 select
   *
-from ods.ecas_loan
+from dw_new.dw_loan_base_stat_should_repay_day
 where 1 > 0
-  and product_code in ('001801','001802')
-  and overdue_days > 0
+  and biz_date in ('2020-06-02','2020-06-03','2020-06-04')
+  and product_id in ('001801','001802')
 limit 10
 ;
 
+select
+  -- *
+  min(should_repay_date) as should_repay_date
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802')
+  -- and should_repay_date in ('2020-06-02','2020-06-03','2020-06-04')
+limit 10
+;
+
+
+select
+  -- *
+  loan_init_term,
+  count(distinct due_bill_no) as loan_num,
+  sum(loan_init_principal) as loan_init_principal
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id in ('001801','001802')
+  and loan_active_date = '2020-07-28'
+group by loan_init_term
+limit 10
+;
+
+select
+  *
+from dw_new_cps.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-07-28'
+order by product_id,loan_terms,loan_num
+-- limit 10
+;
 
 
 
@@ -6419,4 +6462,67 @@ where 1 > 0
   and biz_date = '2020-06-02'
   and product_id in ('001801','001802')
 ;
+
+
+invalidate metadata dw_new.dw_loan_ret_msg_day;
+select
+  *
+from dw_new.dw_loan_ret_msg_day
+where 1 > 0
+  and biz_date = '2020-06-28'
+  and product_id in ('001801','001802')
+order by product_id,loan_terms,ret_msg
+;
+
+
+
+
+invalidate metadata dw_new.dw_loan_approval_stat_day;
+select
+  *
+from dw_new.dw_loan_approval_stat_day
+where 1 > 0
+  -- and biz_date = '2020-06-02'
+  -- and loan_approval_num_sum = loan_approval_num_count
+  -- and loan_terms = 12
+  and product_id in ('001801','001802')
+order by biz_date,product_id,loan_terms
+limit 10
+;
+
+
+
+select distinct
+  product_id,
+  due_bill_no,
+  loan_active_date,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  remain_principal,
+  paid_principal,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_days,
+  case when overdue_days > 0 then due_bill_no      else null end as overdue_due_bill_no,
+  case when overdue_days > 0 then remain_principal else 0    end as overdue_remain_principal,
+  case when overdue_days = 0 then 0
+  when 1   <= overdue_days and overdue_days <= 30  then 1
+  when 31  <= overdue_days and overdue_days <= 60  then 2
+  when 61  <= overdue_days and overdue_days <= 90  then 3
+  when 91  <= overdue_days and overdue_days <= 120 then 4
+  when 121 <= overdue_days and overdue_days <= 150 then 5
+  when 151 <= overdue_days and overdue_days <= 180 then 6
+  else 7 end as overdue_stage,
+  abs(month('2020-07-15') - month(loan_active_date)) as overdue_mob,
+  overdue_principal
+  ,s_d_date
+  ,e_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  and s_d_date <= '2020-07-15' and '2020-07-15' < e_d_date
+  and overdue_days > 50
+limit 10
+;
+
 

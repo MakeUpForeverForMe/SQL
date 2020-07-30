@@ -1085,6 +1085,9 @@ select
   conv(conv(hex('中国'),16,2),2,16)        as `2  ——> 16 进制`, -- E4B8ADE59BBD
   unhex(conv(conv(hex('中国'),16,2),2,16)) as `16 ——> 10 进制`  -- 中国
 ;
+
+-- 取多个数之间的最大、最小值  least(v1, v2, ...)  greatest(v1, v2, ...)
+select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
 ```
 
 ## 4.2 Hive
@@ -1127,7 +1130,7 @@ set spark.executor.memoryOverhead=4g;                                           
 set spark.executor.heartbeatInterval=60s;                                          -- 设置 Spark Executor 通信超时时间
 set hive.spark.client.future.timeou=360;                                           -- 设置 Spark Client 超时时间
 set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
-set hive.exec.dynamici.partition=true;                                             -- 设置 动态分区
+set hive.exec.dynamic.partition=true;                                              -- 设置 动态分区
 set hive.exec.dynamic.partition.mode=nonstrict;                                    -- 设置 动态分区为非严格模式
 set hive.exec.max.dynamic.partitions.pernode=100;                                  -- 设置 每个执行 MR 的节点上，最大可以创建多少个动态分区
 set hive.exec.max.dynamic.partitions=1000;                                         -- 设置 所有执行 MR 的节点上，最大可以创建多少个动态分区
@@ -1500,7 +1503,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*date*';
-DESC FUNCTION EXTENDED datediff;
+DESC FUNCTION EXTENDED least;
 ```
 
 
