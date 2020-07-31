@@ -6443,15 +6443,31 @@ group by loan_init_term
 limit 10
 ;
 
+set VAR:db_suffix=;
+
+-- invalidate metadata dw_new${db_suffix}.dw_loan_base_stat_loan_num_day;
 select
   *
-from dw_new_cps.dw_loan_base_stat_loan_num_day
+from dw_new${VAR:db_suffix}.dw_loan_base_stat_loan_num_day
 where 1 > 0
   and product_id in ('001801','001802')
   and biz_date = '2020-07-28'
 order by product_id,loan_terms,loan_num
 -- limit 10
 ;
+
+
+
+select
+  *
+from dw_new${VAR:db_suffix}.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-07-28'
+order by product_id,loan_terms
+-- limit 10
+;
+
 
 
 
@@ -6469,60 +6485,63 @@ select
   *
 from dw_new.dw_loan_ret_msg_day
 where 1 > 0
-  and biz_date = '2020-06-28'
+  and biz_date = '2020-07-28'
   and product_id in ('001801','001802')
 order by product_id,loan_terms,ret_msg
 ;
 
 
+select
+  -- sum(loan_amount) as loan_amount
+  loan_amount
+from ods_new_s.loan_apply
+where 1 > 0
+  and biz_date = '2020-06-05'
+  -- and loan_approval_num_sum = loan_approval_num_count
+  and loan_terms = 1
+  and loan_amount is null
+  -- and product_id in ('001801','001802')
+  and product_id = '001801'
+-- limit 10
+;
 
 
 invalidate metadata dw_new.dw_loan_approval_stat_day;
 select
-  *
+  sum(loan_amount) as loan_amount
 from dw_new.dw_loan_approval_stat_day
 where 1 > 0
-  -- and biz_date = '2020-06-02'
+  and biz_date = '2020-06-05'
   -- and loan_approval_num_sum = loan_approval_num_count
-  -- and loan_terms = 12
-  and product_id in ('001801','001802')
+  and loan_terms = 1
+  -- and product_id in ('001801','001802')
+  and product_id = '001801'
 order by biz_date,product_id,loan_terms
-limit 10
+-- limit 10
 ;
-
 
 
 select distinct
-  product_id,
-  due_bill_no,
-  loan_active_date,
-  loan_init_principal,
-  loan_init_term,
-  loan_term,
-  remain_principal,
-  paid_principal,
-  overdue_date_first,
-  overdue_date_start,
-  overdue_days,
-  case when overdue_days > 0 then due_bill_no      else null end as overdue_due_bill_no,
-  case when overdue_days > 0 then remain_principal else 0    end as overdue_remain_principal,
-  case when overdue_days = 0 then 0
-  when 1   <= overdue_days and overdue_days <= 30  then 1
-  when 31  <= overdue_days and overdue_days <= 60  then 2
-  when 61  <= overdue_days and overdue_days <= 90  then 3
-  when 91  <= overdue_days and overdue_days <= 120 then 4
-  when 121 <= overdue_days and overdue_days <= 150 then 5
-  when 151 <= overdue_days and overdue_days <= 180 then 6
-  else 7 end as overdue_stage,
-  abs(month('2020-07-15') - month(loan_active_date)) as overdue_mob,
-  overdue_principal
-  ,s_d_date
-  ,e_d_date
-from ods_new_s.loan_info
-where 1 > 0
-  and s_d_date <= '2020-07-15' and '2020-07-15' < e_d_date
-  and overdue_days > 50
-limit 10
+  paid_out_type,
+  case paid_out_type
+  when 'NORMAL_SETTLE'  then '正常结清'
+  when 'OVERDUE_SETTLE' then '逾期结清'
+  when 'PRE_SETTLE'     then '提前结清'
+  when 'REFUND'         then '退车'
+  when 'REDEMPTION'     then '赎回'
+  when 'BANK_REF'       then '放款退票'
+  else paid_out_type
+  end as paid_out_type_cn
+from ods.ecas_repay_schedule
 ;
+
+
+
+
+
+
+
+
+
 
 
