@@ -6443,7 +6443,7 @@ group by loan_init_term
 limit 10
 ;
 
-set VAR:db_suffix=;
+set VAR:db_suffix=_cps;
 
 -- invalidate metadata dw_new${db_suffix}.dw_loan_base_stat_loan_num_day;
 select
@@ -6457,7 +6457,7 @@ order by product_id,loan_terms,loan_num
 ;
 
 
-
+invalidate metadata dw_new${db_suffix}.dw_loan_base_stat_repay_detail_day;
 select
   *
 from dw_new${VAR:db_suffix}.dw_loan_base_stat_repay_detail_day
@@ -6469,6 +6469,11 @@ order by product_id,loan_terms
 ;
 
 
+
+select
+  max(biz_date)
+from ods_new_s_cps.repay_detail
+;
 
 
 select
@@ -6493,15 +6498,16 @@ order by product_id,loan_terms,ret_msg
 
 select
   -- sum(loan_amount) as loan_amount
-  loan_amount
+  max(datediff(to_date(loan_apply_time),to_date(issue_time))) as tt
+  -- loan_amount
 from ods_new_s.loan_apply
 where 1 > 0
-  and biz_date = '2020-06-05'
+  -- and biz_date = '2020-06-05'
   -- and loan_approval_num_sum = loan_approval_num_count
-  and loan_terms = 1
-  and loan_amount is null
-  -- and product_id in ('001801','001802')
-  and product_id = '001801'
+  -- and loan_terms = 1
+  -- and loan_amount is null
+  and product_id in ('001801','001802')
+  -- and product_id = '001801'
 -- limit 10
 ;
 
@@ -6539,6 +6545,19 @@ from ods.ecas_repay_schedule
 
 
 
+invalidate metadata dw_new.dw_loan_base_stat_repay_detail_day;
+select
+  *
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and biz_date = '2020-07-28'
+  -- and loan_approval_num_sum = loan_approval_num_count
+  -- and loan_terms = 1
+  and product_id in ('001801','001802')
+  -- and product_id = '001801'
+order by biz_date,product_id,loan_terms
+-- limit 10
+;
 
 
 
