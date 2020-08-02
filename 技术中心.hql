@@ -6445,25 +6445,27 @@ limit 10
 
 set VAR:db_suffix=_cps;
 
--- invalidate metadata dw_new${db_suffix}.dw_loan_base_stat_loan_num_day;
+-- invalidate metadata dw_new${VAR:db_suffix}.dw_loan_base_stat_loan_num_day;
 select
   *
 from dw_new${VAR:db_suffix}.dw_loan_base_stat_loan_num_day
 where 1 > 0
   and product_id in ('001801','001802')
-  and biz_date = '2020-07-28'
+  -- and biz_date = '2020-07-28'
+  and biz_date = '2020-06-03'
 order by product_id,loan_terms,loan_num
 -- limit 10
 ;
 
 
-invalidate metadata dw_new${db_suffix}.dw_loan_base_stat_repay_detail_day;
+invalidate metadata dw_new${VAR:db_suffix}.dw_loan_base_stat_repay_detail_day;
 select
   *
 from dw_new${VAR:db_suffix}.dw_loan_base_stat_repay_detail_day
 where 1 > 0
   and product_id in ('001801','001802')
-  and biz_date = '2020-07-28'
+  and biz_date = '2020-06-02'
+  -- and biz_date = '2020-07-28'
 order by product_id,loan_terms
 -- limit 10
 ;
@@ -6480,8 +6482,10 @@ select
   *
 from dw_new.dw_loan_apply_stat_day
 where 1 > 0
-  and biz_date = '2020-06-02'
+  -- and biz_date = '2020-06-09'
+  and biz_date = '2020-06-05'
   and product_id in ('001801','001802')
+order by product_id,loan_terms
 ;
 
 
@@ -6496,33 +6500,80 @@ order by product_id,loan_terms,ret_msg
 ;
 
 
+invalidate metadata ods_new_s.loan_apply;
 select
-  -- sum(loan_amount) as loan_amount
-  max(datediff(to_date(loan_apply_time),to_date(issue_time))) as tt
+  -- due_bill_no,
+  sum(loan_amount)          as loan_amount,
+  sum(loan_amount_approval) as loan_amount_approval
+  -- max(datediff(to_date(loan_apply_time),to_date(issue_time))) as tt
   -- loan_amount
 from ods_new_s.loan_apply
-where 1 > 0
-  -- and biz_date = '2020-06-05'
-  -- and loan_approval_num_sum = loan_approval_num_count
-  -- and loan_terms = 1
-  -- and loan_amount is null
-  and product_id in ('001801','001802')
-  -- and product_id = '001801'
--- limit 10
-;
-
-
-invalidate metadata dw_new.dw_loan_approval_stat_day;
-select
-  sum(loan_amount) as loan_amount
-from dw_new.dw_loan_approval_stat_day
 where 1 > 0
   and biz_date = '2020-06-05'
   -- and loan_approval_num_sum = loan_approval_num_count
   and loan_terms = 1
+  -- and loan_amount is null
   -- and product_id in ('001801','001802')
   and product_id = '001801'
-order by biz_date,product_id,loan_terms
+-- limit 10
+;
+
+
+select
+  *
+from
+ods.ecas_loan
+-- ods.ecas_repay_schedule
+where 1 > 0
+  and p_type = 'lx'
+  -- and product_code = '001801'
+  and due_bill_no in (
+    '1120060511120607576033',
+    '1120060510293537455084',
+    '1120060510294109809437'
+  )
+limit 10
+;
+
+
+
+set var:db_name=
+ods_new_s.repay_schedule
+-- dw_new.dw_loan_approval_stat_day
+-- dw_new.dw_loan_apply_stat_day
+;
+
+invalidate metadata ${VAR:db_name};
+
+select
+  -- *
+  due_bill_no,
+  loan_active_date,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  should_repay_date,
+  -- should_repay_amount,
+  should_repay_principal,
+  -- should_repay_interest,
+  -- should_repay_penalty,
+  -- should_repay_term_fee,
+  -- should_repay_svc_fee,
+  -- should_repay_mult_amt,
+  s_d_date,
+  e_d_date,
+  product_id
+from ${VAR:db_name}
+where 1 > 0
+  -- and biz_date = '2020-06-02'
+  -- and biz_date in ('2020-06-05','2020-06-07','2020-06-08')
+  -- and loan_approval_num_sum = loan_approval_num_count
+  -- and loan_terms = 1
+  and product_id in ('001801','001802')
+  and due_bill_no = '1120070114545200768685'
+  -- and product_id = '001801'
+-- order by biz_date,product_id,loan_terms
+order by product_id,loan_init_term,loan_term,s_d_date
 -- limit 10
 ;
 
@@ -6562,5 +6613,27 @@ order by biz_date,product_id,loan_terms
 
 
 
+invalidate metadata dw_new.dw_credit_apply_stat_day;
 
+set hivevar:ST9=2020-08-01;
+set hivevar:db_suffix=;
+
+
+
+
+
+select
+  distinct
+  resp_code,
+  apply_amount,
+  credit_amount
+  -- biz_date,
+  -- sum(apply_amount),
+  -- sum(credit_amount)
+from ods_new_s.credit_apply
+where 1 > 0
+  and resp_code = '2'
+  -- and biz_date between date_sub('2020-06-15',1) and '2020-06-15'
+-- group by biz_date
+;
 
