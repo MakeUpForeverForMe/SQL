@@ -1502,8 +1502,8 @@ CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'         USIN
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*date*';
-DESC FUNCTION EXTENDED least;
+SHOW FUNCTIONS LIKE '*date_format*';
+DESC FUNCTION EXTENDED date_format;
 ```
 
 

@@ -6615,8 +6615,26 @@ order by biz_date,product_id,loan_terms
 
 invalidate metadata dw_new.dw_credit_apply_stat_day;
 
-set hivevar:ST9=2020-08-01;
+set hivevar:ST9=2020-07-01;
+set hivevar:db_suffix=_cps;
 set hivevar:db_suffix=;
+
+
+
+select
+  a,
+  case
+  when 2 < a then 3
+  when 1 < a then 2
+  when 0 < a then 1
+  else 0 end
+from (
+  select 1 as a union all
+  select 2 as a union all
+  select 3 as a union all
+  select 4 as a
+) as tmp
+;
 
 
 
@@ -6635,5 +6653,23 @@ where 1 > 0
   and resp_code = '2'
   -- and biz_date between date_sub('2020-06-15',1) and '2020-06-15'
 -- group by biz_date
+;
+
+
+select distinct
+  -- s_d_date
+  overdue_date
+  -- product_id,
+  -- due_bill_no,
+  -- loan_status_cn,
+  -- overdue_principal,
+  -- overdue_interest
+from ods_new_s_cps.loan_info
+where 1 > 0
+  and product_id in ('001601','001602','001603')
+order by
+overdue_date
+-- s_d_date
+-- limit 10
 ;
 
