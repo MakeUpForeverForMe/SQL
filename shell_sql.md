@@ -1503,7 +1503,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*date_format*';
-DESC FUNCTION EXTENDED date_format;
+DESC FUNCTION EXTENDED sum;
 ```
 
 
@@ -1525,7 +1525,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*to_date*';
+show functions in _impala_builtins like '*sum*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';

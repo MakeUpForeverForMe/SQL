@@ -6657,19 +6657,63 @@ where 1 > 0
 
 
 select distinct
+  paid_out_type
   -- s_d_date
-  overdue_date
+  -- overdue_date
   -- product_id,
   -- due_bill_no,
   -- loan_status_cn,
   -- overdue_principal,
   -- overdue_interest
-from ods_new_s_cps.loan_info
+from
+-- ods_new_s_cps.loan_info
+ods.ecas_repay_schedule
 where 1 > 0
-  and product_id in ('001601','001602','001603')
-order by
-overdue_date
+  -- and product_id in ('001601','001602','001603')
+-- order by
+-- overdue_date
 -- s_d_date
 -- limit 10
 ;
+
+select nvl(12/0,0)*100;
+
+
+
+
+
+
+select
+  biz_date,
+  count(1)
+from dm_eagle.eagle_loan_info
+group by biz_date
+order by biz_date
+;
+
+
+
+
+
+set hivevar:table=
+-- dm_eagle.eagle_loan_info
+-- dm_eagle.eagle_repay_schedule
+-- dm_eagle.eagle_repay_detail
+dm_eagle.eagle_repay_detail_partition
+-- dm_eagle_cps.eagle_loan_info
+-- dm_eagle_cps.eagle_repay_schedule
+-- dm_eagle_cps.eagle_repay_detail
+;
+msck repair table ${table};
+select * from ${table} limit 10;
+
+
+
+select *
+from dw_new.dw_loan_apply_stat_day
+where 1 > 0
+  and product_id in ('001801','001802')
+limit 10
+;
+
 
