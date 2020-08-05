@@ -6254,17 +6254,26 @@ create table test_map(
   msg string
 );
 
-insert overwrite table test_map
-select 'a',concat('{',concat_ws(',',array('"age":1','"age":60')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":15')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":20')),'}') union all
-select 'a',concat('{',concat_ws(',',array('"age":18')),'}') union all
-select 'a',concat('[',concat_ws(',',array('"a"',1)),']')
+
+
+with base as (
+  select '1' as a,concat('{',concat_ws(',',array('"age":1','"age":60')),'}') as b union all
+  select '2' as a,concat('{',concat_ws(',',array('"age":15')),'}')           as b union all
+  select '1' as a,concat('{',concat_ws(',',array('"age":20')),'}')           as b union all
+  select '2' as a,concat('{',concat_ws(',',array('"age":18')),'}')           as b union all
+  select '1' as a,concat('[',concat_ws(',',array('"a"',1)),']')              as b
+)
+from base
+insert overwrite table test_map select * where a = 1
+insert into table test_map select * where a = 2
 ;
 
 
 invalidate metadata test_map;
 select id,msg from test_map;
+
+set hive.support.quoted.identifiers=None;
+select `(id)?+.+` from test_map;
 
 
 select concat(map('aa',1)) test_map;
@@ -6717,3 +6726,18 @@ limit 10
 ;
 
 
+select
+  `(is_settled|product_id)?+.+`
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120070611473712088686'
+;
+
+
+
+select *
+from
+-- dm_eagle.eagle_migration_rate_month
+dw_new.dw_loan_base_stat_overdue_num_day
+limit 10
+;

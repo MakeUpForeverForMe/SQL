@@ -1119,6 +1119,8 @@ select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-
 --   其他
 --  */
 
+set hive.support.quoted.identifiers=None;                                          -- 设置后可以在自动中使用正则表达式，选定字段（字段反选）。默认为 column
+select `(id)?+.+` from test_map;                                                   -- 过滤掉 id 字段的其他所有字段
 
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
@@ -1503,7 +1505,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*date_format*';
-DESC FUNCTION EXTENDED sum;
+DESC FUNCTION EXTENDED date_format;
 ```
 
 
