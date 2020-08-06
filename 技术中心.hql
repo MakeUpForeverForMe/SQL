@@ -6741,3 +6741,73 @@ from
 dw_new.dw_loan_base_stat_overdue_num_day
 limit 10
 ;
+
+
+
+
+select *
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id = '001801'
+  -- and s_d_date <= '2020-07-06' and '2020-07-06' < e_d_date
+  -- and loan_init_term = 1
+  -- and loan_active_date = '2020-06-06'
+  and due_bill_no = '1120060420501004691039'
+  -- and overdue_date_first = '2020-06-17'
+limit 10
+;
+
+select *
+from
+-- ods.ecas_repay_schedule
+ods_new_s.repay_schedule
+where 1 > 0
+  and product_id = '001801'
+  -- and product_code = '001801'
+  -- and due_bill_no in (
+  --   '1120060602301006990582'
+  --   -- '1120060603005467686032',
+  --   -- '1120060603080555106032',
+  --   -- '1120060602241148366852',
+  --   -- '1120060603072020996032'
+  -- )
+order by due_bill_no
+limit 10
+;
+
+
+
+
+
+select distinct
+  loan_info.due_bill_no
+from (
+  select due_bill_no
+  from dm_eagle_cps.eagle_loan_info
+  where 1 > 0
+    and product_id in ('001801','001802')
+) as loan_info
+join (
+  select due_bill_no
+  from dm_eagle_cps.eagle_repay_schedule
+  where 1 > 0
+    and product_id in ('001801','001802')
+) as repay_schedule
+on loan_info.due_bill_no = repay_schedule.due_bill_no
+join (
+  select due_bill_no
+  from dm_eagle_cps.eagle_repay_detail
+  where 1 > 0
+    and product_id in ('001801','001802')
+) as repay_detail
+on loan_info.due_bill_no = repay_detail.due_bill_no
+-- limit 10
+;
+
+
+
+
+select *
+from ods_new_s.loan_info
+where due_bill_no = '1120061317321647290537'
+;
