@@ -6780,18 +6780,22 @@ limit 10
 
 
 select distinct
-  loan_info.due_bill_no
+  loan_info.due_bill_no,
+  loan_init_term,
+  paid_out_type
 from (
-  select due_bill_no
+  select due_bill_no,loan_init_term
   from dm_eagle_cps.eagle_loan_info
   where 1 > 0
     and product_id in ('001801','001802')
+    and loan_init_term = 9
 ) as loan_info
 join (
-  select due_bill_no
+  select due_bill_no,paid_out_type
   from dm_eagle_cps.eagle_repay_schedule
   where 1 > 0
     and product_id in ('001801','001802')
+    and paid_out_type is not null
 ) as repay_schedule
 on loan_info.due_bill_no = repay_schedule.due_bill_no
 join (
@@ -6801,13 +6805,89 @@ join (
     and product_id in ('001801','001802')
 ) as repay_detail
 on loan_info.due_bill_no = repay_detail.due_bill_no
+order by due_bill_no
 -- limit 10
 ;
 
 
 
+select
+  count(1) as cnt
+  -- *
+from
+ods_new_s_cps.repay_schedule
+-- ods_new_s_cps.repay_schedule_tmp
+where 1 > 0
+  and product_id in ('001801','001802')
+  -- and e_d_date = '3000-12-31'
+  -- and should_repay_date between date_sub('${ST9}',30) and '${ST9}'
+  -- and due_bill_no = '1120061514363028353120'
+;
+
+
+
+
+insert overwrite table ods_new_s.customer_info partition(product_id)
+select * from dm_eagle.customer_info
+;
+
+
+
+set hivevar:ST9=2020-10-06;
+
+select distinct
+  due_bill_no       as due_bill_no_repay_schedule,
+  loan_init_term    as loan_init_term_repay_schedule,
+  loan_term         as loan_term_repay_schedule,
+  should_repay_date as should_repay_date,
+  product_id        as product_id_repay_schedule
+from ods_new_s${db_suffix}.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802')
+    and s_d_date <= '${ST9}' and '${ST9}' < e_d_date
+    -- and e_d_date = '3000-12-31'
+  and should_repay_date between date_sub('${ST9}',30) and '${ST9}'
+  and due_bill_no = '1120061514363028353120'
+;
+
+
 
 select *
 from ods_new_s.loan_info
-where due_bill_no = '1120061317321647290537'
+where 1 > 0
+  and product_id in ('001801','001802')
+  and loan_active_date = '2020-06-04'
+  and overdue_date_start = '2020-06-15'
+  and loan_init_term = 1
+limit 50
 ;
+
+
+
+invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
+select *
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  -- and biz_date = '2020-06-20'
+  and remain_principal > 0
+limit 50
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
