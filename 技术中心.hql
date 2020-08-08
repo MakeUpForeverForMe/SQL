@@ -6869,8 +6869,8 @@ select *
 from dw_new.dw_loan_base_stat_overdue_num_day
 where 1 > 0
   and product_id in ('001801','001802')
-  -- and biz_date = '2020-06-20'
-  and remain_principal > 0
+  and biz_date = '2020-06-20'
+  -- and remain_principal > 0
 limit 50
 ;
 
