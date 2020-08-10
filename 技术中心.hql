@@ -6892,125 +6892,10 @@ set hivevar:tb_suffix=_asset;
 
 
 
-select
-  '2_repay_schedule'          as type1,
-  'repay_schedule_ecas'       as type2,
-  product_id                  as product_id,
-  case product_id
-  when 'DIDI201908161538' then '滴滴 - 滴滴中航'
-  when '001503'           then '盒子 - 盒伙人员工贷1'
-  when '001504'           then '盒子 - 盒伙人员工贷2'
-  when '001505'           then '盒子 - 盒子商户贷'
-  when '001506'           then '凤金 - 凤凰金融1期'
-  when '001507'           then '凤金 - 凤凰金融2期'
-  when '001601'           then '汇通 - 汇通车分期-非LCV新车'
-  when '001602'           then '汇通 - 汇通车分期-非LCV二手车'
-  when '001603'           then '汇通 - 汇通车分期-LCV新车'
-  when '001701'           then '瓜子 - 新车融资租赁'
-  when '001702'           then '瓜子 - 二手车融资租赁'
-  when '001801'           then '乐信 - 乐花卡'
-  when '001802'           then '乐信 - 乐花借钱'
-  else product_id end         as product_id_cn,
-  count(distinct due_bill_no) as due_bill_no_cnt,
-  count(1)                    as total_cnt
-from (
-  select distinct
-    product_code                  as product_id,
-    due_bill_no                   as due_bill_no,
-    schedule_id                   as schedule_id,
-    case
-    when product_code = 'DIDI201908161538' and d_date = '2020-02-27' then null
-    when product_code = 'DIDI201908161538' and d_date = '2020-02-28' then null
-    when product_code = 'DIDI201908161538' and d_date = '2020-02-29' then null
-    when product_code = 'DIDI201908161538' and d_date = '2020-03-01' then null
-    else out_side_schedule_no end as out_side_schedule_no,
-    loan_init_prin                as loan_init_principal,
-    loan_init_term                as loan_init_term,
-    curr_term                     as loan_term,
-    start_interest_date           as start_interest_date,
-    pmt_due_date                  as should_repay_date,
-    origin_pmt_due_date           as should_repay_date_history,
-    grace_date                    as grace_date,
-    due_term_prin                 as should_repay_principal,
-    due_term_int                  as should_repay_interest,
-    due_penalty                   as should_repay_penalty,
-    due_term_fee                  as should_repay_term_fee,
-    due_svc_fee                   as should_repay_svc_fee,
-    due_mult_amt                  as should_repay_mult_amt,
-    reduced_amt                   as reduce_amount,
-    reduce_term_prin              as reduce_principal,
-    reduce_term_int               as reduce_interest,
-    reduce_term_fee               as reduce_term_fee,
-    reduce_svc_fee                as reduce_svc_fee,
-    reduce_penalty                as reduce_penalty,
-    reduce_mult_amt               as reduce_mult_amt
-  from ods.ecas_repay_schedule_asset
-  where 1 > 0
-    and d_date is not null
-    and d_date not in ('2025-06-02','2025-06-05','2025-06-06','2099-07-02','2099-07-03','2099-07-04','2099-07-05','9999-09-09','9999-99-99')
-) as ecas_repay_schedule
-group by product_id
-union all
-select
-  '2_repay_schedule'          as type1,
-  'repay_schedule_news'       as type2,
-  product_id                  as product_id,
-  case product_id
-  when 'DIDI201908161538' then '滴滴 - 滴滴中航'
-  when '001503'           then '盒子 - 盒伙人员工贷1'
-  when '001504'           then '盒子 - 盒伙人员工贷2'
-  when '001505'           then '盒子 - 盒子商户贷'
-  when '001506'           then '凤金 - 凤凰金融1期'
-  when '001507'           then '凤金 - 凤凰金融2期'
-  when '001601'           then '汇通 - 汇通车分期-非LCV新车'
-  when '001602'           then '汇通 - 汇通车分期-非LCV二手车'
-  when '001603'           then '汇通 - 汇通车分期-LCV新车'
-  when '001701'           then '瓜子 - 新车融资租赁'
-  when '001702'           then '瓜子 - 二手车融资租赁'
-  when '001801'           then '乐信 - 乐花卡'
-  when '001802'           then '乐信 - 乐花借钱'
-  else product_id end         as product_id_cn,
-  count(distinct due_bill_no) as due_bill_no_cnt,
-  count(1)                    as total_cnt
-from (
-  select distinct
-    product_id,
-    due_bill_no,
-    schedule_id,
-    out_side_schedule_no,
-    loan_init_principal,
-    loan_init_term,
-    loan_term,
-    start_interest_date,
-    should_repay_date,
-    should_repay_date_history,
-    grace_date,
-    should_repay_principal,
-    should_repay_interest,
-    should_repay_penalty,
-    should_repay_term_fee,
-    should_repay_svc_fee,
-    should_repay_mult_amt,
-    reduce_amount,
-    reduce_principal,
-    reduce_interest,
-    reduce_term_fee,
-    reduce_svc_fee,
-    reduce_penalty,
-    reduce_mult_amt
-  from ods_new_s_cps.repay_schedule
-  where 1 > 0
-) as repay_schedule
-where 1 > 0
-  and product_id in ('001801','001802')
-group by product_id
--- order by product_id,type1,type2
-;
 
 
-
-
-
+invalidate metadata ods_new_s.repay_schedule;
+invalidate metadata ods_new_s_cps.repay_schedule;
 select
   ecas_loan.product_id,
   (loan_cnt_ecas - loan_cnt_news) as loan_cnt,
@@ -7020,27 +6905,27 @@ select
 from (
   select product_code as product_id,count(distinct due_bill_no) as loan_cnt_asset_ecas from ods.ecas_loan
   where 1 > 0
-    and d_date <= '2020-08-05'
+    and d_date <= '2020-06-30'
   group by product_code
 ) as ecas_loan
 left join (
   select product_id as product_id,count(distinct due_bill_no) as loan_cnt_asset_news from ods_new_s_cps.loan_info
   where 1 > 0
-    -- and d_date <= '2020-08-05'
+    -- and d_date <= '2020-06-30'
   group by product_id
 ) as loan_info
 on ecas_loan.product_id = loan_info.product_id
 left join (
   select product_code as product_id,count(distinct due_bill_no) as loan_cnt_ecas from ods.ecas_loan_asset
   where 1 > 0
-    and d_date <= '2020-08-05'
+    and d_date <= '2020-06-30'
   group by product_code
 ) as ecas_loan_asset
 on ecas_loan.product_id = ecas_loan_asset.product_id
 left join (
   select product_id as product_id,count(distinct due_bill_no) as loan_cnt_news from ods_new_s.loan_info
   where 1 > 0
-    -- and d_date <= '2020-08-05'
+    -- and d_date <= '2020-06-30'
   group by product_id
 ) as loan_info_asset
 on ecas_loan.product_id = loan_info_asset.product_id
@@ -7048,28 +6933,28 @@ on ecas_loan.product_id = loan_info_asset.product_id
 left join (
   select product_code as product_id,count(distinct due_bill_no) as repay_schedule_asset_ecas from ods.ecas_repay_schedule
   where 1 > 0
-    and d_date <= '2020-08-05'
+    and d_date <= '2020-06-30'
   group by product_code
 ) as ecas_repay_schedule
 on ecas_loan.product_id = ecas_repay_schedule.product_id
 left join (
   select product_id as product_id,count(distinct due_bill_no) as repay_schedule_asset_news from ods_new_s_cps.repay_schedule
   where 1 > 0
-    -- and d_date <= '2020-08-05'
+    -- and d_date <= '2020-06-30'
   group by product_id
 ) as repay_schedule
 on ecas_repay_schedule.product_id = repay_schedule.product_id
 left join (
   select product_code as product_id,count(distinct due_bill_no) as repay_schedule_ecas from ods.ecas_repay_schedule_asset
   where 1 > 0
-    and d_date <= '2020-08-05'
+    and d_date <= '2020-06-30'
   group by product_code
 ) as ecas_repay_schedule_asset
 on ecas_repay_schedule.product_id = ecas_repay_schedule_asset.product_id
 left join (
   select product_id as product_id,count(distinct due_bill_no) as repay_schedule_news from ods_new_s.repay_schedule
   where 1 > 0
-    -- and d_date <= '2020-08-05'
+    -- and d_date <= '2020-06-30'
   group by product_id
 ) as repay_schedule_asset
 on ecas_repay_schedule.product_id = repay_schedule_asset.product_id
@@ -7079,5 +6964,87 @@ where 1 > 0
 order by product_id
 ;
 
+
+
+
+
+
+select
+  *
+from dw_new${db_suffix}.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and overdue_principal > 0
+limit 10
+;
+
+
+select
+  *
+from dm_eagle${db_suffix}.eagle_inflow_rate_first_term_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and overdue_principal > 0
+limit 10
+;
+
+
+select *
+from dm_eagle.eagle_credit_loan_approval_amount_sum_day
+where 1 > 0
+  and biz_date = '2020-06-04'
+;
+
+
+
+
+
+invalidate metadata
+dm_eagle.eagle_funds
+;
+
+select
+  *
+from
+dm_eagle.eagle_funds
+-- dm.dm_watch_funds
+where 1 > 0
+  and biz_date = '2020-06-02'
+  -- and d_date = '2020-06-02'
+;
+
+
+
+select distinct
+  due_bill_no,
+  loan_init_term,
+  should_repay_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802')
+  and loan_init_term = 3
+  -- and loan_term = 2
+  and should_repay_date <= '2020-06-30'
+limit 50
+;
+
+
+invalidate metadata
+dm_eagle.eagle_inflow_rate_first_term_day
+;
+
+select *
+from dm_eagle.eagle_inflow_rate_first_term_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and (overdue_loan_inflow_rate > 100
+    or overdue_principal_inflow_rate > 100
+    or remain_principal_inflow_rate > 100)
+  -- and loan_init_term = 3
+  -- and loan_term = 2
+  -- and should_repay_date <= '2020-06-30'
+limit 50
+;
 
 
