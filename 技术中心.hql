@@ -6894,76 +6894,6 @@ set hivevar:tb_suffix=_asset;
 
 
 
-invalidate metadata ods_new_s.repay_schedule;
-invalidate metadata ods_new_s_cps.repay_schedule;
-select
-  ecas_loan.product_id,
-  (loan_cnt_ecas - loan_cnt_news) as loan_cnt,
-  (loan_cnt_asset_ecas - loan_cnt_asset_news) as loan_cnt_asset,
-  repay_schedule_ecas - repay_schedule_news as repay_schedule,
-  repay_schedule_asset_ecas - repay_schedule_asset_news as repay_schedule_asset
-from (
-  select product_code as product_id,count(distinct due_bill_no) as loan_cnt_asset_ecas from ods.ecas_loan
-  where 1 > 0
-    and d_date <= '2020-06-30'
-  group by product_code
-) as ecas_loan
-left join (
-  select product_id as product_id,count(distinct due_bill_no) as loan_cnt_asset_news from ods_new_s_cps.loan_info
-  where 1 > 0
-    -- and d_date <= '2020-06-30'
-  group by product_id
-) as loan_info
-on ecas_loan.product_id = loan_info.product_id
-left join (
-  select product_code as product_id,count(distinct due_bill_no) as loan_cnt_ecas from ods.ecas_loan_asset
-  where 1 > 0
-    and d_date <= '2020-06-30'
-  group by product_code
-) as ecas_loan_asset
-on ecas_loan.product_id = ecas_loan_asset.product_id
-left join (
-  select product_id as product_id,count(distinct due_bill_no) as loan_cnt_news from ods_new_s.loan_info
-  where 1 > 0
-    -- and d_date <= '2020-06-30'
-  group by product_id
-) as loan_info_asset
-on ecas_loan.product_id = loan_info_asset.product_id
-
-left join (
-  select product_code as product_id,count(distinct due_bill_no) as repay_schedule_asset_ecas from ods.ecas_repay_schedule
-  where 1 > 0
-    and d_date <= '2020-06-30'
-  group by product_code
-) as ecas_repay_schedule
-on ecas_loan.product_id = ecas_repay_schedule.product_id
-left join (
-  select product_id as product_id,count(distinct due_bill_no) as repay_schedule_asset_news from ods_new_s_cps.repay_schedule
-  where 1 > 0
-    -- and d_date <= '2020-06-30'
-  group by product_id
-) as repay_schedule
-on ecas_repay_schedule.product_id = repay_schedule.product_id
-left join (
-  select product_code as product_id,count(distinct due_bill_no) as repay_schedule_ecas from ods.ecas_repay_schedule_asset
-  where 1 > 0
-    and d_date <= '2020-06-30'
-  group by product_code
-) as ecas_repay_schedule_asset
-on ecas_repay_schedule.product_id = ecas_repay_schedule_asset.product_id
-left join (
-  select product_id as product_id,count(distinct due_bill_no) as repay_schedule_news from ods_new_s.repay_schedule
-  where 1 > 0
-    -- and d_date <= '2020-06-30'
-  group by product_id
-) as repay_schedule_asset
-on ecas_repay_schedule.product_id = repay_schedule_asset.product_id
-
-where 1 > 0
-  and ecas_loan.product_id in ('001801','001802')
-order by product_id
-;
-
 
 
 
@@ -7046,5 +6976,56 @@ where 1 > 0
   -- and should_repay_date <= '2020-06-30'
 limit 50
 ;
+
+
+
+
+select
+  *
+from dm_eagle.eagle_loan_info
+where due_bill_no = '1120060215213608230275'
+order by biz_date
+;
+
+
+
+invalidate metadata
+ods_new_s.loan_info
+;
+
+select *
+from ods_new_s.loan_info
+where due_bill_no = '1120060215213608230275'
+order by s_d_date
+;
+
+
+select
+loan_status,
+loan_init_term,
+curr_term,
+remain_term,
+paid_principal,
+paid_interest,
+paid_out_date,
+d_date
+from ods.ecas_loan_asset
+where due_bill_no = '1120060215213608230275'
+order by d_date
+;
+
+
+
+select distinct
+  gender,
+  bill_sex
+from dm_eagle.assets_distribution
+;
+
+
+
+
+
+
 
 
