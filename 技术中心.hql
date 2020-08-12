@@ -7025,7 +7025,299 @@ from dm_eagle.assets_distribution
 
 
 
+select distinct
+  -- ret_msg  as resp_msg
+  product_code
+from ods.t_personas
+where 1 > 0
+  and lower(pass) = 'no'
+;
 
+
+
+select distinct
+  -- ret_msg
+  product_id
+from
+-- dm_eagle.assets_distribution
+dm.dm_assets_distribution
+;
+
+
+select distinct ret_msg
+from dm_eagle.eagle_ret_msg_day
+where 1 > 0
+  and ret_msg_stage = '02'
+  and product_id = '001802'
+  and biz_date < '2020-06-25'
+;
+
+
+
+
+
+
+
+select due_bill_no,loan_init_term,overdue_prin,d_date,(loan_init_prin - paid_principal) as remain_principal
+from ods.ecas_loan_asset
+where 1 > 0
+  and product_code in (
+    '001801'
+    -- ,
+    -- '001802'
+  )
+  and active_date = '2020-06-04'
+  and overdue_days = 1
+order by d_date
+-- limit 10
+;
+
+
+
+
+select max(s_d_date)
+from ods_new_s_cps.loan_info
+;
+
+
+
+
+
+
+invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
+
+
+select distinct loan_active_date
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id in ('001801')
+order by loan_active_date
+;
+
+
+
+
+select
+  loan_active_date,
+  overdue_days,
+  sum(if(overdue_days > 0,remain_principal,0)) as cnt
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id = '001801'
+  and s_d_date <= '2020-07-15'
+  and e_d_date > '2020-07-15'
+  and loan_active_date = '2020-06-25'
+  and loan_init_term = 3
+  and loan_term = 2
+group by loan_active_date,overdue_days
+;
+
+
+
+
+invalidate metadata dm_eagle.eagle_credit_loan_approval_amount_sum_day;
+select
+  *
+from dm_eagle.eagle_credit_loan_approval_amount_sum_day
+where 1 > 0
+  and biz_date = '2020-06-04'
+;
+
+
+select distinct
+  education,bill_education
+from dm_eagle.assets_distribution
+;
+
+
+
+
+
+select array('a','b','c') as a;
+
+
+
+
+
+
+select
+  split(
+    concat_ws(',',
+      if(overdue_days = 0,  '0',   null),
+      if(overdue_days >= 1, '1+',  null),
+      if(overdue_days > 3,  '3+',  null),
+      if(overdue_days > 7,  '7+',  null),
+      if(overdue_days > 14, '14+', null),
+      if(overdue_days > 30, '30+', null),
+      if(overdue_days > 60, '60+', null),
+      if(overdue_days > 90, '90+', null),
+      if(overdue_days > 120,'120+',null),
+      if(overdue_days > 150,'150+',null),
+      if(overdue_days > 180,'180+',null)
+    ),','
+  ) as tt
+from (
+  select 50  as overdue_days union all
+  select 100 as overdue_days
+) as tmp
+;
+
+
+
+
+select *
+  -- due_bill_no,
+  -- -- loan_status,
+  -- biz_date
+from
+ods_new_s.repay_detail
+-- ods_new_s_cps.repay_detail
+where 1 > 0
+  -- and biz_date = '2020-06-03'
+  -- and loan_status = '0'
+  and due_bill_no in (
+    '1120060215213608230275',
+    '1120060216004289090275',
+    '1120060315434201160683',
+    '1120060318015544273567',
+    '1120060420501158464265',
+    '1120060420510334902509',
+    '1120060510291041444850',
+    '1120060510291180650917',
+    '1120060510291219831303',
+    '1120060510292278025855',
+    '1120060510292928006247',
+    '1120060510293108891287',
+    '1120060510293236264396',
+    '1120060510295114945051',
+    '1120060510295545340062',
+    '1120060510300559326682',
+    '1120060510300702357685',
+    '1120060510300944421982',
+    '1120060510303029749221',
+    '1120060510313310319606',
+    '1120060510313484801510',
+    '1120060510314443303533',
+    '1120060510314637234204',
+    '1120060510324386931800',
+    '1120060510334464331333'
+
+    -- '1120060510334912690618',
+    -- '1120060510343157147367',
+    -- '1120060510450998656515',
+    -- '1120060510452658560402',
+    -- '1120060510455040992322',
+    -- '1120060510455756944221',
+    -- '1120060510462216533625',
+    -- '1120060510464638220703',
+    -- '1120060510470989937022',
+    -- '1120060510471257615809',
+    -- '1120060510471442052118',
+    -- '1120060510472892852410',
+    -- '1120060510474405236124',
+    -- '1120060510483166645034',
+    -- '1120060510483511719117',
+    -- '1120060510491202120934',
+    -- '1120060511110961602615',
+    -- '1120060511120964383329',
+    -- '1120060511131974539713',
+    -- '1120060511132383103016',
+    -- '1120060511140642596833',
+    -- '1120060511141298693031',
+    -- '1120060511173419906330',
+    -- '1120060511174298184833',
+    -- '1120060511184385512833',
+    -- '1120060511312194364430',
+    -- '1120060511315016692632',
+    -- '1120060511325696044931',
+    -- '1120060602304430867548',
+    -- '1120060602304689935795',
+    -- '1120060602322140630323',
+    -- '1120060602323631368511',
+    -- '1120060602324557511307',
+    -- '1120060602332594205233',
+    -- '1120060602343409571806',
+    -- '1120060602450492475795',
+    -- '1120060602480529513432',
+    -- '1120060602543338694112'
+  )
+-- order by product_id,due_bill_no,order_id
+order by due_bill_no,biz_date,order_id
+;
+
+
+select distinct
+  txn_date
+from
+-- ods.ecas_repay_hst_asset
+ods.ecas_repay_hst
+where 1 > 0
+  -- and txn_date = '2020-06-03'
+  -- and due_bill_no = '1120060216004289090275'
+-- and d_date = '2020-06-04'
+-- order by due_bill_no,order_id
+order by txn_date
+;
+
+
+
+
+insert overwrite table ods_new_s.repay_detail_tmp partition(biz_date,product_id)
+select *
+from ods_new_s.repay_detail
+where 1 > 0
+  and biz_date in ('2020-06-03','2020-06-04','2020-06-05','2020-06-06')
+  and loan_status != '0'
+-- order by product_id,biz_date,payment_id
+;
+
+insert overwrite table ods_new_s.repay_detail partition(biz_date,product_id)
+select *
+from ods_new_s.repay_detail_tmp
+where 1 > 0
+  and biz_date in ('2020-06-03','2020-06-04','2020-06-05','2020-06-06')
+-- order by product_id,biz_date,payment_id
+;
+
+
+
+invalidate metadata ods_new_s.repay_detail;
+
+select
+  product_id,
+  biz_date,
+  sum(repay_amount) as paid_amount_new
+from ods_new_s.repay_detail
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date in ('2020-06-03','2020-06-04','2020-06-05','2020-06-06')
+  -- and biz_date <= '2020-06-18'
+group by product_id,biz_date
+order by product_id,biz_date
+;
+
+
+select
+  product_id,
+  txn_date,
+  sum(repay_amt) as paid_amount_ods
+from ods.ecas_repay_hst_asset as tmp
+join (select distinct due_bill_no,product_code as product_id from ods.ecas_loan_asset where product_code in ('001801','001802')) as loan
+on tmp.due_bill_no = loan.due_bill_no
+where 1 > 0
+  and d_date = '2020-08-11'
+  and txn_date in ('2020-06-03','2020-06-04','2020-06-05','2020-06-06')
+  -- and txn_date <= '2020-06-18'
+group by product_id,txn_date
+order by product_id,txn_date
+;
+
+
+
+select count(1)
+from ods.ecas_repay_hst_asset as tmp
+where d_date = '2020-08-11'
+;
 
 
 
