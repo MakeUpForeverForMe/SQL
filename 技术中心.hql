@@ -7321,3 +7321,169 @@ where d_date = '2020-08-11'
 
 
 
+
+
+
+
+invalidate metadata ods_new_s.repay_detail;
+invalidate metadata ods.ecas_repay_hst_asset;
+invalidate metadata ods.ecas_loan_asset;
+invalidate metadata ods_new_s_cps.repay_detail;
+invalidate metadata ods.ecas_repay_hst;
+invalidate metadata ods.ecas_loan;
+
+select
+  coalesce(repay_detail.product_id,repay_hst.product_id,repay_detail_cps.product_id,repay_detail_cps.product_id) as product_id,
+  coalesce(repay_detail.txn_date,repay_hst.txn_date,repay_detail_cps.txn_date,repay_detail_cps.txn_date)         as txn_date,
+  paid_amount_new,
+  paid_amount_ods,
+  paid_amount_new_cps,
+  paid_amount_ods_cps
+from (
+  select
+    product_id,
+    biz_date as txn_date,
+    sum(repay_amount) as paid_amount_new
+  from ods_new_s.repay_detail
+  where 1 > 0
+    -- and biz_date = '2020-06-16'
+    and product_id in ('001801','001802')
+  group by product_id,biz_date
+) as repay_detail
+full join (
+  select
+    product_id,
+    txn_date,
+    sum(repay_amt) as paid_amount_ods
+  from ods.ecas_repay_hst_asset as tmp
+  join (select distinct due_bill_no,product_code as product_id from ods.ecas_loan_asset where product_code in ('001801','001802')) as loan
+  on tmp.due_bill_no = loan.due_bill_no
+  where 1 > 0
+    -- and d_date = '2020-06-16'
+    and txn_date = d_date
+  group by product_id,txn_date
+) as repay_hst
+on  repay_detail.product_id = repay_hst.product_id
+and repay_detail.txn_date   = repay_hst.txn_date
+
+
+
+
+
+select *
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and biz_date = '2020-06-30'
+  and overdue_days > 0
+limit 10
+;
+
+
+
+select *
+from dm_eagle.eagle_repay_schedule
+limit 10
+;
+
+invalidate metadata
+ods_new_s.customer_info
+;
+select distinct cutomer_type
+from ods_new_s.customer_info
+limit 10
+;
+
+
+
+select *
+from dm_eagle.eagle_repay_detail
+where 1 > 0
+  and due_bill_no = '1120060215213608230275'
+  -- and biz_date = '2020-06-04'
+limit 10
+;
+
+
+
+select
+  loan_terms,
+  remain_principal,
+  overdue_principal,
+  unposted_principal,
+  biz_date,
+  product_id
+from dm_eagle.eagle_asset_scale_principal_day
+where 1 > 0
+    and product_id in ('001801','001802')
+  -- and biz_date = '2020-06-04'
+limit 10
+;
+
+
+invalidate metadata
+dm_eagle.eagle_overdue_rate_month
+;
+select distinct dpd
+from dm_eagle.eagle_overdue_rate_month
+where 1 > 0
+  -- and due_bill_no = '1120060215213608230275'
+  -- and biz_date = '2020-06-04'
+limit 10
+;
+
+
+invalidate metadata
+dm_eagle.eagle_repayment_record_day
+;
+select *
+from dm_eagle.eagle_repayment_record_day
+where 1 > 0
+  -- and due_bill_no = '1120060215213608230275'
+  -- and biz_date = '2020-06-04'
+limit 10
+;
+
+
+
+invalidate metadata
+dm_eagle.eagle_repayment_record_day
+;
+select *
+from dm_eagle.eagle_repayment_record_day
+where 1 > 0
+  -- and due_bill_no = '1120060215213608230275'
+  -- and biz_date = '2020-06-04'
+limit 10
+;
+
+dw_new${db_suffix}.dw_loan_base_stat_overdue_num_day
+
+
+
+
+
+
+select *
+from dm_eagle.eagle_order_info
+where 1 > 0
+  and order_id = '000015914454181admin000082000003'
+;
+
+
+
+
+select *
+from
+-- ods.ecas_order
+-- ods.ecas_order_hst
+ods.ecas_order_asset
+-- ods.ecas_order_hst_asset
+where 1 > 0
+  and d_date = '2020-08-12'
+  and order_id = '000015914454181admin000082000003'
+;
+
+
+
+
+
