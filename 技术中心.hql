@@ -7485,5 +7485,150 @@ where 1 > 0
 
 
 
+select
+  -- *
+  distinct
+  nvl(txn_date,datefmt(cast(txn_time as string),'ms','yyyy-MM-dd')) as txn_date
+from
+-- ods.ecas_order
+ods.ecas_order_hst
+-- ods.ecas_order_asset
+where 1 > 0
+  and d_date = '2020-08-12'
+  -- and txn_date is null
+order by txn_date
+-- limit 10
+;
 
 
+
+select date_sub(current_date,1);
+
+
+
+select distinct biz_date
+from dm_eagle.eagle_ret_msg_day
+order by biz_date
+;
+
+
+select
+  due_bill_no,
+  loan_term,
+  schedule_status,
+  schedule_status_cn,
+  should_repay_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  -- and due_bill_no = '1120061019095085122902' -- 6期，全部结清 快照日：2020-08-10 应还日：2020-08-10
+  -- and due_bill_no = '1120062009364346847397' -- 2期，都逾期 快照日：2020-08-10 应还日：2020-07-05
+  and due_bill_no = '1120061421344483293354' -- 9期，第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
+  and s_d_date <= '${ST9}' and '${ST9}' < e_d_date
+  and should_repay_date <= '${ST9}'
+order by loan_term,should_repay_date
+;
+
+
+
+
+
+
+select schedule_status
+from (
+  select 'o' as schedule_status union all
+  select 'f' as schedule_status union all
+  select 'n' as schedule_status
+) as tmp
+;
+
+
+
+
+
+
+  select
+    due_bill_no    as due_bill_no,
+    repay_term     as repay_term,
+    sum(pricinpal) over(partition by product_id,due_bill_no order by repay_term rows between UNBOUNDED PRECEDING AND CURRENT ROW) as paid_principal,
+    product_id     as product_id
+  from (
+    select
+      due_bill_no,
+      repay_term,
+      sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+      product_id
+    from ods_new_s${db_suffix}.repay_detail
+    where 1 > 0
+      and biz_date <= '${ST9}'
+    group by due_bill_no,product_id,repay_term
+
+
+
+
+
+set hivevar:ST9=2020-07-08;
+
+set hivevar:ST9=2020-07-20;
+
+set hivevar:ST9=2020-08-10;
+
+
+select
+  due_bill_no,
+  active_date,
+  curr_term,
+  overdue_prin,
+  loan_init_prin,
+  -- (loan_init_prin - paid_principal) as remain_principal,
+  overdue_date                      as overdue_date,
+  overdue_days                      as overdue_days,
+  overdue_date                      as dpd_begin_date,
+  overdue_days                      as dpd_days,
+  -- sum(max(overdue_days) over(partition by due_bill_no,overdue_date)) as dpd_days_count,
+  -- max(overdue_days) over(partition by due_bill_no,overdue_date) as dpd_days_max,
+  collect_out_date                  as collect_out_date,
+  if(overdue_days > 0,curr_term,null)  as overdue_term,
+  -- count(distinct overdue_term) as overdue_terms_count,
+  -- max(curr_term)                    as overdue_terms_max,
+  -- sum(overdue_principal)            as overdue_principal_accumulate,
+  -- max(overdue_principal)            as overdue_principal_max,
+  abs(month(d_date) - month(active_date)) as mob,
+  product_code,
+  d_date                            as d_date
+from ods.ecas_loan_asset
+where 1 > 0
+  -- and overdue_days > 0
+  -- and d_date = '${ST9}'
+  and d_date != 'bak'
+  and due_bill_no = '1120061019095085122902' -- 6期，当期全部结清 快照日：2020-08-10 应还日：2020-08-10
+  -- and due_bill_no = '1120062009364346847397' -- 2期，都逾期 快照日：2020-08-10 应还日：2020-07-05
+  -- and due_bill_no = '1120061421344483293354' -- 9期，第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
+order by due_bill_no,d_date
+;
+
+
+
+
+select *
+from ods_new_s.repay_schedule
+where 1 > 0
+  and due_bill_no = '1120062009364346847397'
+;
+
+
+
+
+select
+  due_bill_no,
+  sum(if(bnp_type = 'Pricinpal',repay_amt,0)) as pricinpal,
+  sum(if(bnp_type = 'Interest', repay_amt,0)) as interest,
+  sum(if(bnp_type = 'TERMFee',  repay_amt,0)) as term_fee,
+  sum(if(bnp_type = 'SVCFee',   repay_amt,0)) as svc_fee,
+  sum(if(bnp_type = 'Penalty',  repay_amt,0)) as penalty
+from ods.ecas_repay_hst${tb_suffix}
+where 1 > 0
+  and d_date = '${ST9}'
+  and due_bill_no = '1120061019095085122902'
+group by due_bill_no
+;
