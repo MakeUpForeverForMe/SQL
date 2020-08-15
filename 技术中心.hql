@@ -7531,47 +7531,27 @@ order by loan_term,should_repay_date
 
 
 
-
-
-
-select schedule_status
-from (
-  select 'o' as schedule_status union all
-  select 'f' as schedule_status union all
-  select 'n' as schedule_status
-) as tmp
-;
-
-
-
-
-
-
-  select
-    due_bill_no    as due_bill_no,
-    repay_term     as repay_term,
-    sum(pricinpal) over(partition by product_id,due_bill_no order by repay_term rows between UNBOUNDED PRECEDING AND CURRENT ROW) as paid_principal,
-    product_id     as product_id
-  from (
-    select
-      due_bill_no,
-      repay_term,
-      sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
-      product_id
-    from ods_new_s${db_suffix}.repay_detail
-    where 1 > 0
-      and biz_date <= '${ST9}'
-    group by due_bill_no,product_id,repay_term
-
-
-
-
-
 set hivevar:ST9=2020-07-08;
 
 set hivevar:ST9=2020-07-20;
 
-set hivevar:ST9=2020-08-10;
+set hivevar:ST9=2020-08-12;
+
+
+
+select
+  *
+  -- due_bill_no,
+  -- should_repay_penalty,
+  -- should_repay_penalty_acru
+from ods_new_s_cps.repay_schedule
+where 1 > 0
+  -- and (should_repay_penalty_acru > 0 or should_repay_penalty > 0)
+  and due_bill_no = '1000000465'
+order by loan_term,s_d_date
+-- limit 10
+;
+
 
 
 select
@@ -7613,7 +7593,13 @@ order by due_bill_no,d_date
 select *
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120062009364346847397'
+  and due_bill_no = '1120061019095085122902'
+;
+
+select *
+from ods_new_s.repay_detail
+where 1 > 0
+  and due_bill_no = '1120061019095085122902'
 ;
 
 
@@ -7632,3 +7618,153 @@ where 1 > 0
   and due_bill_no = '1120061019095085122902'
 group by due_bill_no
 ;
+
+
+
+
+
+
+set hive.support.quoted.identifiers=None;     -- 设置可以使用正则表达式查找字段
+
+insert overwrite table ods_new_s${db_suffix}.loan_info_tmp partition(is_settled = 'no',product_id)
+select
+  `(dpd_days_count|dpd_days_max|overdue_terms_count|overdue_terms_max|collect_out_date|dpd_begin_date|dpd_days|is_settled|mob|overdue_principal_accumulate|overdue_principal_max|overdue_term)?+.+`
+from ods_new_s${db_suffix}.loan_info
+where 1 > 0
+  -- and false
+;
+
+
+
+
+select count(1) from ods_new_s${db_suffix}.loan_info_tmp; -- 5354164
+select count(1) from ods_new_s${db_suffix}.loan_info;     -- 5354164
+
+
+
+
+
+
+
+
+
+
+  select
+    due_bill_no,
+    overdue_days_max,
+    sum(overdue_days_count) over(partition by due_bill_no order by s_d_date) as overdue_days_count,
+    overdue_terms_count,
+    overdue_terms_max,
+    overdue_principal_accumulate,
+    overdue_principal_max,
+    s_d_date,
+    e_d_date,
+    product_id
+  from (
+    select
+      due_bill_no,
+      max(overdue_days) over(partition by due_bill_no order by s_d_date) as overdue_days_max,
+
+      -- max(overdue_days) over(partition by due_bill_no order by max(overdue_date_start) over(partition by due_bill_no order by s_d_date)) as overdue_days_count,
+
+      max(overdue_days) over(partition by due_bill_no,overdue_date_start order by s_d_date) as overdue_days_count,
+
+
+      -- max(overdue_date_start) over(partition by due_bill_no order by s_d_date) as overdue_date_start_max,
+
+      count(distinct if(overdue_days > 0,loan_term,null)) over(partition by due_bill_no order by loan_term)                                                 as overdue_terms_count,
+      max(if(overdue_days > 0,loan_term,null))            over(partition by due_bill_no order by s_d_date)                                                  as overdue_terms_max,
+      sum(distinct overdue_principal)                     over(partition by due_bill_no order by loan_term)                                                 as overdue_principal_accumulate,
+      max(overdue_principal)                              over(partition by due_bill_no order by s_d_date)                                                  as overdue_principal_max,
+      s_d_date,
+      e_d_date,
+      product_id
+    from ods_new_s${db_suffix}.loan_info
+    where 1 > 0
+      and due_bill_no = '1000000465'
+  ) as tmp
+  where 1 > 0
+    -- and s_d_date <= '${ST9}' and '${ST9}' < e_d_date
+  order by due_bill_no,s_d_date
+;
+
+
+    select
+      due_bill_no,
+      loan_term,
+      max(overdue_days) over(partition by due_bill_no order by s_d_date) as overdue_days_max,
+
+      -- max(overdue_days) over(partition by due_bill_no order by max(overdue_date_start) over(partition by due_bill_no order by s_d_date)) as overdue_days_count,
+
+
+      max(overdue_days) over(partition by due_bill_no,overdue_date_start order by s_d_date) as overdue_days_count,
+
+      -- max(overdue_date_start) over(partition by due_bill_no order by s_d_date) as overdue_date_start_max,
+
+      count(distinct if(overdue_days > 0,loan_term,null)) over(partition by due_bill_no order by loan_term)                                                 as overdue_terms_count,
+      max(if(overdue_days > 0,loan_term,null))            over(partition by due_bill_no order by s_d_date)                                                  as overdue_terms_max,
+      sum(distinct overdue_principal)                     over(partition by due_bill_no order by loan_term)                                                 as overdue_principal_accumulate,
+      max(overdue_principal)                              over(partition by due_bill_no order by s_d_date)                                                  as overdue_principal_max,
+      s_d_date,
+      e_d_date,
+      product_id
+    from ods_new_s${db_suffix}.loan_info
+    where 1 > 0
+      and due_bill_no = '1000000465'
+  order by due_bill_no,s_d_date
+;
+
+
+
+
+select *
+from
+ods_new_s.loan_info
+-- ods_new_s_cps.loan_info
+where 1 > 0
+  -- and due_bill_no = '1120070122165877736172'
+  and due_bill_no = '1120062009364346847397'
+order by s_d_date
+;
+
+
+select *
+from
+dm_eagle.eagle_loan_info
+-- dm_eagle_cps.eagle_loan_info
+where 1 > 0
+  -- and biz_date = '2020-07-01'
+  -- and due_bill_no = '1120070122165877736172'
+  -- and due_bill_no = '1120062009364346847397'
+  and due_bill_no = '1120061421344483293354'
+order by biz_date
+;
+
+
+
+  select
+    due_bill_no,
+    sum(overdue_days) as tt
+  from (
+    select
+      due_bill_no,
+      max(overdue_days) as overdue_days
+    from ods_new_s_cps.loan_info
+    where 1 > 0
+      and s_d_date <= '2020-07-13'
+      -- and due_bill_no = '1000000465'
+      and due_bill_no = '1120061421344483293354'
+    group by due_bill_no,overdue_date_start
+  ) as a
+  group by due_bill_no
+;
+
+
+
+
+
+
+
+
+
+

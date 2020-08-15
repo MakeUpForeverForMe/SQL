@@ -1213,8 +1213,8 @@ select 'tom3'    as user_id, 'test10' as device_id, 'new' as user_type, 66.66 as
 -- 测试over从句
 SELECT user_id,user_type,price,sales,row_number() over(partition by user_type order by sales,user_id) as row_num,
   SUM(price) OVER(PARTITION BY user_type ORDER BY sales) AS pv1, -- 默认为从起点到当前行
-  SUM(price) OVER(PARTITION BY user_type ORDER BY sales RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pv21,
-  SUM(price) OVER(PARTITION BY user_type ORDER BY sales ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pv2, --从起点到当前行，结果同pv1
+  SUM(price) OVER(PARTITION BY user_type ORDER BY sales RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pv21, --从起点到当前行，结果同pv1
+  SUM(price) OVER(PARTITION BY user_type ORDER BY sales ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pv2,
   SUM(price) OVER(PARTITION BY user_type) AS pv3,               --分组内所有行
   SUM(price) OVER(PARTITION BY user_type ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS pv31,
   SUM(price) OVER(PARTITION BY user_type ORDER BY sales ROWS BETWEEN 3 PRECEDING AND CURRENT ROW) AS pv4,   --当前行+往前3行
