@@ -7474,10 +7474,8 @@ where 1 > 0
 
 select *
 from
--- ods.ecas_order
--- ods.ecas_order_hst
-ods.ecas_order_asset
--- ods.ecas_order_hst_asset
+ods.ecas_repay_hst_asset
+-- ods.ecas_repay_hst
 where 1 > 0
   and d_date = '2020-08-12'
   and order_id = '000015914454181admin000082000003'
@@ -7529,6 +7527,9 @@ where 1 > 0
 order by loan_term,should_repay_date
 ;
 
+
+
+set hivevar:ST9=2020-06-04;
 
 
 set hivevar:ST9=2020-07-08;
@@ -7708,9 +7709,9 @@ select count(1) from ods_new_s${db_suffix}.loan_info;     -- 5354164
       s_d_date,
       e_d_date,
       product_id
-    from ods_new_s${db_suffix}.loan_info
+    from ods_new_s.loan_info
     where 1 > 0
-      and due_bill_no = '1000000465'
+      and due_bill_no = '1120060711281498770784'
   order by due_bill_no,s_d_date
 ;
 
@@ -7723,6 +7724,8 @@ ods_new_s.loan_info
 -- ods_new_s_cps.loan_info
 where 1 > 0
   -- and due_bill_no = '1120070122165877736172'
+  -- and due_bill_no = '1120062009364346847397'
+  -- and due_bill_no = '1120060711281498770784'
   and due_bill_no = '1120062009364346847397'
 order by s_d_date
 ;
@@ -7736,7 +7739,9 @@ where 1 > 0
   -- and biz_date = '2020-07-01'
   -- and due_bill_no = '1120070122165877736172'
   -- and due_bill_no = '1120062009364346847397'
-  and due_bill_no = '1120061421344483293354'
+  -- and due_bill_no = '1120061421344483293354'
+  -- and due_bill_no = '1120062009364346847397'
+  and due_bill_no = '1120060711281498770784'
 order by biz_date
 ;
 
@@ -7748,15 +7753,121 @@ order by biz_date
   from (
     select
       due_bill_no,
-      max(overdue_days) as overdue_days
-    from ods_new_s_cps.loan_info
+      overdue_days
+      -- max(overdue_days) as overdue_days
+    from ods_new_s.loan_info
     where 1 > 0
       and s_d_date <= '2020-07-13'
       -- and due_bill_no = '1000000465'
-      and due_bill_no = '1120061421344483293354'
-    group by due_bill_no,overdue_date_start
+      -- and due_bill_no = '1120061421344483293354'
+      and due_bill_no = '1120062009364346847397'
+    -- group by due_bill_no,overdue_date_start
   ) as a
   group by due_bill_no
+;
+
+
+
+
+select
+  sum(loan_init_principal) as amount
+from (
+select distinct
+  due_bill_no,
+  loan_init_principal
+from ods_new_s.loan_info
+) as tmp
+;
+
+
+select sum(loan_amount_accumulate_count)
+from dw_new.dw_loan_base_stat_loan_num_day
+where biz_date = '2020-08-16'
+;
+
+
+
+
+
+
+set var:ST9=2020-06-03;
+select
+  -- due_bill_no,
+  -- loan_active_date,
+  -- loan_init_principal,
+  -- loan_init_term,
+  -- loan_term,
+  -- start_interest_date,
+  -- should_repay_date,
+  -- should_repay_principal as should_repay_principal,
+  -- schedule_status_cn,
+
+  loan_term,
+  sum(should_repay_principal) as should_repay_principal,
+  '${var:ST9}' as biz_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802')
+  and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+  and start_interest_date <= '${var:ST9}' and '${var:ST9}' < should_repay_date
+group by product_id,loan_term
+-- order by product_id,due_bill_no
+;
+
+
+
+set var:ST9=2020-06-03;
+select
+  repay_schedule.loan_init_term,
+  repay_schedule.loan_term,
+  count(distinct repay_schedule.due_bill_no)                                                                    as should_repay_loan_num,
+  sum(repay_schedule.should_repay_principal - nvl(repay_detail.pricinpal,0))                                    as should_repay_principal,
+  sum(if(lower(schedule_status) = 'o',repay_schedule.should_repay_principal - nvl(repay_detail.pricinpal,0),0)) as should_repay_overdue_principal,
+  sum(if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_interest  - nvl(repay_detail.interest,0)))  as should_repay_interest,
+  sum(if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_term_fee - nvl(repay_detail.term_fee,0)) + if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_svc_fee - nvl(repay_detail.svc_fee,0))) as should_repay_svc_term,
+  sum(if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_term_fee  - nvl(repay_detail.term_fee,0)))  as should_repay_term_fee,
+  sum(if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_svc_fee   - nvl(repay_detail.svc_fee,0)))   as should_repay_svc_fee,
+  sum(if(lower(schedule_status) = 'f',0,repay_schedule.should_repay_penalty   - nvl(repay_detail.penalty,0)))   as should_repay_penalty,
+  repay_schedule.product_id
+from (
+  select
+    due_bill_no,
+    loan_init_term,
+    loan_term,
+    schedule_status,
+    should_repay_principal,
+    should_repay_interest,
+    should_repay_term_fee,
+    should_repay_svc_fee,
+    should_repay_penalty,
+    product_id
+  from ods_new_s.repay_schedule
+  where 1 > 0
+    and product_id in ('001801','001802')
+    and schedule_status = 'N'
+    and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+    and start_interest_date <= '${var:ST9}' and '${var:ST9}' < should_repay_date
+) as repay_schedule
+left join (
+  select
+    due_bill_no,
+    repay_term,
+    sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+    sum(case bnp_type when 'Interest'  then repay_amount else 0 end) as interest,
+    sum(case bnp_type when 'TERMFee'   then repay_amount else 0 end) as term_fee,
+    sum(case bnp_type when 'SVCFee'    then repay_amount else 0 end) as svc_fee,
+    sum(case bnp_type when 'Penalty'   then repay_amount else 0 end) as penalty,
+    product_id
+  from ods_new_s.repay_detail
+  where 1 > 0
+    and biz_date <= '${var:ST9}'
+  group by due_bill_no,product_id,repay_term
+) as repay_detail
+on  repay_schedule.due_bill_no = repay_detail.due_bill_no
+and repay_schedule.loan_term   = repay_detail.repay_term
+group by repay_schedule.loan_init_term,repay_schedule.loan_term,repay_schedule.product_id
+order by product_id,loan_init_term,loan_term
 ;
 
 
@@ -7767,4 +7878,158 @@ order by biz_date
 
 
 
+set var:ST9=2020-06-03;
+select due_bill_no,loan_active_date,product_id,'${var:ST9}' as biz_date
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id in ('001801','001802')
+  and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+order by product_id,loan_active_date,due_bill_no
+;
+
+select
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term,
+  should_repay_principal,
+  product_id,
+  '${var:ST9}' as biz_date
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802')
+  and loan_term = 1
+  and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+order by product_id,loan_active_date,due_bill_no
+;
+
+
+
+refresh dw_new.dw_loan_base_stat_loan_num_day;
+
+
+
+
+select
+  sum(loan_num)                     as loan_num,
+  sum(loan_num_accumulate_count)    as loan_num_accumulate_count,
+  sum(loan_num_accumulate_sum)      as loan_num_accumulate_sum,
+  sum(loan_amount)                  as loan_amount,
+  sum(loan_amount_accumulate_count) as loan_amount_accumulate_count,
+  sum(loan_amount_accumulate_sum)   as loan_amount_accumulate_sum,
+  -- sum(loan_num_accumulate_count)    as loan_num,
+  -- sum(loan_amount_accumulate_count) as loan_amount,
+  -- biz_date         as loan_active_date,
+  product_id
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-08-14'
+group by
+  -- biz_date,
+  product_id
+order by
+  -- biz_date,
+  product_id
+;
+
+
+
+select
+  *
+  -- sum(should_repay_principal) as tt
+from dw_new.dw_loan_base_stat_should_repay_day
+where 1 > 0
+  and product_id = '001802'
+  and biz_date = '2020-06-03'
+;
+
+
+
+
+set var:ST9=2020-06-03;
+select
+sum(should_repay_principal_unposted) as should_repay_principal_unposted,
+loan_term_unposted,
+product_id_unposted
+from (
+  select
+    due_bill_no_unposted,
+    loan_term_unposted,
+    should_repay_principal_unposted - nvl(pricinpal,0) as should_repay_principal_unposted,
+    product_id_unposted
+  from (
+    select
+      due_bill_no            as due_bill_no_unposted,
+      loan_term              as loan_term_unposted,
+      should_repay_principal as should_repay_principal_unposted,
+      product_id             as product_id_unposted
+    from ods_new_s.repay_schedule
+    where 1 > 0
+      and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+  ) as unposted_schedule
+  left join (
+    select
+      due_bill_no                                                      as due_bill_no_repay_detail,
+      repay_term                                                       as repay_term_repay_detail,
+      sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+      sum(case bnp_type when 'Interest'  then repay_amount else 0 end) as interest,
+      sum(case bnp_type when 'TERMFee'   then repay_amount else 0 end) as term_fee,
+      sum(case bnp_type when 'SVCFee'    then repay_amount else 0 end) as svc_fee,
+      sum(case bnp_type when 'Penalty'   then repay_amount else 0 end) as penalty,
+      product_id                                                       as product_id_repay_detail
+    from ods_new_s.repay_detail
+    where 1 > 0
+      and biz_date <= '${var:ST9}'
+    group by due_bill_no,product_id,repay_term
+  ) as repay_detail
+  on  product_id_unposted  = product_id_repay_detail
+  and due_bill_no_unposted = due_bill_no_repay_detail
+  and loan_term_unposted   = repay_term_repay_detail
+) as tmp
+group by product_id_unposted,loan_term_unposted
+;
+
+
+
+
+select
+  -- *
+  sum(loan_num_accumulate_count) as tt,
+  product_id
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-06-03'
+group by product_id
+;
+
+
+
+
+
+
+select
+  due_bill_no,
+  repay_term,
+  sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+  biz_date,
+  product_id
+from ods_new_s.repay_detail
+where 1 > 0
+  -- and biz_date <= '${var:ST9}'
+group by due_bill_no,product_id,repay_term,biz_date
+;
+
+
+
+
+select
+from
+where
+group by
+order by
+left  join
+inner join
+full join
 
