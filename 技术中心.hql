@@ -8010,26 +8010,267 @@ group by product_id
 
 
 select
-  due_bill_no,
-  repay_term,
+  count(distinct due_bill_no) as repaid_num,
   sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
   biz_date,
   product_id
 from ods_new_s.repay_detail
 where 1 > 0
-  -- and biz_date <= '${var:ST9}'
-group by due_bill_no,product_id,repay_term,biz_date
+  and biz_date = '2020-06-03'
+group by product_id,biz_date
+;
+
+
+set hivevar:ST9=2020-06-04;
+
+set var:ST9=2020-06-05;
+
+select
+  loan_init_term,
+  repaid_num,
+  pricinpal + interest + term_fee + svc_fee + penalty as repaid_amount,
+  pricinpal                                           as repaid_pincipal,
+  interest + term_fee + svc_fee + penalty             as repaid_interest_penalty_svc_fee,
+  interest                                            as repaid_interest,
+  interest + interest                                 as repaid_svc_fee,
+  interest                                            as repaid_penalty,
+  product_id
+from (
+  select
+    loan_init_term,
+    count(distinct due_bill_no)                                      as repaid_num,
+    sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+    sum(case bnp_type when 'Interest'  then repay_amount else 0 end) as interest,
+    sum(case bnp_type when 'TERMFee'   then repay_amount else 0 end) as term_fee,
+    sum(case bnp_type when 'SVCFee'    then repay_amount else 0 end) as svc_fee,
+    sum(case bnp_type when 'Penalty'   then repay_amount else 0 end) as penalty,
+    biz_date,
+    product_id
+  from ods_new_s.repay_detail
+  where 1 > 0
+    and biz_date = '${var:ST9}'
+  group by loan_init_term,product_id,biz_date
+) as tmp
+;
+
+select *
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and biz_date = '2020-06-04'
+;
+
+
+select
+  *
+from ods_new_s.repay_detail
+where 1 > 0
+  and biz_date = '2020-06-04'
+order by due_bill_no,loan_init_term,repay_term
+;
+
+
+select
+  loan_init_term                                      as loan_init_term_count,
+  pricinpal + interest + term_fee + svc_fee + penalty as repaid_amount_count,
+  pricinpal                                           as repaid_pincipal_count,
+  interest + term_fee + svc_fee + penalty             as repaid_interest_penalty_svc_fee_count,
+  interest                                            as repaid_interest_count,
+  interest + interest                                 as repaid_svc_fee_count,
+  interest                                            as repaid_penalty_count,
+  product_id                                          as product_id_count
+from (
+  select
+    loan_init_term,
+    sum(case bnp_type when 'Pricinpal' then repay_amount else 0 end) as pricinpal,
+    sum(case bnp_type when 'Interest'  then repay_amount else 0 end) as interest,
+    sum(case bnp_type when 'TERMFee'   then repay_amount else 0 end) as term_fee,
+    sum(case bnp_type when 'SVCFee'    then repay_amount else 0 end) as svc_fee,
+    sum(case bnp_type when 'Penalty'   then repay_amount else 0 end) as penalty,
+    product_id
+  from ods_new_s.repay_detail
+  where 1 > 0
+    and biz_date <= '2020-06-04'
+  group by loan_init_term,product_id
+) as tmp
+order by product_id_count,loan_init_term_count
+;
+
+
+
+select distinct *
+from (
+  select
+    count(due_bill_no)  over(partition by product_id order by txn_date) as repaid_num,
+    sum(repaid_pincipal) over(partition by product_id order by txn_date)  as repaid_pincipal,
+    txn_date,
+    product_id
+  from (
+    select
+      due_bill_no,
+      sum(if(bnp_type = 'Pricinpal',repay_amount,0)) as repaid_pincipal,
+      biz_date as txn_date,
+      product_id
+    from ods_new_s${var:db_suffix}.repay_detail
+    where 1 > 0
+      and product_id in ('001801','001802')
+      and biz_date <= '2020-06-08'
+    group by due_bill_no,product_id,biz_date
+  ) as tmp
+) as tmp
+order by txn_date,product_id
+;
+
+select
+  count(distinct due_bill_no),
+  -- sum(if(bnp_type = 'Pricinpal',repay_amount,0)) as repaid_pincipal,
+  -- biz_date as txn_date,
+  product_id
+from ods_new_s${db_suffix}.repay_detail
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date <= '2020-06-08'
+group by product_id
+;
+
+
+select
+  sum(paid_num_count)    as repaid_num,
+  -- sum(paid_principal_count) as repaid_pincipal,
+  -- biz_date         as txn_date,
+  product_id
+from dw_new${db_suffix}.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-06-08'
+group by product_id
+;
+
+
+set hivevar:ST9=2020-06-01;
+set hivevar:ET9=2020-06-15;
+
+select
+  product_id,
+  sum(loan_amount) as loan_amount
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and biz_date <= '2020-07-22'
+group by product_id
 ;
 
 
 
 
 select
-from
-where
+  product_id,
+  -- loan_month,
+  sum(loan_amount) as loan_amount
+from (select distinct product_id,loan_month,loan_amount from dm_eagle.eagle_overdue_rate_month where 1 > 0
+  and biz_date <= '2020-07-22') as tmp
+group by product_id
+-- ,loan_month
+;
+
+
+229085573.0000
+254455585.0000
+
+
+
+select
+  product_id,
+  -- date_format(biz_date,'yyyy-MM')  as loan_month,
+  sum(loan_amount_accumulate_count) as loan_amount
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and biz_date = '2020-06-22'
 group by
-order by
-left  join
-inner join
-full join
+  product_id
+;
+
+
+select
+  sum(paid_amount_count) as paid_amount_count,
+  biz_date         as txn_date,
+  product_id
+from dw_new${var:db_suffix}.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and product_id in ('001801','001802')
+group by biz_date,product_id
+order by txn_date,product_id
+;
+
+
+select
+  sum(paid_amount) as paid_amount_count,
+  biz_date         as txn_date,
+  product_id
+from dm_eagle${var:db_suffix}.eagle_asset_scale_repaid_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-08-10'
+group by biz_date,product_id
+order by txn_date,product_id
+;
+
+
+
+invalidate metadata dm_eagle${var:db_suffix}.eagle_should_repay_repaid_amount_day;
+
+
+select
+  sum(repaid_amount) as repaid_amount,
+  biz_date         as txn_date,
+  product_id
+from dm_eagle${var:db_suffix}.eagle_should_repay_repaid_amount_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-08-10'
+group by biz_date,product_id
+order by txn_date,product_id
+;
+
+
+select sum(repaid_amount) as repaid_amount from dm_eagle.eagle_should_repay_repaid_amount_day where 1 > 0 and product_id = '001802' and biz_date = '2020-08-10';
+
+
+
+
+
+
+
+
+select
+  sum(repaid_amount) as repaid_amount
+from dm_eagle_cps.eagle_should_repay_repaid_amount_day
+where 1 > 0
+  and product_id in ('001801','001802')
+  and biz_date = '2020-08-16'
+;
+
+
+
+
+select
+  sum(paid_amount_count) as repaid_amount
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  -- and product_id in ('001801','001802')
+  and product_id = '001802'
+  and biz_date = '2020-08-16'
+;
+
+
+
+select
+  sum(paid_amount) as repaid_amount
+from dm_eagle.eagle_asset_scale_repaid_day
+where 1 > 0
+  -- and product_id in ('001801','001802')
+  and product_id = '001802'
+  and biz_date = '2020-08-16'
+;
+
+
+
 
