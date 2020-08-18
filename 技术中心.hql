@@ -8274,3 +8274,12 @@ where 1 > 0
 
 
 
+UPDATE eagle_asset_scale_principal_day SET unposted_principal=unposted_principal / 1000;
+
+-- UPDATE eagle_asset_scale_principal_day SET remain_principal=remain_principal / 1000;
+
+UPDATE eagle_inflow_rate_day SET remain_principal=remain_principal * 20000; -- 20000
+
+
+
+
