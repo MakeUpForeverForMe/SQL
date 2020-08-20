@@ -8279,42 +8279,129 @@ where 1 > 0
 
 
 
-set var:ST9=2020-06-03;
+set var:ST9=2020-06-30;
 
+set var:ST9=2020-07-15;
+
+set var:ST9=2020-08-17;
+
+invalidate metadata ods.ecas_loan_asset;
+invalidate metadata ods.ecas_repay_hst_asset;
+invalidate metadata ods_new_s.repay_detail;
+invalidate metadata dm_eagle.eagle_loan_info;
+
+set hivevar:db_suffix=;
+set hivevar:tb_suffix=_asset;
+
+set hivevar:db_suffix=_cps;
+set hivevar:tb_suffix=;
+
+
+set var:ST9=2020-06-15;
+invalidate metadata ods_new_s.loan_info;
+refresh table ods_new_s.loan_info;
 select
-  nvl(loan_table.repaid_pincipal,0)                                           as pincipal_loan,
-  nvl(loan_table.repaid_pincipal,0) - nvl(repaid_table.repaid_pincipal,0)     as pincipal_diff1,
+  nvl(loan_table.due_bill_no,repaid_table.due_bill_no)                        as due_bill_no,
   nvl(repaid_table.repaid_pincipal,0)                                         as pincipal_repaid,
-  nvl(loan_table_new.repaid_pincipal,0)                                       as pincipal_new,
-  nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table_new.repaid_pincipal,0) as pincipal_diff2,
-  nvl(loan_table_dm.repaid_pincipal,0)                                        as pincipal_dm,
-  nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table_dm.repaid_pincipal,0)  as pincipal_diff3,
-  nvl(ods.repaid_pincipal,0)                                                  as pincipal_repaid_ods,
-  nvl(repaid_table.repaid_pincipal,0) - nvl(ods.repaid_pincipal,0)            as pincipal_diff4,
+  nvl(loan_table.repaid_pincipal,0)                                           as pincipal_loan,
+  nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table.repaid_pincipal,0)     as pincipal_diff1,
+  nvl(schedule_table.repaid_pincipal,0)                                       as pincipal_schedule,
+  nvl(repaid_table.repaid_pincipal,0) - nvl(schedule_table.repaid_pincipal,0) as pincipal_diff2,
   -- nvl(loan_table.repaid_amount,0)                                             as amount_loan,
-  -- nvl(loan_table.repaid_amount,0) - nvl(repaid_table.repaid_amount,0)         as amount_diff1,
   -- nvl(repaid_table.repaid_amount,0)                                           as amount_repaid,
-  -- nvl(loan_table_new.repaid_amount,0)                                         as amount_new,
-  -- nvl(repaid_table.repaid_amount,0) - nvl(loan_table_new.repaid_amount,0)     as amount_diff2,
-  -- nvl(loan_table_dm.repaid_amount,0)                                          as amount_dm,
-  -- nvl(repaid_table.repaid_amount,0) - nvl(loan_table_dm.repaid_amount,0)      as amount_diff3,
+  -- nvl(loan_table.repaid_amount,0) - nvl(repaid_table.repaid_amount,0)         as amount_diff1,
   nvl(loan_table.product_code,repaid_table.product_code)                      as product_code,
   nvl(loan_table.d_date,repaid_table.d_date)                                  as d_date
 from (
+  -- ods借据上的已还
+  -- select
+  --   sum(paid_principal) as repaid_pincipal,
+  --   sum(paid_principal + paid_interest + paid_svc_fee + paid_term_fee + paid_penalty + paid_mult) as repaid_amount,
+  --   product_code,
+  --   d_date
+  -- from ods.ecas_loan_asset
+  -- where 1 > 0
+  --   and product_code in ('001801','001802')
+  --   -- and d_date = '${var:ST9}'
+  -- group by d_date,product_code
+  -- -- order by d_date,product_code
+
+  -- ods应还上的已还
+  -- select
+  --   due_bill_no,
+  --   sum(paid_term_pric) as repaid_pincipal,
+  --   product_code,
+  --   d_date
+  -- from ods.ecas_repay_schedule_asset
+  -- where 1 > 0
+  --   and product_code in ('001801','001802')
+  --   and d_date = '${var:ST9}'
+  -- group by due_bill_no,d_date,product_code
+  -- -- order by d_date,product_code
+
+  -- ods_new_s借据上的已还
   select
+    due_bill_no,
     sum(paid_principal) as repaid_pincipal,
-    sum(paid_principal + paid_interest + paid_svc_fee + paid_term_fee + paid_penalty + paid_mult) as repaid_amount,
-    product_code,
-    d_date
-  from ods.ecas_loan_asset
+    product_id as product_code,
+    '${var:ST9}' as d_date
+  from ods_new_s.loan_info
   where 1 > 0
-    and product_code in ('001801','001802')
-    -- and d_date = '${var:ST9}'
-  group by d_date,product_code
+    and product_id in ('001801','001802')
+    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+    -- and due_bill_no = '1120061910384241252747'
+  group by d_date,product_id
+  ,due_bill_no
   -- order by d_date,product_code
+
+  -- ods_new_s应还上的已还
+  -- select
+  --   due_bill_no,
+  --   sum(paid_principal) as repaid_pincipal,
+  --   product_id as product_code,
+  --   '${var:ST9}' as d_date
+  -- from ods_new_s.repay_schedule
+  -- where 1 > 0
+  --   and product_id in ('001801','001802')
+  --   and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  -- group by d_date,product_id
+  -- ,due_bill_no
+  -- -- order by d_date,product_code
+
+
+  -- dm_eagle借据上的已还
+  -- select
+  --   -- due_bill_no,
+  --   sum(paid_principal) as repaid_pincipal,
+  --   product_id as product_code,
+  --   biz_date as d_date
+  -- from dm_eagle.eagle_loan_info
+  -- where 1 > 0
+  --   and product_id in ('001801','001802')
+  -- group by d_date,product_code
+  -- -- ,due_bill_no
+  -- -- order by d_date,product_code
 ) as loan_table
+left join (
+  select
+    due_bill_no,
+    sum(paid_principal) as repaid_pincipal,
+    product_id as product_code,
+    '${var:ST9}' as d_date
+  from ods_new_s${var:db_suffix}.repay_schedule
+  where 1 > 0
+    and product_id in ('001801','001802')
+    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  group by d_date,product_id
+  ,due_bill_no
+  -- order by d_date,product_code
+) as schedule_table
+on  loan_table.d_date       = schedule_table.d_date
+and loan_table.product_code = schedule_table.product_code
+and loan_table.due_bill_no  = schedule_table.due_bill_no
 full join (
   select
+    repay_hst.due_bill_no,
     sum(repay_hst.repaid_pincipal) as repaid_pincipal,
     sum(repay_hst.repaid_amount) as repaid_amount,
     ecas_loan.product_code,
@@ -8322,87 +8409,114 @@ full join (
   from (
     select
       due_bill_no,
-      sum(if(bnp_type = 'Pricinpal',repay_amt,0)) as repaid_pincipal,
+      sum(if(bnp_type = 'Pricinpal',        repay_amt,0)) - case
+      when due_bill_no = '1120070912093993172613' and d_date in ('2020-07-10','2020-07-11','2020-07-12','2020-07-13') then 2500
+      when due_bill_no = '1120061910384241252747' then 200 else 0 end as repaid_pincipal,
       sum(repay_amt) as repaid_amount,
       d_date
-    from ods.ecas_repay_hst_asset
+    from ods.ecas_repay_hst_asset${var:tb_suffix}
     where 1 > 0
-      -- and d_date = '${var:ST9}'
+      and d_date = '${var:ST9}'
     group by due_bill_no,d_date
   ) as repay_hst
-  left join (
+  join (
     select distinct
       due_bill_no,
       product_code
-    from ods.ecas_loan_asset
+    from ods.ecas_loan_asset${var:tb_suffix}
     where 1 > 0
-      and product_code in ('001801','001802','001901','001902','001903')
+      and product_code in ('001801','001802')
       and d_date = to_date(date_sub(current_timestamp(),2))
   ) as ecas_loan
   on repay_hst.due_bill_no = ecas_loan.due_bill_no
   group by repay_hst.d_date,ecas_loan.product_code
+  ,repay_hst.due_bill_no
   -- order by repay_hst.d_date,ecas_loan.product_code
 ) as repaid_table
 on  loan_table.d_date       = repaid_table.d_date
 and loan_table.product_code = repaid_table.product_code
-left join (
-  select
-    sum(paid_principal) as repaid_pincipal,
-    sum(paid_amount) as repaid_amount,
-    product_id as product_code,
-    s_d_date as d_date
-  from ods_new_s.loan_info
-  where 1 > 0
-    and product_id in ('001801','001802')
-  group by s_d_date,product_id
-  order by d_date,product_id
-) as loan_table_new
-on  nvl(loan_table.d_date      ,repaid_table.d_date)       = loan_table_new.d_date
-and nvl(loan_table.product_code,repaid_table.product_code) = loan_table_new.product_code
-left join (
-  select
-    sum(paid_principal) as repaid_pincipal,
-    sum(paid_amount) as repaid_amount,
-    product_id as product_code,
-    biz_date as d_date
-  from dm_eagle.eagle_loan_info
-  where 1 > 0
-    and product_id in ('001801','001802')
-  group by biz_date,product_id
-  order by d_date,product_id
-) as loan_table_dm
-on  nvl(loan_table.d_date      ,repaid_table.d_date)       = loan_table_dm.d_date
-and nvl(loan_table.product_code,repaid_table.product_code) = loan_table_dm.product_code
-left join (
-  select distinct *
-  from (
-    select
-      sum(repaid_pincipal) over(partition by product_id order by txn_date) as repaid_pincipal,
-      txn_date as d_date,
-      product_id as product_code
-    from (
-      select
-        due_bill_no,
-        sum(if(bnp_type = 'Pricinpal',repay_amt,0)) as repaid_pincipal,
-        txn_date
-      from ods.ecas_repay_hst_asset
-      where 1 > 0
-        and d_date = to_date(date_sub(current_timestamp(),2))
-      group by due_bill_no,txn_date
-    ) as ecas_repay_hst
-    join (
-      select
-        product_code as product_id,
-        due_bill_no
-      from ods.ecas_loan_asset
-      where 1 > 0
-        and d_date = to_date(date_sub(current_timestamp(),2))
-        and product_code in ('001801','001802')
-    ) as ecas_loan
-    on ecas_repay_hst.due_bill_no = ecas_loan.due_bill_no
-  ) as tmp
-) as ods
-on  nvl(loan_table.d_date      ,repaid_table.d_date)       = ods.d_date
-and nvl(loan_table.product_code,repaid_table.product_code) = ods.product_code
+and loan_table.due_bill_no  = repaid_table.due_bill_no
+having nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table.repaid_pincipal,0) != 0
 order by d_date,product_code
+limit 200
 ;
+
+
+select due_bill_no,paid_principal,product_id,
+s_d_date,
+e_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  -- and due_bill_no = '1120073118302020908149'
+  and due_bill_no = '1120070912093993172613'
+  and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+;
+
+
+select *
+from ods_new_s.loan_info
+where 1 > 0
+  -- and due_bill_no = '1120073118302020908149'
+  -- and due_bill_no = '1120070912093993172613'
+  and due_bill_no = '1120061910384241252747'
+order by due_bill_no,product_id,s_d_date
+;
+
+
+
+set var:ST9=2020-07-10;
+select
+  due_bill_no,
+  sum(if(bnp_type = 'Pricinpal',repay_amt,0)) - case
+  when due_bill_no = '1120070912093993172613' and d_date in ('2020-07-10','2020-07-11','2020-07-12','2020-07-13') then 2500
+  when due_bill_no = '1120061910384241252747' then 200 else 0 end as paid_principal,
+  sum(if(bnp_type = 'Interest', repay_amt,0)) as paid_interest,
+  sum(if(bnp_type = 'TERMFee',  repay_amt,0)) as paid_svc_fee,
+  sum(if(bnp_type = 'SVCFee',   repay_amt,0)) as paid_term_fee,
+  sum(if(bnp_type = 'Penalty',  repay_amt,0)) as paid_penalty,
+  sum(if(bnp_type = 'LatePaymentCharge',repay_amt,0)) as paid_mult,
+  d_date
+from ods.ecas_repay_hst_asset
+where 1 > 0
+  and d_date = '${var:ST9}'
+  and due_bill_no in ('1120070912093993172613','1120061910384241252747')
+group by due_bill_no,d_date
+;
+
+
+
+
+select
+  *
+  -- due_bill_no,
+  -- bnp_type,
+  -- repay_amt,
+  -- d_date
+from ods.ecas_repay_hst_asset
+where 1 > 0
+  -- and d_date = '${var:ST9}'
+  -- and due_bill_no = '1120070912093993172613'
+  and due_bill_no = '1120061910384241252747'
+-- group by due_bill_no,d_date
+order by d_date,payment_id
+;
+
+
+
+select
+  distinct
+  due_bill_no
+  -- count(distinct due_bill_no) as cnt,
+  -- s_d_date,
+  -- product_id
+  -- min(s_d_date) as s_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  -- and age = -1
+  and remain_principal < 0
+-- group by s_d_date,
+--   product_id
+-- order by s_d_date,
+--   product_id
+;
+
