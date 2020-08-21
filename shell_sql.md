@@ -1088,6 +1088,15 @@ select
 
 -- 取多个数之间的最大、最小值  least(v1, v2, ...)  greatest(v1, v2, ...)
 select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
+
+-- 取非空值。 nvl(a,b) 如果 a 为空，取 b ，否则取 a。 coalesce(a,b,c,...) 从前往后，取第一个非空值
+select
+  nvl(null,'nvl_1_a') as nvl_1,
+  nvl('nvl_2_a','nvl_2_b') as nvl_2,
+  coalesce(null,null,'coalesce_1_a') as coalesce_1,
+  coalesce(null,'coalesce_2_a','coalesce_2_b') as coalesce_2,
+  coalesce('coalesce_3_a','coalesce_3_b','coalesce_3_c') as coalesce_3
+;
 ```
 
 ## 4.2 Hive
