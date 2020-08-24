@@ -8279,174 +8279,6 @@ where 1 > 0
 
 
 
-
-
-
-
-set var:ST9=2020-06-30;
-
-set var:ST9=2020-07-15;
-
-set var:ST9=2020-08-17;
-
-invalidate metadata ods.ecas_loan_asset;
-invalidate metadata ods.ecas_repay_hst_asset;
-invalidate metadata ods_new_s.repay_detail;
-invalidate metadata dm_eagle.eagle_loan_info;
-
-set hivevar:db_suffix=;
-set hivevar:tb_suffix=_asset;
-
-set hivevar:db_suffix=_cps;
-set hivevar:tb_suffix=;
-
-
-set var:ST9=2020-06-05;
-invalidate metadata ods_new_s${var:db_suffix}.loan_info;
-invalidate metadata ods_new_s${var:db_suffix}.repay_schedule;
--- 实还对比
-select
-  nvl(loan_table.due_bill_no,repaid_table.due_bill_no)                        as due_bill_no,
-  nvl(repaid_table.repaid_pincipal,0)                                         as pincipal_repaid,
-  nvl(loan_table.repaid_pincipal,0)                                           as pincipal_loan,
-  nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table.repaid_pincipal,0)     as pincipal_diff1,
-  nvl(schedule_table.repaid_pincipal,0)                                       as pincipal_schedule,
-  nvl(repaid_table.repaid_pincipal,0) - nvl(schedule_table.repaid_pincipal,0) as pincipal_diff2,
-  -- nvl(loan_table.repaid_amount,0)                                             as amount_loan,
-  -- nvl(repaid_table.repaid_amount,0)                                           as amount_repaid,
-  -- nvl(loan_table.repaid_amount,0) - nvl(repaid_table.repaid_amount,0)         as amount_diff1,
-  nvl(loan_table.product_code,repaid_table.product_code)                      as product_code,
-  nvl(loan_table.d_date,repaid_table.d_date)                                  as d_date
-from (
-  -- ods借据上的已还
-  -- select
-  --   sum(paid_principal) as repaid_pincipal,
-  --   sum(paid_principal + paid_interest + paid_svc_fee + paid_term_fee + paid_penalty + paid_mult) as repaid_amount,
-  --   product_code,
-  --   d_date
-  -- from ods.ecas_loan_asset
-  -- where 1 > 0
-  --   and product_code in ('001801','001802')
-  --   -- and d_date = '${var:ST9}'
-  -- group by d_date,product_code
-  -- -- order by d_date,product_code
-
-  -- ods应还上的已还
-  -- select
-  --   due_bill_no,
-  --   sum(paid_term_pric) as repaid_pincipal,
-  --   product_code,
-  --   d_date
-  -- from ods.ecas_repay_schedule_asset
-  -- where 1 > 0
-  --   and product_code in ('001801','001802')
-  --   and d_date = '${var:ST9}'
-  -- group by due_bill_no,d_date,product_code
-  -- -- order by d_date,product_code
-
-  -- ods_new_s借据上的已还
-  select
-    due_bill_no,
-    sum(paid_principal) as repaid_pincipal,
-    product_id as product_code,
-    '${var:ST9}' as d_date
-  from ods_new_s${var:db_suffix}.loan_info
-  where 1 > 0
-    and product_id in ('001801','001802')
-    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-    -- and due_bill_no = '1120061910384241252747'
-  group by d_date,product_id
-  ,due_bill_no
-  -- order by d_date,product_code
-
-  -- ods_new_s应还上的已还
-  -- select
-  --   due_bill_no,
-  --   sum(paid_principal) as repaid_pincipal,
-  --   product_id as product_code,
-  --   '${var:ST9}' as d_date
-  -- from ods_new_s.repay_schedule
-  -- where 1 > 0
-  --   and product_id in ('001801','001802')
-  --   and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-  -- group by d_date,product_id
-  -- ,due_bill_no
-  -- -- order by d_date,product_code
-
-
-  -- dm_eagle借据上的已还
-  -- select
-  --   -- due_bill_no,
-  --   sum(paid_principal) as repaid_pincipal,
-  --   product_id as product_code,
-  --   biz_date as d_date
-  -- from dm_eagle.eagle_loan_info
-  -- where 1 > 0
-  --   and product_id in ('001801','001802')
-  -- group by d_date,product_code
-  -- -- ,due_bill_no
-  -- -- order by d_date,product_code
-) as loan_table
-left join (
-  select
-    due_bill_no,
-    sum(paid_principal) as repaid_pincipal,
-    product_id as product_code,
-    '${var:ST9}' as d_date
-  from ods_new_s${var:db_suffix}.repay_schedule
-  where 1 > 0
-    and product_id in ('001801','001802')
-    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-  group by d_date,product_id
-  ,due_bill_no
-  -- order by d_date,product_code
-) as schedule_table
-on  loan_table.d_date       = schedule_table.d_date
-and loan_table.product_code = schedule_table.product_code
-and loan_table.due_bill_no  = schedule_table.due_bill_no
-full join (
-  select
-    repay_hst.due_bill_no,
-    sum(repay_hst.repaid_pincipal) as repaid_pincipal,
-    sum(repay_hst.repaid_amount) as repaid_amount,
-    ecas_loan.product_code,
-    repay_hst.d_date
-  from (
-    select
-      due_bill_no,
-      sum(if(bnp_type = 'Pricinpal',        repay_amt,0)) - case
-      when due_bill_no = '1120070912093993172613' and d_date in ('2020-07-10','2020-07-11','2020-07-12','2020-07-13') then 2500
-      when due_bill_no = '1120061910384241252747' then 200 else 0 end as repaid_pincipal,
-      sum(repay_amt) as repaid_amount,
-      txn_date as d_date
-    from ods.ecas_repay_hst${var:tb_suffix}
-    where 1 > 0
-      and d_date = '${var:ST9}'
-    group by due_bill_no,txn_date
-  ) as repay_hst
-  join (
-    select distinct
-      due_bill_no,
-      product_code
-    from ods.ecas_loan${var:tb_suffix}
-    where 1 > 0
-      and product_code in ('001801','001802')
-      and d_date = to_date(date_sub(current_timestamp(),2))
-  ) as ecas_loan
-  on repay_hst.due_bill_no = ecas_loan.due_bill_no
-  group by repay_hst.d_date,ecas_loan.product_code
-  ,repay_hst.due_bill_no
-  -- order by repay_hst.d_date,ecas_loan.product_code
-) as repaid_table
-on  loan_table.d_date       = repaid_table.d_date
-and loan_table.product_code = repaid_table.product_code
-and loan_table.due_bill_no  = repaid_table.due_bill_no
-having nvl(repaid_table.repaid_pincipal,0) - nvl(loan_table.repaid_pincipal,0) != 0
-order by d_date,product_code
-limit 200
-;
-
-
 select due_bill_no,paid_principal,product_id,
 s_d_date,
 e_d_date
@@ -8534,10 +8366,10 @@ select
 from ods.ecas_loan_asset
 where 1 > 0
   -- and d_date in ('2020-07-09','2020-07-10','2020-07-11')
-  -- and d_date = '2020-06-04'
+  and d_date = '2020-06-02'
   -- and d_date = '2020-06-10'
-  and d_date = '2020-08-19'
-  and due_bill_no = '1120071303501255365388'
+  -- and d_date = '2020-08-19'
+  -- and due_bill_no = '1120071303501255365388'
   -- and due_bill_no = '1120060420501158464265'
 -- order by due_bill_no,curr_term,d_date
 ;
@@ -8627,55 +8459,28 @@ order by d_date,payment_id
 
 invalidate metadata ods_new_s.loan_info;
 select
-  *
-  -- distinct
-  -- due_bill_no
+  -- *
+  distinct
+  due_bill_no
   -- count(distinct due_bill_no) as cnt,
-  -- s_d_date,
-  -- product_id
-  -- min(s_d_date) as s_d_date
+  s_d_date,
+  -- min(s_d_date) as s_d_date,
+  product_id
 from ods_new_s.loan_info
 where 1 > 0
-  -- and age = -1
-  -- and remain_principal < 0
+  and (age = -1 or remain_principal < 0)
   -- and due_bill_no = '1120061421344483293354'
--- group by s_d_date,
+-- group by
+--   -- s_d_date,
 --   product_id
 order by s_d_date,
   product_id
--- limit 10
+limit 10
 ;
 
 
 
 
-
-select
-  repay_schedule.product_code  as product_code,
-  repay_schedule.due_bill_no   as due_bill_no,
-  repay_schedule.paid_out_date as schedule_paid_out_date,
-  ecas_loan.paid_out_date      as loan_paid_out_date
-from (
-  select due_bill_no,paid_out_date,product_code
-  from ods.ecas_repay_schedule_asset
-  where 1 > 0
-    and d_date = to_date(date_sub(current_timestamp(),2))
-    and schedule_status = 'F'
-  group by due_bill_no,paid_out_date,product_code,loan_init_term
-  having count(due_bill_no) = loan_init_term
-) as repay_schedule
-left join(
-  select distinct due_bill_no,paid_out_date,product_code
-  from ods.ecas_loan_asset
-  where 1 > 0
-    and d_date = to_date(date_sub(current_timestamp(),2))
-) as ecas_loan
-on  repay_schedule.product_code = ecas_loan.product_code
-and repay_schedule.due_bill_no  = ecas_loan.due_bill_no
-where 1 > 0
-  and repay_schedule.paid_out_date != ecas_loan.paid_out_date
-limit 100
-;
 
 
 select due_bill_no,paid_out_date,product_code
@@ -8691,12 +8496,82 @@ limit 100
 
 
 
+
+
+invalidate metadata ods_new_s.loan_apply;
+select
+  cust_id,
+  user_hash_no,
+  birthday,
+  pre_apply_no,
+  apply_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  loan_usage,
+  loan_usage_cn,
+  repay_type,
+  repay_type_cn,
+  interest_rate,
+  penalty_rate,
+  apply_status,
+  apply_resut_msg,
+  issue_time,
+  loan_amount_approval,
+  loan_amount,
+  create_time,
+  update_time,
+  biz_date,
+  product_id
+from ods_new_s.loan_apply
+where 1 > 0
+  and due_bill_no = '1120073118425563935378'
+;
+
+
+
+
+
+
+
+
+set var:ST9=2020-06-07;
+
+invalidate metadata ods_new_s.repay_schedule;
+select
+  *
+  -- due_bill_no,
+  -- should_repay_principal,
+  -- loan_term,
+  -- s_d_date,
+  -- e_d_date
+from ods_new_s.repay_schedule
+where 1 > 0
+  -- and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+  -- and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  -- and schedule_status = 'N'
+  and due_bill_no = '1120060602332594205233'
+  -- and (due_bill_no = '1120060215213608230275' or due_bill_no = '1120060216004289090275')
+order by due_bill_no,loan_term,s_d_date
+;
+
+
+select
+  due_bill_no,
+  loan_init_prin,
+  paid_term_pric,
+  paid_out_date,
+  paid_out_type,
+  schedule_status,
+  product_code
 from ods.ecas_repay_schedule_asset
 where 1 > 0
-  -- and d_date = '2020-07-09'
-  and d_date = '2020-08-19'
-  -- and pmt_due_date is null
-order by curr_term,d_date
--- limit 10
+  -- and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
+  -- and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  -- and schedule_status = 'N'
+  and d_date = '2020-08-22'
+  and due_bill_no = '1120060602332594205233'
+  -- and (due_bill_no = '1120060215213608230275' or due_bill_no = '1120060216004289090275')
 ;
 
