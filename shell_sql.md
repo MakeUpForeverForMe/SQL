@@ -1131,15 +1131,32 @@ select
 set hive.support.quoted.identifiers=None;                                          -- 设置后可以在自动中使用正则表达式，选定字段（字段反选）。默认为 column
 select `(id)?+.+` from test_map;                                                   -- 过滤掉 id 字段的其他所有字段
 
+set hive.groupby.orderby.position.alias=true;                                      -- 设置 Hive 可以使用 group by 1,2,3
+set hive.resultset.use.unique.column.names=false;                                  -- 设置 Hive 查询结果不显示库名
+set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
+
+
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
+set yarn.scheduler.maximum-allocation-mb=16g;                                      -- 设置 ResourceManager 容器内存
+set yarn.nodemanager.resource.memory-mb=16g;                                       -- 设置 NodeManager 容器内存
+set hive.exec.parallel=true;                                                       -- 设置 多进程并行
+set hive.exec.parallel.thread.number=16;                                           -- 设置 多进程数，默认8
+set hive.support.quoted.identifiers=None;                                          -- 设置 可以使用正则表达式查找字段
+set hive.mapjoin.optimized.hashtable=false;                                        -- 设置 禁用自动 MapJoin
+set hive.mapjoin.followby.gby.localtask.max.memory.usage=0.9;                      -- 设置 MapJoin 时的缓存占比
 set mapreduce.job.queuename=root.default;                                          -- 设置 Yarn 对列
 set spark.driver.memory=4g;                                                        -- 设置 Spark Driver 的内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
 set spark.executor.memory=4g;                                                      -- 设置 Spark Executor 的内存
 set spark.executor.memoryOverhead=4g;                                              -- 设置 Spark Executor 的堆外内存
 set spark.executor.heartbeatInterval=60s;                                          -- 设置 Spark Executor 通信超时时间
-set hive.spark.client.future.timeou=360;                                           -- 设置 Spark Client 超时时间
+set spark.executor.instances=50;                                                   -- 设置 Executor 进程数
+set spark.executor.cores=3;                                                        -- 设置 每个 Executor 的核数
+set spark.shuffle.memoryFraction=0.6;                                              -- 设置 Shuffle 操作的内存占比
+set spark.maxRemoteBlockSizeFetchToMem=200m;                                       -- 设置 抓取数据的最大值
+set spark.default.parallelism=1000;                                                -- 设置 Task 数量
+set hive.spark.client.future.timeout=360;                                          -- 设置 Spark Client 超时时间
 set hive.mapred.mode=nostrict;                                                     -- 设置 非严格模式
 set hive.exec.dynamic.partition=true;                                              -- 设置 动态分区
 set hive.exec.dynamic.partition.mode=nonstrict;                                    -- 设置 动态分区为非严格模式
@@ -1147,7 +1164,6 @@ set hive.exec.max.dynamic.partitions.pernode=100;                               
 set hive.exec.max.dynamic.partitions=1000;                                         -- 设置 所有执行 MR 的节点上，最大可以创建多少个动态分区
 set hive.exec.max.created.files=100000;                                            -- 设置 整个 MR Job 中，最大可以创建多少个 HDFS 文件
 set hive.error.on.empty.partition=false;                                           -- 设置 当有空分区生成时，是否抛出异常
-set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
 
 -- MR 优化
 set hive.exec.compress.intermediate=true;                                          -- 设置 MR中间数据可以进行压缩，默认是 false

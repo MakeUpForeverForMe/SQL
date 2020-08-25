@@ -7674,7 +7674,6 @@ select count(1) from ods_new_s${db_suffix}.loan_info;     -- 5354164
 
       max(overdue_days) over(partition by due_bill_no,overdue_date_start order by s_d_date) as overdue_days_count,
 
-
       -- max(overdue_date_start) over(partition by due_bill_no order by s_d_date) as overdue_date_start_max,
 
       count(distinct if(overdue_days > 0,loan_term,null)) over(partition by due_bill_no order by loan_term)                                                 as overdue_terms_count,
@@ -7696,7 +7695,8 @@ select count(1) from ods_new_s${db_suffix}.loan_info;     -- 5354164
 
     select
       due_bill_no,
-      loan_term,
+      loan_term2,
+      overdue_principal,
       max(overdue_days) over(partition by due_bill_no order by s_d_date) as overdue_days_max,
 
       -- max(overdue_days) over(partition by due_bill_no order by max(overdue_date_start) over(partition by due_bill_no order by s_d_date)) as overdue_days_count,
@@ -7709,6 +7709,8 @@ select count(1) from ods_new_s${db_suffix}.loan_info;     -- 5354164
       count(distinct if(overdue_days > 0,loan_term,null)) over(partition by due_bill_no order by loan_term)                                                 as overdue_terms_count,
       max(if(overdue_days > 0,loan_term,null))            over(partition by due_bill_no order by s_d_date)                                                  as overdue_terms_max,
       sum(distinct overdue_principal)                     over(partition by due_bill_no order by loan_term)                                                 as overdue_principal_accumulate,
+      sum(distinct overdue_principal)                     over(partition by due_bill_no order by s_d_date)                                                  as overdue_principal_accumulate,
+
       max(overdue_principal)                              over(partition by due_bill_no order by s_d_date)                                                  as overdue_principal_max,
       s_d_date,
       e_d_date,
@@ -8176,8 +8178,7 @@ group by product_id
 ;
 
 
-229085573.0000
-254455585.0000
+
 
 
 
@@ -8285,7 +8286,7 @@ e_d_date
 from ods_new_s.loan_info
 where 1 > 0
   -- and due_bill_no = '1120073118302020908149'
-  and due_bill_no = '1120070912093993172613'
+  and due_bill_no = '1120060711281498770784'
   and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
 ;
 
@@ -8542,8 +8543,19 @@ invalidate metadata ods_new_s.repay_schedule;
 select
   *
   -- due_bill_no,
-  -- should_repay_principal,
   -- loan_term,
+  -- loan_active_date,
+  -- should_repay_date,
+  -- grace_date,
+  -- should_repay_principal,
+  -- should_repay_interest,
+  -- schedule_status,
+  -- schedule_status_cn,
+  -- paid_out_date,
+  -- paid_out_type,
+  -- paid_out_type_cn,
+  -- paid_principal,
+  -- paid_interest,
   -- s_d_date,
   -- e_d_date
 from ods_new_s.repay_schedule
@@ -8551,27 +8563,197 @@ where 1 > 0
   -- and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
   -- and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
   -- and schedule_status = 'N'
-  and due_bill_no = '1120060602332594205233'
+  and due_bill_no in (
+    '1120061211013462742786',
+    '1120061017361786522786'
+
+    -- '1120060602332594205233',
+    -- '1120060511173419906330',
+    -- '1120060511131974539713',
+    -- '1120060511184385512833',
+    -- '1120060602322140630323',
+    -- '1120060510474405236124',
+    -- '1120060602323631368511',
+    -- '1120060511174298184833',
+    -- '1120060602543338694112',
+    -- '1120060510483511719117',
+    -- '1120060510314443303533',
+    -- '1120060510470989937022',
+    -- '1120060602324557511307',
+    -- '1120060510300944421982',
+    -- '1120060511325696044931',
+    -- '1120060510300559326682'
+  )
   -- and (due_bill_no = '1120060215213608230275' or due_bill_no = '1120060216004289090275')
 order by due_bill_no,loan_term,s_d_date
 ;
 
 
+
+
+
+
+
+
+
+
+
 select
-  due_bill_no,
-  loan_init_prin,
-  paid_term_pric,
-  paid_out_date,
-  paid_out_type,
-  schedule_status,
-  product_code
+  distinct
+  out_side_schedule_no
+  -- due_bill_no,
+  -- loan_init_prin,
+  -- paid_term_pric,
+  -- paid_out_date,
+  -- paid_out_type,
+  -- schedule_status,
+  -- product_code
 from ods.ecas_repay_schedule_asset
 where 1 > 0
   -- and s_d_date <= '${var:ST9}' and '${var:ST9}' < e_d_date
   -- and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
   -- and schedule_status = 'N'
-  and d_date = '2020-08-22'
-  and due_bill_no = '1120060602332594205233'
+  and d_date = '2020-06-05'
+  -- and due_bill_no = '1120060602332594205233'
   -- and (due_bill_no = '1120060215213608230275' or due_bill_no = '1120060216004289090275')
+  and due_bill_no in (
+    '1120061211013462742786',
+    '1120061017361786522786'
+  )
 ;
+
+
+select to_date(date_sub(current_timestamp(),1)) as dd;
+
+select case
+  case a
+  when 1 then 1
+  when 2 then 2
+  else a end
+when 1 then 0 else a end as aa
+from (
+  select 1 as a union all
+  select 2 as a
+) as tmp
+;
+
+
+
+select
+  due_bill_no,
+  loan_term2,
+  overdue_days,
+  overdue_term,
+  overdue_terms_count,
+  overdue_terms_max,
+  overdue_principal,
+  overdue_principal_accumulate,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120060711281498770784'
+order by s_d_date
+;
+
+
+
+
+select
+  *
+  -- due_bill_no,
+  -- loan_term2,
+  -- overdue_days,
+  -- overdue_term,
+  -- overdue_terms_count,
+  -- overdue_terms_max,
+  -- overdue_principal,
+  -- overdue_principal_accumulate,
+  -- s_d_date,
+  -- e_d_date,
+  -- product_id
+from ods_new_s.loan_info
+where 1 > 0
+  -- and due_bill_no = '1120061910384241252747'
+  and due_bill_no in (
+    '1120061211013462742786',
+    '1120061017361786522786'
+  )
+order by due_bill_no,s_d_date
+;
+
+
+
+1120061017361786522786 --  07-08~07-09
+1120061211013462742786 --  07-08~07-09
+
+1120061910384241252747 --  06-20~06-22
+
+
+
+select
+  -- *
+  due_bill_no,
+  loan_term,
+  overdue_days,
+  dpd_days_count,
+  overdue_term,
+  overdue_terms_count,
+  overdue_terms_max,
+  overdue_principal,
+  overdue_principal_accumulate,
+  biz_date,
+  product_id
+from dm_eagle.eagle_loan_info
+where 1 > 0
+  and due_bill_no = '1120060711281498770784'
+  -- and due_bill_no in (
+  --   '1120061211013462742786',
+  --   '1120061017361786522786'
+  -- )
+order by due_bill_no,biz_date
+;
+
+
+
+select
+  due_bill_no,
+  loan_term2,
+  overdue_principal,
+  max(overdue_days) over(partition by due_bill_no order by s_d_date) as overdue_days_max,
+  count(distinct if(overdue_days > 0,loan_term2,null)) over(partition by due_bill_no order by s_d_date) as overdue_terms_count,
+  max(if(overdue_days > 0,loan_term2,null))            over(partition by due_bill_no order by s_d_date) as overdue_terms_max,
+  sum(distinct overdue_principal)                      over(partition by due_bill_no order by s_d_date) as overdue_principal_accumulate,
+
+  max(overdue_principal)                               over(partition by due_bill_no order by s_d_date) as overdue_principal_max,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120060711281498770784'
+  -- 1120062009364346847397
+order by due_bill_no,s_d_date
+;
+
+
+
+
+
+drop table if exists map_tmp;
+create temporary table if not exists map_tmp(
+  tt_map map<string,string> comment '测试字段'
+) comment '测试Map表'
+;
+
+insert overwrite table map_tmp
+select '{"a":1,"b":{"c":2,"d":{"e":3}}}'
+;
+
+select * from map_tmp;
+
+
+
+
 
