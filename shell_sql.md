@@ -71,21 +71,8 @@
 | 核心 | 10.83.16.18 | root     | fzh6M#fmu3Rr7MTi |      |
 
 ## 1.3 资金方 - 项目 - 产品 码表
-| biz_name | capital_id | capital_name | channel_id | channel_name |    project_id    |    project_name    |    product_id    |      product_name      |
-|----------|------------|--------------|------------|--------------|------------------|--------------------|------------------|------------------------|
-| 滴滴中航 | ZHXT01     | 中航信托     |      10000 | 滴滴中航     | DIDI201908161538 | 滴滴中航           | DIDI201908161538 | 滴滴中航               |
-| 盒伙人   | YNXT01     | 云南信托     |       0001 | 盒子支付     | J60300           | 云信普惠1023号     | 001503           | 盒伙人员工贷1          |
-| 盒子     | YNXT01     | 云南信托     |       0001 | 盒子支付     | J75500           | 云信普惠1032号     | 001504           | 盒伙人员工贷2          |
-| 盒子     | YNXT01     | 云南信托     |       0002 | 盒子支付     | J75500           | 云信普惠1032号     | 001505           | 盒子商户贷             |
-| 凤金1期  | YNXT01     | 云南信托     |       0004 | 凤凰金融     | J75500           | 云信普惠1032号     | 001506           | 凤凰金融1期            |
-| 凤金     | YNXT01     | 云南信托     |       0004 | 凤凰金融     | J90400           | 云信普惠635号      | 001507           | 凤凰金融2期            |
-| 汇通     | HYBL01     | 和赢保理     |       0003 | 汇通信诚     | WS10043190001    | 汇通增量           | 001601           | 汇通车分期-非LCV新车   |
-| 汇通     | HYBL01     | 和赢保理     |       0003 | 汇通信诚     | WS10043190001    | 汇通增量           | 001602           | 汇通车分期-非LCV二手车 |
-| 汇通     | HYBL01     | 和赢保理     |       0003 | 汇通信诚     | WS10043190001    | 汇通增量           | 001603           | 汇通车分期-LCV新车     |
-| 瓜子民生 | MSJZ01     | 民生金租     |       0005 | 瓜子         | WS0005200001     | 瓜子民生           | 001701           | 新车融资租赁           |
-| 瓜子民生 | MSJZ01     | 民生金租     |       0005 | 瓜子         | WS0005200001     | 瓜子民生           | 001702           | 二手车融资租赁         |
-| 乐信国民 | GMXT01     | 国民信托     |       0006 | 乐信         | WS0006200001     | 乐信国民2020第一期 | 001801           | 乐花卡                 |
-| 乐信国民 | GMXT01     | 国民信托     |       0006 | 乐信         | WS0006200001     | 乐信国民2020第一期 | 001802           | 乐花借钱               |
+[腾讯共享文档](https://docs.qq.com/sheet/DRVpEWmtVZHdKWm5l)
+
 
 ## 1.4 公司邮箱
 | 环境 |          邮箱IP         | 端口 |                  账户                  |       密码       |
@@ -1138,6 +1125,7 @@ set hive.auto.convert.join=false;                                               
 
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
+set mapreduce.job.queuename=root.default;                                          -- 设置 MapReduce 的 Yarn 对列
 set yarn.scheduler.maximum-allocation-mb=16g;                                      -- 设置 ResourceManager 容器内存
 set yarn.nodemanager.resource.memory-mb=16g;                                       -- 设置 NodeManager 容器内存
 set hive.exec.parallel=true;                                                       -- 设置 多进程并行
@@ -1145,7 +1133,6 @@ set hive.exec.parallel.thread.number=16;                                        
 set hive.support.quoted.identifiers=None;                                          -- 设置 可以使用正则表达式查找字段
 set hive.mapjoin.optimized.hashtable=false;                                        -- 设置 禁用自动 MapJoin
 set hive.mapjoin.followby.gby.localtask.max.memory.usage=0.9;                      -- 设置 MapJoin 时的缓存占比
-set mapreduce.job.queuename=root.default;                                          -- 设置 Yarn 对列
 set spark.driver.memory=4g;                                                        -- 设置 Spark Driver 的内存
 set spark.driver.memoryOverhead=4g;                                                -- 设置 Spark Driver 的堆外内存
 set spark.executor.memory=4g;                                                      -- 设置 Spark Executor 的内存

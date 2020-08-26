@@ -8756,4 +8756,69 @@ select * from map_tmp;
 
 
 
+select
+  *
+from ods_new_s.repay_detail
+where 1 > 0
+  and due_bill_no = '1120061910384241252747'
+order by due_bill_no,biz_date
+;
 
+
+select
+  *
+from ods.ecas_repay_schedule_asset
+where 1 > 0
+  and d_date = '2020-06-15'
+  and pmt_due_date = '2020-06-15'
+  -- and due_bill_no = '1120061910384241252747'
+;
+
+select
+  *
+from ods_new_s.repay_schedule
+where 1 > 0
+  and '2020-06-15' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '2020-06-15'
+order by due_bill_no,s_d_date
+;
+
+
+
+
+
+
+
+
+select
+  loan_init_term                                                                                                                                               as loan_init_term,
+  count(due_bill_no)                                                                                                                                           as should_repay_loan_num,
+  sum(nvl(should_repay_principal,0) + nvl(should_repay_interest,0) + nvl(should_repay_term_fee,0) + nvl(should_repay_svc_fee,0) + nvl(should_repay_penalty,0)) as should_repay_amount,
+  sum(nvl(should_repay_principal,0))                                                                                                                           as should_repay_principal,
+  sum(nvl(should_repay_interest,0) + nvl(should_repay_term_fee,0) + nvl(should_repay_svc_fee,0) + nvl(should_repay_penalty,0))                                 as should_repay_interest_penalty_svc_fee,
+  sum(nvl(should_repay_interest,0))                                                                                                                            as should_repay_interest,
+  sum(nvl(should_repay_term_fee,0) + nvl(should_repay_svc_fee,0))                                                                                              as should_repay_svc_term,
+  sum(nvl(should_repay_term_fee,0))                                                                                                                            as should_repay_term_fee,
+  sum(nvl(should_repay_svc_fee,0))                                                                                                                             as should_repay_svc_fee,
+  sum(nvl(should_repay_penalty,0))                                                                                                                             as should_repay_penalty,
+  product_id                                                                                                                                                   as product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '2020-06-16'
+group by product_id,loan_init_term
+;
+
+
+select * from dw_new.dw_loan_base_stat_should_repay_day where biz_date = '2020-06-16';
+
+
+left join (
+  select
+    product_id as dim_product_id,
+    first_value(capital_id) over(partition by product_id order by create_time) as capital_id,
+    first_value(channel_id) over(partition by product_id order by create_time) as channel_id,
+    first_value(project_id) over(partition by product_id order by create_time) as project_id
+  from dim_new.biz_conf
+) as biz_conf
+on product_id = dim_product_id
