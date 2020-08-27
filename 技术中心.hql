@@ -8810,7 +8810,9 @@ group by product_id,loan_init_term
 ;
 
 
-select * from dw_new.dw_loan_base_stat_should_repay_day where biz_date = '2020-06-16';
+select * from dm_eagle.eagle_asset_scale_repaid_day where biz_date = '2020-08-01';
+
+
 
 
 left join (
@@ -8822,3 +8824,138 @@ left join (
   from dim_new.biz_conf
 ) as biz_conf
 on product_id = dim_product_id
+
+
+select abs(month('2020-12-01') - month('2020-01-01')) as aa;
+
+
+
+
+
+select *
+from ods.ecas_loan_asset
+where 1 > 0
+  and due_bill_no = '1120070517353639833037'
+order by due_bill_no,d_date
+;
+
+
+
+
+select
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term1,
+  loan_term2,
+  should_repay_date,
+  loan_status,
+  loan_status_cn,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_days,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120070512475715383594'
+order by s_d_date,due_bill_no
+;
+
+
+
+select
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term,
+  should_repay_date,
+  schedule_status,
+  schedule_status_cn,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and due_bill_no = '1120070512475715383594'
+  -- and should_repay_date = '2020-08-06'
+  -- and schedule_status = 'O'
+order by loan_term,s_d_date,due_bill_no
+limit 100
+;
+
+
+
+select distinct
+  -- due_bill_no,
+  loan_init_term,
+  loan_term1,
+  loan_term2,
+  should_repay_date,
+  overdue_date_start,
+  overdue_days,
+  s_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  -- and loan_init_term != 1
+  -- and loan_init_term = 3
+  and overdue_date_start is not null
+  and overdue_days = 1
+  and should_repay_date = overdue_date_start
+  and s_d_date = '2020-08-06'
+  and should_repay_date = '2020-08-06'
+order by s_d_date
+-- ,due_bill_no
+limit 100
+;
+
+
+
+select
+  count(distinct due_bill_no) as cnt
+from (
+select distinct
+  yeday.due_bill_no,
+  -- yeday.overdue_days,
+  -- yeday.product_code
+from (
+  select
+    due_bill_no,
+    overdue_days,
+    product_code
+  from ods.ecas_loan_asset
+  where 1 > 0
+    and d_date = '2020-08-05'
+    and p_type = 'lx'
+    and overdue_date is not null
+) as yeday
+left join (
+  select
+    due_bill_no,
+    overdue_days,
+    product_code
+  from ods.ecas_loan_asset
+  where 1 > 0
+    and d_date = '2020-08-06'
+    and p_type = 'lx'
+    and overdue_date is not null
+) as today
+on  yeday.product_code = today.product_code
+and yeday.due_bill_no  = today.due_bill_no
+and yeday.overdue_days = today.overdue_days
+) as tmp
+limit 100
+;
+
+
+
+
+
+
+
+
+
+
+
