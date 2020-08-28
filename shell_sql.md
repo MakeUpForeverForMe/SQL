@@ -70,8 +70,7 @@
 |------|-------------|----------|------------------|------|
 | 核心 | 10.83.16.18 | root     | fzh6M#fmu3Rr7MTi |      |
 
-## 1.3 资金方 - 项目 - 产品 码表
-[共享文档](https://docs.qq.com/sheet/DRVpEWmtVZHdKWm5l)
+## [1.3 资金方 - 项目 - 产品 码表](https://docs.qq.com/sheet/DRVpEWmtVZHdKWm5l)
 
 
 ## 1.4 公司邮箱

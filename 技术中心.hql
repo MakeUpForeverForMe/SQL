@@ -8826,46 +8826,86 @@ left join (
 on product_id = dim_product_id
 
 
-select abs(month('2020-12-01') - month('2020-01-01')) as aa;
+select abs(month('2020-07-01') - month('2020-06-05')) as aa;
 
 
 
 
-
-select *
-from ods.ecas_loan_asset
+invalidate metadata ods.ecas_loan_asset;
+refresh ods.ecas_loan_asset;
+select
+  -- *
+  due_bill_no,
+  loan_status,
+  loan_init_term,
+  curr_term,
+  active_date,
+  overdue_date,
+  overdue_days,
+  paid_out_date,
+  product_code,
+  d_date
+from ods.ecas_loan
 where 1 > 0
-  and due_bill_no = '1120070517353639833037'
+  and due_bill_no = '1120060420501476130479'
+  -- and due_bill_no = 'DD000230362019102621310011c8a3'
+  and d_date <= '2020-06-21'
+  -- and d_date <= '2020-01-01'
+  -- and overdue_days > 100
 order by due_bill_no,d_date
+limit 10
 ;
+
+
+invalidate metadata ods_new_s.loan_info;
+refresh ods_new_s.loan_info;
+select
+  -- *
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  -- loan_term1,
+  loan_term2,
+  should_repay_date,
+  -- loan_status,
+  loan_status_cn,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_days,
+  paid_out_date,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no in ('1120060420510423065836','1120060420501103686498')
+  and should_repay_date = '2020-06-15'
+  -- and due_bill_no = '1120060420501476130479'
+  -- and (should_repay_date is null or should_repay_date = '1')
+order by s_d_date,due_bill_no
+limit 10
+;
+
 
 
 
 
 select
   due_bill_no,
-  loan_active_date,
-  loan_init_term,
-  loan_term1,
-  loan_term2,
-  should_repay_date,
-  loan_status,
-  loan_status_cn,
-  overdue_date_first,
-  overdue_date_start,
-  overdue_days,
-  s_d_date,
-  e_d_date,
-  product_id
-from ods_new_s.loan_info
+  curr_term,
+  pmt_due_date,
+  schedule_status,
+  product_code,
+  d_date
+from ods.ecas_repay_schedule_asset
 where 1 > 0
-  and due_bill_no = '1120070512475715383594'
-order by s_d_date,due_bill_no
+  and due_bill_no = '1120060420501476130479'
+order by due_bill_no,d_date
 ;
 
 
-
 select
+  -- *
   due_bill_no,
   loan_active_date,
   loan_init_term,
@@ -8878,83 +8918,141 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120070512475715383594'
-  -- and should_repay_date = '2020-08-06'
+  and due_bill_no in ('1120060420510423065836','1120060420501103686498')
+  -- and due_bill_no = '1120060420501476130479'
+  and should_repay_date = '2020-06-15'
   -- and schedule_status = 'O'
-order by loan_term,s_d_date,due_bill_no
+order by due_bill_no,loan_term,s_d_date
 limit 100
 ;
 
 
 
-select distinct
-  -- due_bill_no,
-  loan_init_term,
-  loan_term1,
-  loan_term2,
-  should_repay_date,
-  overdue_date_start,
-  overdue_days,
-  s_d_date,
-  product_id
-from ods_new_s.loan_info
-where 1 > 0
-  -- and loan_init_term != 1
-  -- and loan_init_term = 3
-  and overdue_date_start is not null
-  and overdue_days = 1
-  and should_repay_date = overdue_date_start
-  and s_d_date = '2020-08-06'
-  and should_repay_date = '2020-08-06'
-order by s_d_date
--- ,due_bill_no
-limit 100
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set var:ST9=2020-06-16;
+select
+  -- count(distinct loan_info.due_bill_no) as due_bill_no,
+  loan_info.due_bill_no,
+  loan_info.should_repay_date,
+  sum(repay_schedule.should_repay_principal) as should_repay_principal,
+  loan_info.product_id
+from (
+  select
+    due_bill_no       as due_bill_no,
+    loan_term
+    should_repay_date as should_repay_date,
+    product_id        as product_id
+  from ods_new_s.loan_info
+  where 1 > 0
+    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+    and should_repay_date = '2020-06-15'
+    and abs(month('${var:ST9}') - month(loan_active_date)) <= loan_init_term
+) as loan_info
+left join (
+  select
+    due_bill_no,
+    should_repay_principal,
+    should_repay_date,
+    product_id
+  from ods_new_s.repay_schedule
+  where 1 > 0
+    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+    -- and loan_active_date  = '${var:ST9}'
+    -- and should_repay_date = '2020-07-15'
+) as repay_schedule
+on  loan_info.product_id  = repay_schedule.product_id
+and loan_info.due_bill_no = repay_schedule.due_bill_no
+group by loan_info.should_repay_date,loan_info.product_id
+,loan_info.due_bill_no
+order by loan_info.should_repay_date,loan_info.product_id
 ;
 
 
 
 select
-  count(distinct due_bill_no) as cnt
-from (
-select distinct
-  yeday.due_bill_no,
-  -- yeday.overdue_days,
-  -- yeday.product_code
-from (
-  select
-    due_bill_no,
-    overdue_days,
-    product_code
-  from ods.ecas_loan_asset
-  where 1 > 0
-    and d_date = '2020-08-05'
-    and p_type = 'lx'
-    and overdue_date is not null
-) as yeday
-left join (
-  select
-    due_bill_no,
-    overdue_days,
-    product_code
-  from ods.ecas_loan_asset
-  where 1 > 0
-    and d_date = '2020-08-06'
-    and p_type = 'lx'
-    and overdue_date is not null
-) as today
-on  yeday.product_code = today.product_code
-and yeday.due_bill_no  = today.due_bill_no
-and yeday.overdue_days = today.overdue_days
-) as tmp
-limit 100
+  -- count(distinct due_bill_no) as due_bill_no,
+  due_bill_no,
+  loan_active_date,
+  -- due_bill_no,
+  should_repay_date,
+  -- should_repay_principal,
+  sum(should_repay_principal) as should_repay_principal,
+  product_id
+from ods_new_s${var:db_suffix}.repay_schedule
+where 1 > 0
+  and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  and abs(month('${var:ST9}') - month(loan_active_date)) <= loan_init_term
+  -- and should_repay_date < '2020-08-01'
+  and should_repay_date = '2020-06-15'
+  -- and schedule_status != 'F'
+group by loan_active_date,should_repay_date,product_id
+,due_bill_no
+order by loan_active_date,should_repay_date,product_id
 ;
 
 
 
 
-
-
-
+invalidate metadata dw_new${var:db_suffix}.dw_loan_base_stat_overdue_num_day;
+invalidate metadata ods_new_s${var:db_suffix}.repay_schedule;
+-- 校验 dw 逾期表的应还本金
+select
+  nvl(dw_should.should_repay_date,dw_overdue.should_repay_date)                                as should_repay_date,
+  sum(nvl(dw_should.should_repay_principal,0))                                                 as principal_should,
+  sum(nvl(dw_overdue.should_repay_principal,0))                                                as principal_overdue,
+  sum(nvl(dw_should.should_repay_principal,0)) - sum(nvl(dw_overdue.should_repay_principal,0)) as principal_diff,
+  nvl(dw_should.product_id,dw_overdue.product_id)                                              as product_id
+from (
+  select
+    loan_active_date,
+    loan_term,
+    should_repay_date,
+    sum(should_repay_principal) as should_repay_principal,
+    product_id
+  from dw_new${var:db_suffix}.dw_loan_base_stat_overdue_num_day
+  where 1 > 0
+    and product_id in ('001801','001802')
+    and biz_date = '${var:ST9}'
+  group by loan_active_date,should_repay_date,product_id,loan_term
+) as dw_overdue
+left join (
+  select
+    loan_active_date,
+    loan_term,
+    -- due_bill_no,
+    should_repay_date,
+    -- should_repay_principal,
+    sum(should_repay_principal) as should_repay_principal,
+    product_id
+  from ods_new_s${var:db_suffix}.repay_schedule
+  where 1 > 0
+    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+    and should_repay_date >= '${var:ST9}'
+    -- and schedule_status != 'F'
+  group by loan_active_date,should_repay_date,product_id,loan_term
+) as dw_should
+on  dw_overdue.product_id        = dw_should.product_id
+and dw_overdue.should_repay_date = dw_should.should_repay_date
+and dw_overdue.loan_active_date  = dw_should.loan_active_date
+and dw_overdue.loan_term         = dw_should.loan_term
+group by 1,5
+having sum(nvl(dw_should.should_repay_principal,0)) - sum(nvl(dw_overdue.should_repay_principal,0)) != 0
+order by should_repay_date,product_id
+;
 
 
 
