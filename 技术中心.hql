@@ -8928,130 +8928,16 @@ limit 100
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-set var:ST9=2020-06-16;
 select
-  -- count(distinct loan_info.due_bill_no) as due_bill_no,
-  loan_info.due_bill_no,
-  loan_info.should_repay_date,
-  sum(repay_schedule.should_repay_principal) as should_repay_principal,
-  loan_info.product_id
-from (
-  select
-    due_bill_no       as due_bill_no,
-    loan_term
-    should_repay_date as should_repay_date,
-    product_id        as product_id
-  from ods_new_s.loan_info
-  where 1 > 0
-    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-    and should_repay_date = '2020-06-15'
-    and abs(month('${var:ST9}') - month(loan_active_date)) <= loan_init_term
-) as loan_info
-left join (
-  select
-    due_bill_no,
-    should_repay_principal,
-    should_repay_date,
-    product_id
-  from ods_new_s.repay_schedule
-  where 1 > 0
-    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-    -- and loan_active_date  = '${var:ST9}'
-    -- and should_repay_date = '2020-07-15'
-) as repay_schedule
-on  loan_info.product_id  = repay_schedule.product_id
-and loan_info.due_bill_no = repay_schedule.due_bill_no
-group by loan_info.should_repay_date,loan_info.product_id
-,loan_info.due_bill_no
-order by loan_info.should_repay_date,loan_info.product_id
-;
-
-
-
-select
-  -- count(distinct due_bill_no) as due_bill_no,
-  due_bill_no,
-  loan_active_date,
-  -- due_bill_no,
-  should_repay_date,
-  -- should_repay_principal,
+  should_repay_date           as should_repay_date,
+  loan_term                   as loan_term,
   sum(should_repay_principal) as should_repay_principal,
-  product_id
-from ods_new_s${var:db_suffix}.repay_schedule
+  product_id                  as product_id_repay_schedule
+from ods_new_s.repay_schedule
 where 1 > 0
   and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-  and abs(month('${var:ST9}') - month(loan_active_date)) <= loan_init_term
-  -- and should_repay_date < '2020-08-01'
-  and should_repay_date = '2020-06-15'
-  -- and schedule_status != 'F'
-group by loan_active_date,should_repay_date,product_id
-,due_bill_no
-order by loan_active_date,should_repay_date,product_id
-;
-
-
-
-
-invalidate metadata dw_new${var:db_suffix}.dw_loan_base_stat_overdue_num_day;
-invalidate metadata ods_new_s${var:db_suffix}.repay_schedule;
--- 校验 dw 逾期表的应还本金
-select
-  nvl(dw_should.should_repay_date,dw_overdue.should_repay_date)                                as should_repay_date,
-  sum(nvl(dw_should.should_repay_principal,0))                                                 as principal_should,
-  sum(nvl(dw_overdue.should_repay_principal,0))                                                as principal_overdue,
-  sum(nvl(dw_should.should_repay_principal,0)) - sum(nvl(dw_overdue.should_repay_principal,0)) as principal_diff,
-  nvl(dw_should.product_id,dw_overdue.product_id)                                              as product_id
-from (
-  select
-    loan_active_date,
-    loan_term,
-    should_repay_date,
-    sum(should_repay_principal) as should_repay_principal,
-    product_id
-  from dw_new${var:db_suffix}.dw_loan_base_stat_overdue_num_day
-  where 1 > 0
-    and product_id in ('001801','001802')
-    and biz_date = '${var:ST9}'
-  group by loan_active_date,should_repay_date,product_id,loan_term
-) as dw_overdue
-left join (
-  select
-    loan_active_date,
-    loan_term,
-    -- due_bill_no,
-    should_repay_date,
-    -- should_repay_principal,
-    sum(should_repay_principal) as should_repay_principal,
-    product_id
-  from ods_new_s${var:db_suffix}.repay_schedule
-  where 1 > 0
-    and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-    and should_repay_date >= '${var:ST9}'
-    -- and schedule_status != 'F'
-  group by loan_active_date,should_repay_date,product_id,loan_term
-) as dw_should
-on  dw_overdue.product_id        = dw_should.product_id
-and dw_overdue.should_repay_date = dw_should.should_repay_date
-and dw_overdue.loan_active_date  = dw_should.loan_active_date
-and dw_overdue.loan_term         = dw_should.loan_term
-group by 1,5
-having sum(nvl(dw_should.should_repay_principal,0)) - sum(nvl(dw_overdue.should_repay_principal,0)) != 0
-order by should_repay_date,product_id
+  and should_repay_date between date_sub('${var:ST9}',29) and '${var:ST9}'
+group by 1,2,4
 ;
 
 
