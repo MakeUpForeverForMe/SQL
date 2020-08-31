@@ -8815,15 +8815,6 @@ select * from dm_eagle.eagle_asset_scale_repaid_day where biz_date = '2020-08-01
 
 
 
-left join (
-  select
-    product_id as dim_product_id,
-    first_value(capital_id) over(partition by product_id order by create_time) as capital_id,
-    first_value(channel_id) over(partition by product_id order by create_time) as channel_id,
-    first_value(project_id) over(partition by product_id order by create_time) as project_id
-  from dim_new.biz_conf
-) as biz_conf
-on product_id = dim_product_id
 
 
 select abs(month('2020-07-01') - month('2020-06-05')) as aa;
@@ -8928,17 +8919,13 @@ limit 100
 
 
 
-select
-  should_repay_date           as should_repay_date,
-  loan_term                   as loan_term,
-  sum(should_repay_principal) as should_repay_principal,
-  product_id                  as product_id_repay_schedule
-from ods_new_s.repay_schedule
-where 1 > 0
-  and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
-  and should_repay_date between date_sub('${var:ST9}',29) and '${var:ST9}'
-group by 1,2,4
-;
+
+
+
+
+
+
+
 
 
 

@@ -1073,9 +1073,10 @@ select
 ;
 
 -- 取多个数之间的最大、最小值  least(v1, v2, ...)  greatest(v1, v2, ...)
-select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-07-14','2020-07-01 10:10:10') as max;
+select least('2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest('2020-07-14','2020-07-01 10:10:10') as max; -- 2020-07-01  2020-07-14
+select least(null,'2020-07-14',to_date('2020-07-01 10:10:10')) as min,greatest(null,'2020-07-14','2020-07-01 10:10:10') as max; -- null  null
 
--- 取非空值。 nvl(a,b) 如果 a 为空，取 b ，否则取 a。 coalesce(a,b,c,...) 从前往后，取第一个非空值
+-- 取首个非空值。 nvl(a,b) 如果 a 为空，取 b ，否则取 a。 coalesce(a,b,c,...) 从前往后，取第一个非空值
 select
   nvl(null,'nvl_1_a') as nvl_1,
   nvl('nvl_2_a','nvl_2_b') as nvl_2,
@@ -1486,7 +1487,7 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-ADD JAR hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
 
 DROP FUNCTION IF EXISTS encrypt_aes;
 DROP FUNCTION IF EXISTS decrypt_aes;
@@ -1500,17 +1501,19 @@ DROP FUNCTION IF EXISTS sha256;
 DROP FUNCTION IF EXISTS date_max;
 DROP FUNCTION IF EXISTS date_min;
 
-CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'   USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'       USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'            USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'         USING JAR 'hdfs://node47:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'  USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'   USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'       USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'       USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'            USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'         USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
@@ -1565,7 +1568,7 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | 操作名称 |                    快捷键                     |                                              代码                                             |                                             结果                                            |
 |----------|-----------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | 插入图片 | Shift + Win + K                               | `<img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:10%;"/>` | <img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:20%;"/> |
-| 超链接   | Ctrl + Alt + V                                | `[链接](http://www.baidu.com)`                                                                | [链接](https://img-blog.csdnimg.cn/20200617115400965.jpg)                                                                |
+| 超链接   | Ctrl + Alt + V                                | `[百度](http://www.baidu.com)`                                                                | [百度](https://img-blog.csdnimg.cn/20200617115400965.jpg)                                                                |
 | 引用     | Ctrl + Alt + R 点击快捷键后，直接输入文字即可 | `[引用][引用]  [引用]:http://www.baidu.com`                                                   | [引用][引用]  [引用]:http://www.baidu.com                                                   |
 | 插入注释 | Alt + Shift + 6                               | `注释引用[^1]  [^1]: http://www.baidu.com`                                                    | 注释引用[^1]  [^1]: http://www.baidu.com                                                    |
 | 加粗文本 |                                               | `**加粗文本** __加粗文本__`                                                                   | **加粗文本** __加粗文本__                                                                   |
