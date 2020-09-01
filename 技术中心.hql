@@ -8920,9 +8920,91 @@ limit 100
 
 
 
+invalidate metadata dm_eagle.eagle_loan_amount_day;
+
+select
+  loan_principal,
+  loan_principal - (nvl(remain_principal,0) + nvl(repaid_principal,0)) as diff,
+  nvl(remain_principal,0) + nvl(repaid_principal,0) as loan_principal_sum,
+  nvl(remain_principal,0) as remain_principal,
+  nvl(repaid_principal,0) as repaid_principal,
+  loan_principal.biz_date,
+  loan_principal.product_id
+from (
+  select
+    sum(loan_amount_accumulate) as loan_principal,
+    product_id,
+    biz_date
+  from dm_eagle.eagle_loan_amount_day
+  group by biz_date,product_id
+) as loan_principal
+left join (
+  select
+    sum(remain_principal) as remain_principal,
+    product_id,
+    biz_date
+  from dm_eagle.eagle_asset_scale_principal_day
+  group by biz_date,product_id
+) as remain_principal
+on  loan_principal.product_id = remain_principal.product_id
+and loan_principal.biz_date   = remain_principal.biz_date
+left join (
+  select
+    sum(paid_principal) as repaid_principal,
+    product_id,
+    biz_date
+  from dm_eagle.eagle_asset_scale_repaid_day
+  group by biz_date,product_id
+) as repaid_principal
+on  loan_principal.product_id = repaid_principal.product_id
+and loan_principal.biz_date   = repaid_principal.biz_date
+order by biz_date,product_id
+;
 
 
 
+
+invalidate metadata dw_new.dw_loan_base_stat_loan_num_day;
+invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
+invalidate metadata dw_new.dw_loan_base_stat_repay_detail_day;
+select
+  loan_principal,
+  loan_principal - (nvl(remain_principal,0) + nvl(repaid_principal,0)) as diff,
+  nvl(remain_principal,0) + nvl(repaid_principal,0) as loan_principal_sum,
+  nvl(remain_principal,0) as remain_principal,
+  nvl(repaid_principal,0) as repaid_principal,
+  loan_principal.biz_date,
+  loan_principal.product_id
+from (
+  select
+    sum(loan_principal_count) as loan_principal,
+    product_id,
+    biz_date
+  from dw_new.dw_loan_base_stat_loan_num_day
+  group by biz_date,product_id
+) as loan_principal
+left join (
+  select
+    sum(remain_principal) as remain_principal,
+    product_id,
+    biz_date
+  from dw_new.dw_loan_base_stat_overdue_num_day
+  group by biz_date,product_id
+) as remain_principal
+on  loan_principal.product_id = remain_principal.product_id
+and loan_principal.biz_date   = remain_principal.biz_date
+left join (
+  select
+    sum(repaid_principal_count) as repaid_principal,
+    product_id,
+    biz_date
+  from dw_new.dw_loan_base_stat_repay_detail_day
+  group by biz_date,product_id
+) as repaid_principal
+on  loan_principal.product_id = repaid_principal.product_id
+and loan_principal.biz_date   = repaid_principal.biz_date
+order by biz_date,product_id
+;
 
 
 
