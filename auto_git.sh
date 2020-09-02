@@ -5,8 +5,8 @@ prt(){ echo -e "$(date +'%F %T') $(printf "%${2:-10}s" | sed "s/ /$1/g")\n\n"; }
 succ_erro(){ aa=$? && ( [[ $aa == 0 ]] && prt '成功' || prt '错误' ) &>> $log; }
 
 get_file(){
-  dir=${1}
-  for file in $dir/*; do
+  files=${1}
+  for file in $files/*; do
     [[ -d $file ]] && get_file $file || {
       [[ -f $file ]] && {
         echo $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45} &>> $log
