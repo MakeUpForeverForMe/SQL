@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-prt(){ echo -e "$(date +'%F %T') $(printf "%${2:-10}s" | sed "s/ /$1/g")"; }
+prt(){ echo -e "$(date +'%F %T') $(printf "%${2:-10}s\n\n" | sed "s/ /$1/g")"; }
 
 succ_erro(){ aa=$? && ( [[ $aa == 0 ]] && prt '成功' || prt '错误' ) &>> $log; }
 
