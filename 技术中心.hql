@@ -8823,23 +8823,23 @@ select abs(month('2020-07-01') - month('2020-06-05')) as aa;
 
 
 invalidate metadata ods.ecas_loan_asset;
-refresh ods.ecas_loan_asset;
 select
-  -- *
-  due_bill_no,
-  loan_status,
-  loan_init_term,
-  curr_term,
-  active_date,
-  overdue_date,
-  overdue_days,
-  paid_out_date,
-  product_code,
-  d_date
-from ods.ecas_loan
+  *
+  -- due_bill_no,
+  -- loan_status,
+  -- loan_init_term,
+  -- curr_term,
+  -- active_date,
+  -- overdue_date,
+  -- overdue_days,
+  -- paid_out_date,
+  -- product_code,
+  -- d_date
+from ods.ecas_loan_asset
 where 1 > 0
   -- and due_bill_no = '1120060420501476130479'
-  and due_bill_no = '1120070512475715383594'
+  -- and due_bill_no = '1120070512475715383594'
+  and due_bill_no = '1120061019450546018968'
   -- and due_bill_no = 'DD000230362019102621310011c8a3'
   -- and d_date <= '2020-06-21'
   -- and d_date <= '2020-01-01'
@@ -8850,32 +8850,33 @@ order by due_bill_no,d_date
 
 
 invalidate metadata ods_new_s.loan_info;
-refresh ods_new_s.loan_info;
 select
-  -- *
-  due_bill_no,
-  loan_active_date,
-  loan_init_term,
-  -- loan_term1,
-  loan_term2,
-  should_repay_date,
-  -- loan_status,
-  loan_status_cn,
-  overdue_date_first,
-  overdue_date_start,
-  overdue_days,
-  paid_out_date,
-  s_d_date,
-  e_d_date,
-  product_id
+  *
+  -- due_bill_no,
+  -- loan_active_date,
+  -- loan_init_term,
+  -- -- loan_term1,
+  -- loan_term2,
+  -- should_repay_date,
+  -- -- loan_status,
+  -- loan_status_cn,
+  -- overdue_date_first,
+  -- overdue_date_start,
+  -- overdue_days,
+  -- paid_out_date,
+  -- s_d_date,
+  -- e_d_date,
+  -- product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no in ('1120060420510423065836','1120060420501103686498')
-  and should_repay_date = '2020-06-15'
+  -- and due_bill_no in ('1120060420510423065836','1120060420501103686498')
+  -- and should_repay_date = '2020-06-15'
   -- and due_bill_no = '1120060420501476130479'
+  and due_bill_no = '1120061019450546018968'
+  and due_bill_no = '1120060711272979096947'
   -- and (should_repay_date is null or should_repay_date = '1')
 order by s_d_date,due_bill_no
-limit 10
+-- limit 10
 ;
 
 
@@ -8900,115 +8901,41 @@ select
   -- *
   due_bill_no,
   loan_active_date,
+  loan_init_principal,
   loan_init_term,
   loan_term,
   should_repay_date,
+  should_repay_principal,
   schedule_status,
   schedule_status_cn,
+  paid_out_date,
+  paid_out_type,
+  paid_out_type_cn,
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no in ('1120060420510423065836','1120060420501103686498')
+  -- and due_bill_no in ('1120060420510423065836','1120060420501103686498')
   -- and due_bill_no = '1120060420501476130479'
-  and should_repay_date = '2020-06-15'
+  and due_bill_no = '1120061019450546018968'
+  -- and should_repay_date = '2020-06-15'
   -- and schedule_status = 'O'
 order by due_bill_no,loan_term,s_d_date
-limit 100
+-- limit 100
 ;
 
 
 
 
-invalidate metadata dm_eagle.eagle_loan_amount_day;
-
-select
-  loan_principal,
-  loan_principal - (nvl(remain_principal,0) + nvl(repaid_principal,0)) as diff,
-  nvl(remain_principal,0) + nvl(repaid_principal,0) as loan_principal_sum,
-  nvl(remain_principal,0) as remain_principal,
-  nvl(repaid_principal,0) as repaid_principal,
-  loan_principal.biz_date,
-  loan_principal.product_id
-from (
-  select
-    sum(loan_amount_accumulate) as loan_principal,
-    product_id,
-    biz_date
-  from dm_eagle.eagle_loan_amount_day
-  group by biz_date,product_id
-) as loan_principal
-left join (
-  select
-    sum(remain_principal) as remain_principal,
-    product_id,
-    biz_date
-  from dm_eagle.eagle_asset_scale_principal_day
-  group by biz_date,product_id
-) as remain_principal
-on  loan_principal.product_id = remain_principal.product_id
-and loan_principal.biz_date   = remain_principal.biz_date
-left join (
-  select
-    sum(paid_principal) as repaid_principal,
-    product_id,
-    biz_date
-  from dm_eagle.eagle_asset_scale_repaid_day
-  group by biz_date,product_id
-) as repaid_principal
-on  loan_principal.product_id = repaid_principal.product_id
-and loan_principal.biz_date   = repaid_principal.biz_date
-order by biz_date,product_id
-;
 
 
 
 
-invalidate metadata dw_new.dw_loan_base_stat_loan_num_day;
-invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
-invalidate metadata dw_new.dw_loan_base_stat_repay_detail_day;
-select
-  loan_principal,
-  loan_principal - (nvl(remain_principal,0) + nvl(repaid_principal,0)) as diff,
-  nvl(remain_principal,0) + nvl(repaid_principal,0) as loan_principal_sum,
-  nvl(remain_principal,0) as remain_principal,
-  nvl(repaid_principal,0) as repaid_principal,
-  loan_principal.biz_date,
-  loan_principal.product_id
-from (
-  select
-    sum(loan_principal_count) as loan_principal,
-    product_id,
-    biz_date
-  from dw_new.dw_loan_base_stat_loan_num_day
-  group by biz_date,product_id
-) as loan_principal
-left join (
-  select
-    sum(remain_principal) as remain_principal,
-    product_id,
-    biz_date
-  from dw_new.dw_loan_base_stat_overdue_num_day
-  group by biz_date,product_id
-) as remain_principal
-on  loan_principal.product_id = remain_principal.product_id
-and loan_principal.biz_date   = remain_principal.biz_date
-left join (
-  select
-    sum(repaid_principal_count) as repaid_principal,
-    product_id,
-    biz_date
-  from dw_new.dw_loan_base_stat_repay_detail_day
-  group by biz_date,product_id
-) as repaid_principal
-on  loan_principal.product_id = repaid_principal.product_id
-and loan_principal.biz_date   = repaid_principal.biz_date
-order by biz_date,product_id
-;
 
 
 
+invalidate metadata dm_eagle.eagle_inflow_rate_first_term_day;
 select
   count(1) as cnt,
   biz_date,
@@ -9019,15 +8946,7 @@ order by biz_date,product_id
 ;
 
 
-
-
-select floor(23.33);
-
-
-select distinct
-  overdue_days,
-  floor((overdue_days - 1) / 30) + 1 as tt
-from ods_new_s_cps.loan_info
-order by overdue_days,tt
+select *
+from dim_new.biz_conf
 ;
 
