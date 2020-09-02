@@ -9,7 +9,7 @@ get_file(){
   for file in $dir/*; do
     [[ -d $file ]] && get_file $file || {
       [[ -f $file ]] && {
-        echo $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
+        echo $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45} &>> $log
         rm /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
         link $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
       }
@@ -33,7 +33,7 @@ for dir in ${dirs//,/ }; do
 
   echo -e '\n' &>> $log
 
-  echo 'git add -u' &>> $log
+  echo "git add -u $dir" &>> $log
   git add -u &>> $log
   succ_erro && [[ $aa != 0 ]] && continue
 
