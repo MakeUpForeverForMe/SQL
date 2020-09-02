@@ -1084,6 +1084,9 @@ select
   coalesce(null,'coalesce_2_a','coalesce_2_b') as coalesce_2,
   coalesce('coalesce_3_a','coalesce_3_b','coalesce_3_c') as coalesce_3
 ;
+
+-- 月初或年初日期  两个参数：第一个参数是 date 类型：yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd；第二个参数是字符串类型：MONTH MON MM 或 YEAR YYYY YY
+select trunc('2020-12-31','MM'); -- 2020-12-01
 ```
 
 ## 4.2 Hive
@@ -1519,7 +1522,7 @@ SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*date_format*';
-DESC FUNCTION EXTENDED array;
+DESC FUNCTION EXTENDED floor;
 ```
 
 

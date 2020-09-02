@@ -4,6 +4,18 @@ prt(){ echo -e "$(date +'%F %T') $(printf "%${2:-10}s" | sed "s/ /$1/g")"; }
 
 succ_erro(){ aa=$? && ( [[ $aa == 0 ]] && prt '成功' || prt '错误' ) &>> $log; }
 
+get_file(){
+  dir=${1}
+  for file in $dir/*; do
+    [[ -d $file ]] && get_file $file || {
+      [[ -f $file ]] && {
+        echo $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
+        rm /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
+        link $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
+      }
+    }
+  done
+}
 
 dir1=/d/Users/ximing.wei/Desktop/code
 dir2=/d/Users/ximing.wei/Desktop/技术中心
@@ -15,6 +27,7 @@ log=$dir1/auto_git.log
 prt '-' '50' &>> $log
 
 for dir in ${dirs//,/ }; do
+  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/code/HiveUDF/src &>> $log
   cd $dir
   pwd &>> $log
 

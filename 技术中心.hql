@@ -8838,13 +8838,14 @@ select
   d_date
 from ods.ecas_loan
 where 1 > 0
-  and due_bill_no = '1120060420501476130479'
+  -- and due_bill_no = '1120060420501476130479'
+  and due_bill_no = '1120070512475715383594'
   -- and due_bill_no = 'DD000230362019102621310011c8a3'
-  and d_date <= '2020-06-21'
+  -- and d_date <= '2020-06-21'
   -- and d_date <= '2020-01-01'
   -- and overdue_days > 100
 order by due_bill_no,d_date
-limit 10
+-- limit 10
 ;
 
 
@@ -9008,7 +9009,25 @@ order by biz_date,product_id
 
 
 
+select
+  count(1) as cnt,
+  biz_date,
+  product_id
+from dm_eagle.eagle_inflow_rate_first_term_day
+group by biz_date,product_id
+order by biz_date,product_id
+;
 
 
 
+
+select floor(23.33);
+
+
+select distinct
+  overdue_days,
+  floor((overdue_days - 1) / 30) + 1 as tt
+from ods_new_s_cps.loan_info
+order by overdue_days,tt
+;
 
