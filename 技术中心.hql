@@ -8851,7 +8851,8 @@ order by due_bill_no,d_date
 
 invalidate metadata ods_new_s.loan_info;
 select
-  *
+  -- *
+
   -- due_bill_no,
   -- loan_active_date,
   -- loan_init_term,
@@ -8867,12 +8868,25 @@ select
   -- s_d_date,
   -- e_d_date,
   -- product_id
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term2,
+  should_repay_date,
+  loan_status_cn,
+  paid_out_date,
+  loan_init_principal,
+  paid_principal,
+  remain_principal,
+  s_d_date,
+  e_d_date,
+  product_id
 from ods_new_s.loan_info
 where 1 > 0
   -- and due_bill_no in ('1120060420510423065836','1120060420501103686498')
   -- and should_repay_date = '2020-06-15'
   -- and due_bill_no = '1120060420501476130479'
-  and due_bill_no = '1120061019450546018968'
+  -- and due_bill_no = '1120061019450546018968' -- 文件中的数据错误，
   and due_bill_no = '1120060711272979096947'
   -- and (should_repay_date is null or should_repay_date = '1')
 order by s_d_date,due_bill_no
@@ -8906,10 +8920,9 @@ select
   loan_term,
   should_repay_date,
   should_repay_principal,
-  schedule_status,
+  paid_principal,
   schedule_status_cn,
   paid_out_date,
-  paid_out_type,
   paid_out_type_cn,
   s_d_date,
   e_d_date,
@@ -8928,25 +8941,223 @@ order by due_bill_no,loan_term,s_d_date
 
 
 
+select
+  due_bill_no,
+  repay_amt,
+  term,
+  txn_date,
+  overdue_days,
+  loan_status,
+  d_date
+from ods.ecas_repay_hst_asset
+where due_bill_no = '1120061019450546018968'
+order by due_bill_no,d_date
+;
 
 
 
 
-
+select
+  sum(loan_principal_count) as loan_principal
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and product_id = '001802'
+  and biz_date = '2020-06-30'
+;
 
 
 invalidate metadata dm_eagle.eagle_inflow_rate_first_term_day;
 select
-  count(1) as cnt,
-  biz_date,
-  product_id
+  sum(loan_amount) as loan_principal
+  -- count(1) as cnt,
+  -- biz_date,
+  -- product_id
 from dm_eagle.eagle_inflow_rate_first_term_day
-group by biz_date,product_id
-order by biz_date,product_id
+where 1 > 0
+  -- and loan_active_date between '2020-06-01' and '2020-06-30'
+  and dob = '4'
+  and product_id = '001802'
+  and loan_active_date = '2020-06-26'
+-- group by biz_date,product_id
+-- order by biz_date,product_id
 ;
 
 
 select *
 from dim_new.biz_conf
 ;
+
+
+
+
+
+select *
+from dm_eagle.eagle_asset_scale_repaid_day
+where 1 > 0
+  and biz_date > '2020-08-31'
+;
+
+
+
+select *
+from dm_eagle.eagle_migration_rate_month
+where 1 > 0
+  and product_id in ('001801','001802')
+order by loan_month,product_id,loan_terms,biz_month,overdue_stage
+;
+
+
+
+select
+  sum(paid_principal) as pincipal,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id = '001801'
+  and loan_init_term = 1
+  and overdue_days > 30
+  and '2020-07-31' between s_d_date and date_sub(e_d_date,1)
+group by product_id
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+invalidate metadata ods.ecas_loan_asset;
+select
+  due_bill_no,
+  loan_status,
+  loan_init_term,
+  curr_term,
+  loan_init_prin,
+  paid_principal,
+  active_date,
+  paid_out_date,
+  product_code,
+  d_date
+from ods.ecas_loan_asset
+where 1 > 0
+  and due_bill_no = '1120062107580558997297'
+  and d_date between '2020-07-20' and '2020-07-21'
+order by due_bill_no,d_date
+;
+
+invalidate metadata ods.ecas_loan_asset;
+select
+  due_bill_no,
+  loan_init_prin,
+  loan_init_term,
+  curr_term,
+  due_term_prin,
+  paid_term_pric,
+  paid_out_date,
+  paid_out_type,
+  pmt_due_date,
+  product_code,
+  d_date
+from ods.ecas_repay_schedule_asset
+where 1 > 0
+  and due_bill_no = '1120062107580558997297'
+  and d_date between '2020-07-20' and '2020-07-21'
+order by due_bill_no,d_date
+;
+
+
+invalidate metadata ods_new_s.loan_info;
+select
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term2,
+  should_repay_date,
+  loan_status_cn,
+  paid_out_date,
+  loan_init_principal,
+  paid_principal,
+  remain_principal,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120061019450546018968'
+order by s_d_date,due_bill_no
+;
+
+invalidate metadata ods_new_s.repay_schedule;
+select
+  due_bill_no,
+  loan_active_date,
+  loan_init_principal as init_principal,
+  loan_init_term as init_term,
+  loan_term,
+  should_repay_date as repay_date,
+  should_repay_principal as repay_principal,
+  paid_principal,
+  schedule_status_cn,
+  paid_out_date,
+  paid_out_type_cn,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and due_bill_no = '1120061019450546018968'
+order by due_bill_no,loan_term,s_d_date
+;
+
+invalidate metadata ods_new_s.repay_detail;
+select
+  due_bill_no,payment_id,loan_init_term,repay_term,loan_status_cn,overdue_days,repay_amount,biz_date,product_id
+from ods_new_s.repay_detail
+where 1 > 0
+  and bnp_type = 'Pricinpal'
+  and due_bill_no = '1120061019450546018968'
+  -- and payment_id = '000015927131361admin000083000000'
+order by due_bill_no,repay_term,biz_date
+;
+
+invalidate metadata ods.ecas_repay_hst_asset;
+select
+  due_bill_no,payment_id,repay_amt,term,txn_date,overdue_days,loan_status,d_date
+from ods.ecas_repay_hst_asset
+where 1 > 0
+  and bnp_type = 'Pricinpal'
+  and due_bill_no = '1120061019450546018968'
+  -- and payment_id = '000015927131361admin000083000000'
+order by due_bill_no,d_date,term
+;
+
+
+
+invalidate metadata ods.ecas_repay_hst_repair;
+select
+  -- distinct
+  -- org
+  *
+from
+-- ods_new_s.order_info
+-- ods.ecas_order_asset
+-- ods.ecas_repay_hst
+ods.ecas_repay_hst_repair
+where 1 > 0
+  -- and d_date = '2020-08-12'
+limit 10
+;
+
+
+
+
+
 
