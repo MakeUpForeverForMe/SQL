@@ -1043,10 +1043,15 @@ CREATE TEMPORARY TABLE IF NOT EXISTS test(
   name string COMMENT '名称'
 ) COMMENT '测试表'
 ;
+
 -- 表重命名
 ALTER TABLE test RENAME TO tet; ALTER TABLE tet RENAME TO test;
+-- 修改表注释
+ALTER TABLE test SET TBLPROPERTIES('comment' = '这是表注释!');
 -- 添加字段
 ALTER TABLE test ADD COLUMNS (t_1 string comment '测试');
+-- 修改字段注释
+ALTER TABLE test CHANGE COLUMN t_1 t string comment '这里是列注释!';
 -- 修改字段
 ALTER TABLE test CHANGE COLUMN t_1 t string AFTER id;
 -- 删除字段

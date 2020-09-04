@@ -9076,24 +9076,36 @@ order by due_bill_no,d_date
 
 invalidate metadata ods_new_s.loan_info;
 select
+  -- *
   due_bill_no,
-  loan_active_date,
+  -- loan_active_date,
   loan_init_term,
-  loan_term2,
-  should_repay_date,
+  -- loan_term2,
+  -- should_repay_date,
+  -- loan_status_cn,
+  -- paid_out_date,
+  -- loan_init_principal,
+  -- paid_principal,
+  -- remain_principal,
+
+  loan_term1,
   loan_status_cn,
-  paid_out_date,
-  loan_init_principal,
-  paid_principal,
-  remain_principal,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_days,
+  overdue_term,
+  overdue_terms_count,
+  overdue_terms_max,
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120061019450546018968'
+  and due_bill_no = '1120061421344483293354'
 order by s_d_date,due_bill_no
 ;
+
+
 
 invalidate metadata ods_new_s.repay_schedule;
 select
@@ -9141,19 +9153,103 @@ order by due_bill_no,d_date,term
 
 
 
-invalidate metadata ods.ecas_repay_hst_repair;
+
+
+
+
+
+
+
+
+
+invalidate metadata ods_new_s.repay_schedule;
 select
-  -- distinct
-  -- org
-  *
-from
--- ods_new_s.order_info
--- ods.ecas_order_asset
--- ods.ecas_repay_hst
-ods.ecas_repay_hst_repair
+  due_bill_no,
+  loan_active_date,
+  loan_init_term as init_term,
+  loan_term,
+  should_repay_date as repay_date,
+  schedule_status_cn,
+  paid_out_date,
+  paid_out_type_cn,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.repay_schedule
 where 1 > 0
-  -- and d_date = '2020-08-12'
+  and due_bill_no = '1120061421344483293354'
+  -- and due_bill_no = '1120060902491694564403'
+order by due_bill_no,loan_term,s_d_date
+;
+
+invalidate metadata ods.ecas_loan_asset;
+select
+  due_bill_no,
+  active_date,
+  loan_init_term,
+  curr_term,
+  overdue_days,
+  case
+  when loan_init_term = curr_term and overdue_days > 0 then curr_term
+  when overdue_days > 0 then curr_term - 1
+  else null end overdue_term,
+  product_code as product_id
+  ,d_date
+from ods.ecas_loan_asset
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120062103431976725152'
+  -- and due_bill_no = '1120061421344483293354'
+  -- and due_bill_no = '1120060903380828924502'
+  -- and loan_init_term > 2
+  -- and overdue_days > 60
+order by due_bill_no,d_date
+-- limit 10
+;
+
+
+
+select
+  -- *
+  due_bill_no,
+  loan_init_term,
+  loan_term1,
+  loan_term2,
+  should_repay_date,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and should_repay_date = s_d_date
+  and loan_init_term = 1
+  -- and loan_term1 != loan_init_term
+  -- and loan_term1 = loan_term2
+  and overdue_days > 0
+  -- and due_bill_no = '1120060711431308862377'
+-- order by due_bill_no,s_d_date
 limit 10
+;
+
+
+
+
+  case
+  when loan_init_term = curr_term and overdue_days > 0 then curr_term
+  when overdue_days > 0 then curr_term - 1
+  else null end overdue_term,
+select
+  due_bill_no,
+  loan_term2,
+  max(if(overdue_days > 0,loan_term2,null)) over(partition by due_bill_no order by s_d_date) as overdue_terms_max,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120060711281498770784'
+  -- 1120062009364346847397
+order by due_bill_no,s_d_date
 ;
 
 
