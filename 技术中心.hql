@@ -9029,7 +9029,7 @@ group by product_id
 
 
 
-
+aileen.zheng@weshareholdings.com
 
 
 
@@ -9048,8 +9048,10 @@ select
   d_date
 from ods.ecas_loan_asset
 where 1 > 0
-  and due_bill_no = '1120062107580558997297'
-  and d_date between '2020-07-20' and '2020-07-21'
+  and due_bill_no = '1120070507240382463196'
+  -- and d_date between '2020-07-20' and '2020-07-21'
+  and d_date between '2020-08-05' and '2020-08-10'
+  -- and d_date = '2020-08-05'
 order by due_bill_no,d_date
 ;
 
@@ -9068,7 +9070,7 @@ select
   d_date
 from ods.ecas_repay_schedule_asset
 where 1 > 0
-  and due_bill_no = '1120062107580558997297'
+  and due_bill_no = '1120070507240382463196'
   and d_date between '2020-07-20' and '2020-07-21'
 order by due_bill_no,d_date
 ;
@@ -9078,30 +9080,31 @@ invalidate metadata ods_new_s.loan_info;
 select
   -- *
   due_bill_no,
-  -- loan_active_date,
+  loan_active_date,
   loan_init_term,
-  -- loan_term2,
-  -- should_repay_date,
-  -- loan_status_cn,
-  -- paid_out_date,
-  -- loan_init_principal,
-  -- paid_principal,
-  -- remain_principal,
-
-  loan_term1,
+  loan_term2,
+  should_repay_date,
   loan_status_cn,
-  overdue_date_first,
-  overdue_date_start,
-  overdue_days,
-  overdue_term,
-  overdue_terms_count,
-  overdue_terms_max,
+  paid_out_date,
+  loan_init_principal,
+  paid_principal,
+  remain_principal,
+
+  -- loan_term1,
+  -- loan_status_cn,
+  -- overdue_date_first,
+  -- overdue_date_start,
+  -- overdue_days,
+  -- overdue_term,
+  -- overdue_terms_count,
+  -- overdue_terms_max,
+
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120061421344483293354'
+  and due_bill_no = '1120070507240382463196'
 order by s_d_date,due_bill_no
 ;
 
@@ -9125,7 +9128,7 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120061019450546018968'
+  and due_bill_no = '1120070507240382463196'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -9135,7 +9138,7 @@ select
 from ods_new_s.repay_detail
 where 1 > 0
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120061019450546018968'
+  and due_bill_no = '1120070507240382463196'
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,repay_term,biz_date
 ;
@@ -9146,7 +9149,7 @@ select
 from ods.ecas_repay_hst_asset
 where 1 > 0
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120061019450546018968'
+  and due_bill_no = '1120070507240382463196'
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,d_date,term
 ;
@@ -9234,10 +9237,17 @@ limit 10
 
 
 
-  case
-  when loan_init_term = curr_term and overdue_days > 0 then curr_term
-  when overdue_days > 0 then curr_term - 1
-  else null end overdue_term,
+
+
+
+
+case
+when loan_init_term = curr_term and overdue_days > 0 then curr_term
+when overdue_days > 0 then curr_term - 1
+else null end overdue_term,
+
+
+
 select
   due_bill_no,
   loan_term2,
@@ -9251,6 +9261,7 @@ where 1 > 0
   -- 1120062009364346847397
 order by due_bill_no,s_d_date
 ;
+
 
 
 
