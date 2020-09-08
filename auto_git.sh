@@ -27,9 +27,9 @@ log=$dir1/auto_git.log
 prt '-' '50' &>> $log
 
 for dir in ${dirs//,/ }; do
-  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/code/HiveUDF/src &>> $log
   cd $dir
   pwd &>> $log
+  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/code/HiveUDF/src &>> $log
 
   echo -e '\n' &>> $log
 
