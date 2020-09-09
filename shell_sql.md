@@ -1620,8 +1620,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*date_format*';
-DESC FUNCTION EXTENDED floor;
+SHOW FUNCTIONS LIKE '*LPAD*';
+DESC FUNCTION EXTENDED LPAD;
 ```
 
 

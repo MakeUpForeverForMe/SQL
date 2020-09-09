@@ -9047,7 +9047,7 @@ select
   d_date
 from ods.ecas_loan_asset
 where 1 > 0
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120060318015544273567'
   -- and d_date between '2020-07-20' and '2020-07-21'
   and d_date between '2020-08-05' and '2020-08-10'
   -- and d_date = '2020-08-05'
@@ -9069,7 +9069,7 @@ select
   d_date
 from ods.ecas_repay_schedule_asset
 where 1 > 0
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120060318015544273567'
   and d_date between '2020-07-20' and '2020-07-21'
 order by due_bill_no,d_date
 ;
@@ -9103,7 +9103,7 @@ select
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120060318015544273567'
   -- and s_d_date = '2020-06-02'
 order by due_bill_no,s_d_date
 ;
@@ -9128,50 +9128,85 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120060215213608230275'
+  and due_bill_no = '1120060318015544273567'
 order by due_bill_no,loan_term,s_d_date
 ;
 
 invalidate metadata ods_new_s.repay_detail;
+refresh ods_new_s.repay_detail;
 select
   -- *
-  due_bill_no,payment_id,order_id,loan_init_term,repay_term,loan_status_cn,overdue_days,repay_amount,to_date(txn_time) as txn_date,biz_date,product_id
+  due_bill_no,payment_id,order_id,loan_init_term,repay_term,loan_status_cn,overdue_days,bnp_type,repay_amount,to_date(txn_time) as txn_date,biz_date,product_id
 from ods_new_s.repay_detail
 where 1 > 0
-  and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120060420501158464265'
+  -- and bnp_type = 'Pricinpal'
+  -- and due_bill_no = '1120060216004289090275'
+  and due_bill_no in (
+    '1120060420501158464265',
+    '1120060510292278025855',
+    '1120060510293108891287',
+    '1120060510334912690618',
+    '1120060510464638220703'
+  )
   -- and biz_date between '2020-06-03' and '2020-06-04'
   -- and (biz_date = '2020-06-14' or biz_date = '2020-06-04')
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,biz_date,repay_term
 ;
 
+
 invalidate metadata ods.ecas_repay_hst_asset;
-select
+select distinct
   -- *
-  due_bill_no,payment_id,repay_amt,term,txn_date,overdue_days,loan_status,d_date
+  due_bill_no,order_id,payment_id,repay_amt,term,txn_date,bnp_type,
+  loan_status,overdue_days,
+    -- case
+    -- when due_bill_no = '1120060216004289090275' and d_date between '2020-06-05' and '2020-06-06' then 'N'
+    -- when due_bill_no = '1120060215213608230275' and d_date between '2020-06-05' and '2020-06-06' then 'N'
+    -- when due_bill_no = '1120060315434201160683' and d_date between '2020-06-05' and '2020-06-06' then 'N'
+    -- when due_bill_no = '1120060318015544273567' and d_date between '2020-06-05' and '2020-06-06' then 'N'
+    -- else loan_status end loan_status,
+    -- case
+    -- when due_bill_no = '1120060216004289090275' and d_date between '2020-06-05' and '2020-06-06' then 0
+    -- when due_bill_no = '1120060215213608230275' and d_date between '2020-06-05' and '2020-06-06' then 0
+    -- when due_bill_no = '1120060315434201160683' and d_date between '2020-06-05' and '2020-06-06' then 0
+    -- when due_bill_no = '1120060318015544273567' and d_date between '2020-06-05' and '2020-06-06' then 0
+    -- else overdue_days end overdue_days,
+  d_date
 from ods.ecas_repay_hst_asset
 where 1 > 0
-  and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120060420501158464265'
+  and d_date <= to_date(current_timestamp())
+  -- and bnp_type = 'Pricinpal'
+  and due_bill_no = '1120061910384241252747'
+  -- and due_bill_no in (
+  --   '1120060420501158464265',
+  --   '1120060510292278025855',
+  --   '1120060510293108891287',
+  --   '1120060510334912690618',
+  --   '1120060510464638220703'
+  -- )
   -- and d_date = '2020-06-04'
+  -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
   -- and payment_id = '000015927131361admin000083000000'
-order by due_bill_no,d_date,term
+order by due_bill_no
+,d_date
+,term,bnp_type
 ;
 
 
-
-
-
-
-
-
-
-
-
-
-
+invalidate metadata ods.ecas_repay_hst_asset;
+select
+  due_bill_no,
+  min(d_date) as d_date_min,
+  max(d_date) as d_date_max
+from ods.ecas_repay_hst_asset
+where 1 > 0
+  and (order_id is null or payment_id is null)
+  and d_date <= to_date(current_timestamp())
+group by due_bill_no
+order by d_date_min
+;
 
 
 
