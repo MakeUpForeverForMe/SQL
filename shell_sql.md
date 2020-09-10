@@ -1223,6 +1223,7 @@ select `(id)?+.+` from test_map;                                                
 set hive.groupby.orderby.position.alias=true;                                      -- 设置 Hive 可以使用 group by 1,2,3
 set hive.resultset.use.unique.column.names=false;                                  -- 设置 Hive 查询结果不显示库名
 set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
+set hive.variable.substitute.depth=200;                                            -- 设置 替换变量的长度（默认：40）
 
 
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce

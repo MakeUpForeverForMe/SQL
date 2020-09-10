@@ -9103,11 +9103,20 @@ select
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120060318015544273567'
+  and due_bill_no = '1120060420501237286524'
   -- and s_d_date = '2020-06-02'
 order by due_bill_no,s_d_date
 ;
 
+select
+  due_bill_no,
+  biz_date,
+  product_id
+from ods_new_s.loan_apply
+where 1 > 0
+  and due_bill_no = '1120060420501237286524'
+order by due_bill_no,biz_date
+;
 
 
 invalidate metadata ods_new_s.repay_schedule;
@@ -9132,50 +9141,17 @@ where 1 > 0
 order by due_bill_no,loan_term,s_d_date
 ;
 
-invalidate metadata ods_new_s.repay_detail;
-refresh ods_new_s.repay_detail;
+-- set var:db_suffix=;
+set var:db_suffix=_cps;
+
+set var:table=ods_new_s${var:db_suffix}.repay_detail;
+
+invalidate metadata ${var:table};
 select
   -- *
   due_bill_no,payment_id,order_id,loan_init_term,repay_term,loan_status_cn,overdue_days,bnp_type,repay_amount,to_date(txn_time) as txn_date,biz_date,product_id
-from ods_new_s.repay_detail
+from ${var:table}
 where 1 > 0
-  -- and bnp_type = 'Pricinpal'
-  -- and due_bill_no = '1120060216004289090275'
-  and due_bill_no in (
-    '1120060420501158464265',
-    '1120060510292278025855',
-    '1120060510293108891287',
-    '1120060510334912690618',
-    '1120060510464638220703'
-  )
-  -- and biz_date between '2020-06-03' and '2020-06-04'
-  -- and (biz_date = '2020-06-14' or biz_date = '2020-06-04')
-  -- and payment_id = '000015927131361admin000083000000'
-order by due_bill_no,biz_date,repay_term
-;
-
-
-invalidate metadata ods.ecas_repay_hst_asset;
-select distinct
-  -- *
-  due_bill_no,order_id,payment_id,repay_amt,term,txn_date,bnp_type,
-  loan_status,overdue_days,
-    -- case
-    -- when due_bill_no = '1120060216004289090275' and d_date between '2020-06-05' and '2020-06-06' then 'N'
-    -- when due_bill_no = '1120060215213608230275' and d_date between '2020-06-05' and '2020-06-06' then 'N'
-    -- when due_bill_no = '1120060315434201160683' and d_date between '2020-06-05' and '2020-06-06' then 'N'
-    -- when due_bill_no = '1120060318015544273567' and d_date between '2020-06-05' and '2020-06-06' then 'N'
-    -- else loan_status end loan_status,
-    -- case
-    -- when due_bill_no = '1120060216004289090275' and d_date between '2020-06-05' and '2020-06-06' then 0
-    -- when due_bill_no = '1120060215213608230275' and d_date between '2020-06-05' and '2020-06-06' then 0
-    -- when due_bill_no = '1120060315434201160683' and d_date between '2020-06-05' and '2020-06-06' then 0
-    -- when due_bill_no = '1120060318015544273567' and d_date between '2020-06-05' and '2020-06-06' then 0
-    -- else overdue_days end overdue_days,
-  d_date
-from ods.ecas_repay_hst_asset
-where 1 > 0
-  and d_date <= to_date(current_timestamp())
   -- and bnp_type = 'Pricinpal'
   and due_bill_no = '1120061910384241252747'
   -- and due_bill_no in (
@@ -9185,28 +9161,66 @@ where 1 > 0
   --   '1120060510334912690618',
   --   '1120060510464638220703'
   -- )
+  -- and product_id is null
+  -- and biz_date between '2020-09-02' and '2020-09-06'
+  -- and (biz_date = '2020-06-14' or biz_date = '2020-06-04')
+  -- and payment_id = '000015927131361admin000083000000'
+order by due_bill_no,biz_date,repay_term
+-- limit 10
+;
+
+
+
+-- set var:tb_suffix=_asset;
+set var:tb_suffix=;
+
+set var:table=ods.ecas_repay_hst${var:tb_suffix};
+
+invalidate metadata ${var:table};
+select distinct
+  -- *
+  due_bill_no,order_id,payment_id,repay_amt,term,txn_date,bnp_type,
+  loan_status,overdue_days,
+  batch_date,
+  d_date
+from ${var:table}
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and bnp_type = 'Pricinpal'
+  and due_bill_no = '1120061910384241252747'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
   -- and payment_id = '000015927131361admin000083000000'
-order by due_bill_no
-,d_date
-,term,bnp_type
+  and payment_id != '000015943861031admin000083000002'
+  -- and if('${var:tb_suffix}' = '_asset',
+  --   -- 代偿前
+  --   payment_id in (
+  --     '000015943861031admin000083000003'
+  --   ),
+  --   -- 代偿后
+  --   payment_id in (
+  --     '000015943861031admin000083000002',
+  --     '000015945007161admin000083000002',
+  --     '000015945007161admin000083000003',
+  --     '000015945007161admin000083000004',
+  --     '000015945007161admin000083000005',
+  --     '000015945007161admin000083000006'
+  --   )
+  -- )
+order by due_bill_no,d_date,term,bnp_type
 ;
 
 
-invalidate metadata ods.ecas_repay_hst_asset;
-select
-  due_bill_no,
-  min(d_date) as d_date_min,
-  max(d_date) as d_date_max
-from ods.ecas_repay_hst_asset
-where 1 > 0
-  and (order_id is null or payment_id is null)
-  and d_date <= to_date(current_timestamp())
-group by due_bill_no
-order by d_date_min
-;
+
+
+
+
+
+
+
+
+
 
 
 
@@ -9315,6 +9329,145 @@ order by due_bill_no,s_d_date
 
 
 
+
+
+
+invalidate metadata ods.ecas_repay_hst;
+select
+  due_bill_no,
+  min(d_date) as d_date_min,
+  max(d_date) as d_date_max
+from ods.ecas_repay_hst
+where 1 > 0
+  and (order_id is null or payment_id is null)
+  and d_date <= to_date(current_timestamp())
+group by due_bill_no
+order by d_date_min
+;
+
+
+select *
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and biz_date = '2020-09-06'
+;
+
+
+invalidate metadata ods_new_s_cps.repay_detail;
+select distinct
+  biz_date,
+  product_id
+from ods_new_s_cps.repay_detail
+where 1 > 0
+  and product_id is null
+order by biz_date
+;
+
+
+invalidate metadata dw_new_cps.dw_loan_base_stat_repay_detail_day;
+select distinct
+  biz_date,
+  product_id
+from dw_new_cps.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and product_id is null
+order by biz_date
+;
+
+
+invalidate metadata dm_eagle_cps.eagle_should_repay_repaid_amount_day;
+select
+  -- *
+  biz_date,
+  project_id
+from dm_eagle_cps.eagle_should_repay_repaid_amount_day
+where 1 > 0
+  -- and biz_date between '2020-08-09' and '2020-08-19'
+  and project_id is null
+order by biz_date
+-- limit 10
+;
+
+
+
+
+
+show partitions ods_new_s.repay_detail;
+show partitions dw_new.dw_loan_base_stat_repay_detail_day;
+show partitions dm_eagle.eagle_asset_scale_repaid_day;
+
+show partitions dm_eagle.eagle_should_repay_repaid_amount_day;
+
+
+
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001601');
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001602');
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001603');
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001701');
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001702');
+ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = 'DIDI201908161538');
+
+
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-09',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-10',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-11',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-25',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-26',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-27',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-28',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-29',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-30',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-31',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-01',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-02',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-03',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-04',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-05',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-06',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-07',product_id = '__HIVE_DEFAULT_PARTITION__');
+ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-08',product_id = '__HIVE_DEFAULT_PARTITION__');
+
+
+
+
+
+invalidate metadata ods_new_s_cps.repay_detail;
+select
+  sum(repay_amount) as repay_amount,
+  biz_date,product_id
+from ods_new_s_cps.repay_detail
+where 1 > 0
+  and biz_date between '2020-09-02' and '2020-09-06'
+  and bnp_type = 'Pricinpal'
+group by biz_date,product_id
+order by biz_date,product_id
+;
+
+
+invalidate metadata dm_eagle.eagle_asset_scale_repaid_day;
+select
+  sum(paid_principal) as paid_principal,
+  sum(repay_principal) as repay_principal,
+  biz_date,product_id
+from dm_eagle.eagle_asset_scale_repaid_day
+where 1 > 0
+  and biz_date between '2020-09-02' and '2020-09-06'
+group by biz_date,product_id
+order by biz_date,product_id
+;
+
+
+invalidate metadata dw_new.dw_loan_base_stat_repay_detail_day;
+select
+  sum(repaid_principal) as repaid_principal,
+  sum(repaid_principal_count) as repaid_principal_count,
+  biz_date,product_id
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and biz_date between '2020-09-02' and '2020-09-06'
+group by biz_date,product_id
+order by biz_date,product_id
+;
 
 
 
