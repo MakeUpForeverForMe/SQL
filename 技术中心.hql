@@ -9047,12 +9047,17 @@ select
   d_date
 from ods.ecas_loan_asset
 where 1 > 0
-  and due_bill_no = '1120060318015544273567'
+  -- and product_code in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and due_bill_no = '1120060510301108020593'
   -- and d_date between '2020-07-20' and '2020-07-21'
-  and d_date between '2020-08-05' and '2020-08-10'
+  -- and d_date between '2020-08-05' and '2020-08-10'
   -- and d_date = '2020-08-05'
+  -- and overdue_days > 30
 order by due_bill_no,d_date
+-- limit 10
 ;
+
+
 
 invalidate metadata ods.ecas_loan_asset;
 select
@@ -9075,7 +9080,7 @@ order by due_bill_no,d_date
 ;
 
 
-invalidate metadata ods_new_s.loan_info;
+invalidate metadata ods_new_s_cps.loan_info;
 select
   -- *
   due_bill_no,
@@ -9088,25 +9093,18 @@ select
   loan_init_principal,
   paid_principal,
   remain_principal,
-
-  -- loan_term1,
-  -- loan_status_cn,
-  -- overdue_date_first,
-  -- overdue_date_start,
-  -- overdue_days,
-  -- overdue_term,
-  -- overdue_terms_count,
-  -- overdue_terms_max,
-
   s_d_date,
   e_d_date,
   product_id
-from ods_new_s.loan_info
+from ods_new_s_cps.loan_info
 where 1 > 0
-  and due_bill_no = '1120060420501237286524'
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  -- and due_bill_no = '1120060711281498770784'
   -- and s_d_date = '2020-06-02'
 order by due_bill_no,s_d_date
+limit 100
 ;
+
 
 select
   due_bill_no,
@@ -9114,7 +9112,7 @@ select
   product_id
 from ods_new_s.loan_apply
 where 1 > 0
-  and due_bill_no = '1120060420501237286524'
+  and due_bill_no = '1120071313325167461980'
 order by due_bill_no,biz_date
 ;
 
@@ -9137,12 +9135,15 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120060318015544273567'
+  and due_bill_no = '1120060510301667313582'
 order by due_bill_no,loan_term,s_d_date
 ;
 
--- set var:db_suffix=;
-set var:db_suffix=_cps;
+
+
+
+set var:db_suffix=;
+-- set var:db_suffix=_cps;
 
 set var:table=ods_new_s${var:db_suffix}.repay_detail;
 
@@ -9153,26 +9154,16 @@ select
 from ${var:table}
 where 1 > 0
   -- and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120061910384241252747'
-  -- and due_bill_no in (
-  --   '1120060420501158464265',
-  --   '1120060510292278025855',
-  --   '1120060510293108891287',
-  --   '1120060510334912690618',
-  --   '1120060510464638220703'
-  -- )
-  -- and product_id is null
-  -- and biz_date between '2020-09-02' and '2020-09-06'
-  -- and (biz_date = '2020-06-14' or biz_date = '2020-06-04')
+  -- and due_bill_no = '1120060902365360232251'
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,biz_date,repay_term
--- limit 10
+limit 10
 ;
 
 
 
--- set var:tb_suffix=_asset;
-set var:tb_suffix=;
+set var:tb_suffix=_asset;
+-- set var:tb_suffix=;
 
 set var:table=ods.ecas_repay_hst${var:tb_suffix};
 
@@ -9187,7 +9178,7 @@ from ${var:table}
 where 1 > 0
   and d_date <= to_date(current_timestamp())
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120061910384241252747'
+  and due_bill_no = '1120060510301108020593'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
@@ -9240,10 +9231,12 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120061421344483293354'
+  and due_bill_no = '1120060711281498770784'
   -- and due_bill_no = '1120060902491694564403'
 order by due_bill_no,loan_term,s_d_date
 ;
+
+
 
 invalidate metadata ods.ecas_loan_asset;
 select
@@ -9258,16 +9251,113 @@ select
   else null end overdue_term,
   product_code as product_id
   ,d_date
-from ods.ecas_loan_asset
+from ods.ecas_loan
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120062103431976725152'
+  and due_bill_no = '1120060510301667313582' -- 逾期超过60天
+  -- and due_bill_no = '1120060711281498770784' -- 逾期两次
+  -- and due_bill_no = 'DD0002303620191023124800eb526b'
   -- and due_bill_no = '1120061421344483293354'
   -- and due_bill_no = '1120060903380828924502'
   -- and loan_init_term > 2
   -- and overdue_days > 60
 order by due_bill_no,d_date
 -- limit 10
+;
+
+
+select
+  due_bill_no,
+  active_date,
+  loan_init_term,
+  curr_term,
+  overdue_days,
+  overdue_term,
+  -- dense_rank() over(partition by due_bill_no order by cast(overdue_term as int)) as rn1,
+  sum(if(dense_rank() over(partition by due_bill_no,overdue_term order by cast(overdue_days as int)) = 1,1,0)) as rn2,
+  -- lag(distinct overdue_term) over(partition by due_bill_no order by d_date) as ll,
+  -- count(distinct overdue_term) over(partition by due_bill_no order by ) as max2,
+  product_id,
+  d_date
+from test
+group by due_bill_no,
+  active_date,
+  loan_init_term,
+  curr_term,
+  overdue_days,
+  overdue_term,
+  product_id,
+  d_date
+order by due_bill_no,d_date
+;
+
+
+select
+  due_bill_no,
+  max(curr_term)   as overdue_term,
+  count(curr_term) as overdue_terms_max,
+  d_date
+from ods.ecas_repay_schedule
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no in (
+    -- '1120060711281498770784',
+    -- '1120060510301667313582'
+    'DD0002303620191023124800eb526b'
+  )
+  and pmt_due_date <= d_date
+  and case
+    when product_code = '001801' and due_bill_no = '1120060510300559326682' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060510300944421982' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060510314443303533' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060510470989937022' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060510474405236124' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060510483511719117' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060511131974539713' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060511173419906330' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060511174298184833' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060511184385512833' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060511325696044931' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060602322140630323' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060602323631368511' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060602324557511307' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060602332594205233' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    when product_code = '001801' and due_bill_no = '1120060602543338694112' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+    else schedule_status end = 'O'
+group by due_bill_no,d_date
+order by due_bill_no,d_date
+;
+
+
+select
+  due_bill_no,
+  overdue_days,
+  count(overdue_days) as cnt
+from ods.ecas_loan_asset
+where 1 > 0
+  and overdue_days >= 5
+group by due_bill_no,overdue_days
+having count(overdue_days) >= 2
+order by due_bill_no,overdue_days
+limit 100
+;
+
+
+
+select
+  due_bill_no,
+  loan_init_term,
+  schedule_status,
+  count(distinct loan_term) as cnt,
+  s_d_date,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and schedule_status = 'O'
+group by due_bill_no,schedule_status,product_id,s_d_date,loan_init_term
+having count(distinct loan_term) >= 2
+order by due_bill_no,cnt
+limit 100
 ;
 
 
@@ -9285,13 +9375,13 @@ select
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and should_repay_date = s_d_date
+  -- and should_repay_date = s_d_date
   -- and loan_init_term = 1
   -- and loan_term1 != loan_init_term
   -- and loan_term1 = loan_term2
-  and overdue_days > 60
-  and should_repay_date <= '2020-09-05'
-  -- and due_bill_no = '1120060711431308862377'
+  -- and overdue_days > 60
+  -- and should_repay_date <= '2020-09-05'
+  and due_bill_no = '1120060318015544273567'
 order by due_bill_no,s_d_date
 -- limit 10
 ;
@@ -9299,27 +9389,77 @@ order by due_bill_no,s_d_date
 
 
 
-
-
-
-
-case
-when loan_init_term = curr_term and overdue_days > 0 then curr_term
-when overdue_days > 0 then curr_term - 1
-else null end overdue_term,
-
-
-
 select
   due_bill_no,
+  curr_term,
+  overdue_days,
+  overdue_term,
+  d_date,
+  product_code
+from (
+  select
+    due_bill_no,
+    curr_term,
+    overdue_days,
+    d_date,
+    product_code
+  from ods.ecas_loan_asset
+  where 1 > 0
+    and d_date <= to_date(current_timestamp())
+    and due_bill_no = '1120060711281498770784'
+) as loan
+left join (
+  select due_bill_no as due_bill_no_schedule,max(curr_term) as overdue_term,d_date as d_date_schedule
+  from ods.ecas_repay_schedule_asset
+  where 1 > 0
+    -- and d_date = '2020-07-01'
+    and pmt_due_date <= d_date
+    and due_bill_no = '1120060711281498770784'
+    and case
+      when product_code = '001801' and due_bill_no = '1120060510300559326682' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060510300944421982' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060510314443303533' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060510470989937022' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060510474405236124' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060510483511719117' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060511131974539713' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060511173419906330' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060511174298184833' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060511184385512833' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060511325696044931' and d_date between '2020-06-06' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060602322140630323' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060602323631368511' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060602324557511307' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060602332594205233' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      when product_code = '001801' and due_bill_no = '1120060602543338694112' and d_date between '2020-06-07' and to_date(current_timestamp()) then 'F'
+      else schedule_status end = 'O'
+  group by due_bill_no,d_date
+) as schedule
+on  d_date      = d_date_schedule
+and due_bill_no = due_bill_no_schedule
+order by due_bill_no,d_date
+;
+
+
+
+
+invalidate metadata ods_new_s.loan_info;
+select
+  due_bill_no,
+  loan_term1,
   loan_term2,
+  overdue_days,
+  should_repay_date,
+  case
+  when loan_init_term = loan_term1 and overdue_days > 0 then loan_term1
+  when overdue_days > 0 then loan_term1 - 1 else null end as overdue_term,
   max(if(overdue_days > 0,loan_term2,null)) over(partition by due_bill_no order by s_d_date) as overdue_terms_max,
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120060711281498770784'
+  and due_bill_no = '1120060510301667313582'
   -- 1120062009364346847397
 order by due_bill_no,s_d_date
 ;
@@ -9398,14 +9538,15 @@ show partitions dm_eagle.eagle_asset_scale_repaid_day;
 
 show partitions dm_eagle.eagle_should_repay_repaid_amount_day;
 
+show partitions ods_new_s_cps.loan_info;
 
 
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001601');
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001602');
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001603');
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001701');
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001702');
-ALTER TABLE ods_new_s_cps.repay_schedule DROP IF EXISTS PARTITION (is_settled = 'no',product_id = 'DIDI201908161538');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001601');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001602');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001603');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001701');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001702');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = 'DIDI201908161538');
 
 
 ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-08-09',product_id = '__HIVE_DEFAULT_PARTITION__');
