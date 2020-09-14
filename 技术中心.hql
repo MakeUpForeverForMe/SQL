@@ -9153,8 +9153,8 @@ select
   due_bill_no,payment_id,order_id,loan_init_term,repay_term,loan_status_cn,overdue_days,bnp_type,repay_amount,to_date(txn_time) as txn_date,biz_date,product_id
 from ${var:table}
 where 1 > 0
-  -- and bnp_type = 'Pricinpal'
-  -- and due_bill_no = '1120060902365360232251'
+  and bnp_type = 'Pricinpal'
+  and due_bill_no = '1120081715161900484277'
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,biz_date,repay_term
 limit 10
@@ -9178,7 +9178,7 @@ from ${var:table}
 where 1 > 0
   and d_date <= to_date(current_timestamp())
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120060510301108020593'
+  and due_bill_no = '1120081715161900484277'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
@@ -9468,7 +9468,17 @@ order by due_bill_no,s_d_date
 
 
 
+select
+  min(s_d_date) as s_d_date,
+  product_id
+from ods_new_s.loan_info
+group by product_id
+order by product_id
+;
 
+set hivevar:product_id='DIDI201908161538';
+
+ALTER TABLE ods_new_s.loan_info_tmp DROP IF EXISTS PARTITION (is_settled = 'no',product_id in (${product_id}));
 
 
 
