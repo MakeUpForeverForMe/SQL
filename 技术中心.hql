@@ -9080,26 +9080,29 @@ order by due_bill_no,d_date
 ;
 
 
-invalidate metadata ods_new_s_cps.loan_info;
+invalidate metadata ods_new_s.loan_info;
 select
-  -- *
-  due_bill_no,
-  loan_active_date,
-  loan_init_term,
-  loan_term2,
-  should_repay_date,
-  loan_status_cn,
-  paid_out_date,
-  loan_init_principal,
-  paid_principal,
-  remain_principal,
-  s_d_date,
-  e_d_date,
-  product_id
-from ods_new_s_cps.loan_info
+  *
+  -- due_bill_no,
+  -- loan_active_date,
+  -- loan_init_term,
+  -- loan_term2,
+  -- should_repay_date,
+  -- loan_status_cn,
+  -- overdue_days,
+  -- paid_out_date,
+  -- loan_init_principal as init_principal,
+  -- paid_principal,
+  -- remain_principal,
+  -- s_d_date,
+  -- e_d_date,
+  -- product_id
+from
+ods_new_s.loan_info
+-- ods_new_s.loan_info_bak
 where 1 > 0
   and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  -- and due_bill_no = '1120060711281498770784'
+  and due_bill_no = '1120061017361786522786'
   -- and s_d_date = '2020-06-02'
 order by due_bill_no,s_d_date
 limit 100
@@ -9117,7 +9120,7 @@ order by due_bill_no,biz_date
 ;
 
 
-invalidate metadata ods_new_s.repay_schedule;
+invalidate metadata ods_new_s_cps.repay_schedule;
 select
   due_bill_no,
   loan_active_date,
@@ -9133,9 +9136,9 @@ select
   s_d_date,
   e_d_date,
   product_id
-from ods_new_s.repay_schedule
+from ods_new_s_cps.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120060510301667313582'
+  and due_bill_no = '1120060420510631314604'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -9153,11 +9156,14 @@ select
   due_bill_no,payment_id,order_id,loan_init_term,repay_term,loan_status_cn,overdue_days,bnp_type,repay_amount,to_date(txn_time) as txn_date,biz_date,product_id
 from ${var:table}
 where 1 > 0
+  -- and product_id in (${var:product_id})
+  and product_id = '001802'
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120081715161900484277'
+  -- and biz_date = '2020-06-23'
+  and due_bill_no = '1120060711272979096947'
   -- and payment_id = '000015927131361admin000083000000'
 order by due_bill_no,biz_date,repay_term
-limit 10
+-- limit 10
 ;
 
 
@@ -9168,7 +9174,7 @@ set var:tb_suffix=_asset;
 set var:table=ods.ecas_repay_hst${var:tb_suffix};
 
 invalidate metadata ${var:table};
-select distinct
+select
   -- *
   due_bill_no,order_id,payment_id,repay_amt,term,txn_date,bnp_type,
   loan_status,overdue_days,
@@ -9177,8 +9183,9 @@ select distinct
 from ${var:table}
 where 1 > 0
   and d_date <= to_date(current_timestamp())
+  -- and d_date = '2020-06-04'
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120081715161900484277'
+  and due_bill_no = '1120060711272979096947'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
@@ -9206,11 +9213,63 @@ order by due_bill_no,d_date,term,bnp_type
 
 
 
+select distinct
+  due_bill_no,
+  product_id,
+  biz_date
+from ods_new_s.repay_detail
+where 1 > 0
+  -- and product_id is null
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and biz_date = '2020-06-03'
+  -- and product_id = '001906'
+-- order by biz_date,product_id
+-- order by product_id,biz_date
+limit 10
+;
 
 
 
 
+select
+  min(s_d_date) as s_d_date,
+  product_id
+from ods_new_s.loan_info
+group by product_id
+order by product_id
+;
 
+set hivevar:product_id='DIDI201908161538';
+
+ALTER TABLE ods_new_s.loan_info_tmp DROP IF EXISTS PARTITION (is_settled = 'no',product_id in (${product_id}));
+
+
+
+invalidate metadata ods.ecas_repay_hst;
+select
+  due_bill_no,
+  min(d_date) as d_date_min,
+  max(d_date) as d_date_max
+from ods.ecas_repay_hst
+where 1 > 0
+  and (order_id is null or payment_id is null)
+  and d_date <= to_date(current_timestamp())
+group by due_bill_no
+order by d_date_min
+;
+
+
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-03',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-04',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-05',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-06',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-07',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-08',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-09',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-10',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-11',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-12',product_id = '001906');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-09-13',product_id = '001906');
 
 
 
@@ -9464,36 +9523,6 @@ where 1 > 0
 order by due_bill_no,s_d_date
 ;
 
-
-
-
-
-select
-  min(s_d_date) as s_d_date,
-  product_id
-from ods_new_s.loan_info
-group by product_id
-order by product_id
-;
-
-set hivevar:product_id='DIDI201908161538';
-
-ALTER TABLE ods_new_s.loan_info_tmp DROP IF EXISTS PARTITION (is_settled = 'no',product_id in (${product_id}));
-
-
-
-invalidate metadata ods.ecas_repay_hst;
-select
-  due_bill_no,
-  min(d_date) as d_date_min,
-  max(d_date) as d_date_max
-from ods.ecas_repay_hst
-where 1 > 0
-  and (order_id is null or payment_id is null)
-  and d_date <= to_date(current_timestamp())
-group by due_bill_no
-order by d_date_min
-;
 
 
 select *
