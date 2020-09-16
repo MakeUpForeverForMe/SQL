@@ -9651,4 +9651,40 @@ order by biz_date,product_id
 
 
 
+set hivevar:ST9=2020-07-02;
+
+
+
+select
+  capital_id                        as capital_id,
+  channel_id                        as channel_id,
+  project_id                        as project_id,
+  loan_terms                        as loan_terms,
+  date_format(biz_date,'yyyy-MM')   as loan_month,
+  month('${ST9}') + (year('${ST9}') - year(biz_date)) * 12 - month(biz_date) as mob,
+  sum(loan_principal)               as loan_principal,
+  biz_conf.product_id          as product_id,
+  '${ST9}' as biz_date
+from dw_new.dw_loan_base_stat_loan_num_day as loan_num
+join dim_new.biz_conf
+on  loan_num.product_id = biz_conf.product_id
+and loan_num.biz_date <= '${ST9}'
+and biz_conf.product_id is not null
+and biz_conf.product_id in (${product_id})
+group by 1,2,3,4,5,6,8
+order by loan_month,product_id,loan_terms
+;
+
+
+
+select
+  loan_terms,
+  loan_principal_count,
+  biz_date,
+  product_id
+from dw_new.dw_loan_base_stat_loan_num_day as loan_num
+where biz_date <= '${ST9}'
+and product_id in (${product_id})
+order by biz_date,product_id,loan_terms
+;
 
