@@ -9688,3 +9688,6 @@ and product_id in (${product_id})
 order by biz_date,product_id,loan_terms
 ;
 
+
+
+

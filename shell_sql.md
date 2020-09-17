@@ -1098,30 +1098,35 @@ select trunc('2020-12-31','MM'); -- 2020-12-01
 ### 4.2.1 Hive 学习
 #### 4.2.1.1 Hive 基础学习
 ```sql
--- /*
---   Hive 数据类型
---   数字类型
---     TINYINT          (1-byte signed integer, from -128                 to 127)
---     SMALLINT         (2-byte signed integer, from -32768               to 32767)
---     INT/INTEGER      (4-byte signed integer, from -2147483648          to 2147483647)
---     BIGINT           (8-byte signed integer, from -9223372036854775808 to 9223372036854775807)
---     FLOAT            (4-byte single precision floating point number) -- 单精度浮点型数值
---     DOUBLE           (8-byte double precision floating point number) -- 双精度浮点型数值
---     DOUBLE PRECISION (alias for DOUBLE, only available starting with Hive 2.2.0) -- DOUBLE 的别名 -- available 可用的
---     DECIMAL          DECIMAL(precision, scale) -- DECIMAL（精度，刻度）precision 默认 10，scale 默认 0 （即无小数位）
---       Introduced in Hive 0.11.0 with a precision of 38 digits   -- 在 Hive 0.11.0 中引入，精度为 38 位
---       Hive 0.13.0 introduced user-definable precision and scale -- 在 Hive 0.13.0 中引入了用户可定义的精度和比例
---     NUMERIC          (same as DECIMAL, starting with Hive 3.0.0)
---   日期/时间类型 （使用 timestamp.formats 来支持其他时间戳格式。例如，yyyy-MM-dd'T'HH:mm:ss.SSS，yyyy-MM-dd'T'HH:mm:ss）
---     TIMESTAMP (Note: Only available starting with Hive 0.8.0)  -- yyyy-mm-dd hh:mm:ss
---     DATE      (Note: Only available starting with Hive 0.12.0) -- yyyy­mm­dd
---     INTERVAL  (Note: Only available starting with Hive 1.2.0)  -- 间隔，与NUMERIC不一样。不明白怎么用
---   String 类型
---     STRING  (单引号或双引号引起来的值)
---     VARCHAR (Note: Only available starting with Hive 0.12.0) -- 可变长度(1和65535)，如：指定10，不足10为本身，超过截前10
---     CHAR    (Note: Only available starting with Hive 0.13.0) -- 固定长度值，最长 255
---   其他
---  */
+-- Numeric Types
+--   TINYINT          (1-byte signed integer, from -128                     to 127)
+--   SMALLINT         (2-byte signed integer, from -3 2768                  to 3 2767)
+--   INT/INTEGER      (4-byte signed integer, from -21 4748 3648            to 21 4748 3647)
+--   BIGINT           (8-byte signed integer, from -922 3372 0368 5477 5808 to 922 3372 0368 5477 5807)
+--   FLOAT            (4-byte single precision floating point number)             -- 单精度浮点型数值
+--   DOUBLE           (8-byte double precision floating point number)             -- 双精度浮点型数值
+--   DOUBLE PRECISION (alias for DOUBLE, only available starting with Hive 2.2.0) -- DOUBLE 的别名 -- available 可用的
+--   DECIMAL                                                                      -- DECIMAL（精度，刻度）precision 默认 10，scale 默认 0 （即无小数位）
+--     Introduced in Hive 0.11.0 with a precision of 38 digits                    -- 在 Hive 0.11.0 中引入，精度为 38 位
+--     Hive 0.13.0 introduced user-definable precision and scale                  -- 在 Hive 0.13.0 中引入了用户可定义的精度和比例
+--   NUMERIC          (same as DECIMAL, starting with Hive 3.0.0)
+-- Date/Time Types （使用 timestamp.formats 来支持其他时间戳格式。例如，yyyy-MM-dd'T'HH:mm:ss.SSS，yyyy-MM-dd'T'HH:mm:ss）
+--   TIMESTAMP (Note: Only available starting with Hive 0.8.0)                    -- yyyy-mm-dd hh:mm:ss
+--   DATE (Note: Only available starting with Hive 0.12.0)                        -- yyyy­mm­dd
+--   INTERVAL (Note: Only available starting with Hive 1.2.0)                     -- 间隔，与NUMERIC不一样。不明白怎么用
+-- String Types
+--   STRING
+--   VARCHAR (Note: Only available starting with Hive 0.12.0)                     -- 可变长度（ 1 和 6 5535 ），如：指定 10 ，不足 10 为本身，超过截前 10
+--   CHAR (Note: Only available starting with Hive 0.13.0)                        -- 固定长度值，最长 255
+-- Misc Types
+--   BOOLEAN
+--   BINARY (Note: Only available starting with Hive 0.8.0)
+-- Complex Types
+--   arrays: ARRAY<data_type> (Note: negative values and non-constant expressions are allowed as of Hive 0.14.)
+--   maps: MAP<primitive_type, data_type> (Note: negative values and non-constant expressions are allowed as of Hive 0.14.)
+--   structs: STRUCT<col_name : data_type [COMMENT col_comment], ...>
+--   union: UNIONTYPE<data_type, data_type, ...> (Note: Only available starting with Hive 0.7.0.)
+
 
 
 
