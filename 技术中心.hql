@@ -9198,7 +9198,7 @@ where 1 > 0
   and '2020-08-16' between s_d_date and date_sub(e_d_date,1)
   -- and loan_active_date = '2020-06-11'
   -- and should_repay_date = '2020-06-22'
-order by due_bill_no,init_term,loan_term,s_d_date
+order by init_term,due_bill_no,loan_term,s_d_date
 ;
 
 
@@ -9743,9 +9743,8 @@ group by product_id,loan_active_date,loan_init_term,should_repay_date
 order by product_id,should_repay_date,loan_active_date,loan_init_term;
 
 
+| 2020-06-04  | 2020-06-16        | 240.0000      | 3522.9100     | -3282.9100      | 001801     |
 
-
-set hivevar:ST9=2020-08-16;
 
 
 select
@@ -9753,17 +9752,21 @@ select
   loan_init_term,
   loan_active_date,
   loan_init_principal,
+  should_repay_date,
   should_repay_principal,
   schedule_status,
+  s_d_date,
+  e_d_date,
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
   and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and '${ST9}' between s_d_date and date_sub(e_d_date,1)
-  and should_repay_date = '${ST9}'
-  and product_id = '001802'
-  and loan_active_date = '2020-06-10'
-order by product_id,loan_active_date,loan_init_term,due_bill_no;
+  -- and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
+  -- and should_repay_date = '2020-06-16'
+  -- and product_id = '001801'
+  -- and loan_active_date = '2020-06-04'
+  and due_bill_no = '1120060420501546966791'
+order by product_id,loan_active_date,loan_init_term,should_repay_date,due_bill_no;
 
 
 select
@@ -9776,21 +9779,18 @@ select
 from ods_new_s.repay_schedule
 where 1 > 0
   and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and '${ST9}' between s_d_date and date_sub(e_d_date,1)
-  and should_repay_date = '${ST9}'
-  and product_id = '001802'
-  and loan_active_date = '2020-06-10'
+  and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '2020-06-16'
+  and product_id = '001801'
+  and loan_active_date = '2020-06-04'
 group by product_id,loan_active_date,loan_init_term
 order by product_id,loan_active_date,loan_init_term;
 
 
 
-set hivevar:ST9=2020-08-16;
-
 select
   loan_init_term           as loan_init_term_unposted,
   loan_active_date         as loan_active_date_unposted,
-  should_repay_date        as should_repay_date_unposted,
   sum(loan_init_principal) as loan_principal_unposted,
   sum(unposted_principal)  as unposted_principal,
   product_id               as product_id_unposted
@@ -9800,17 +9800,97 @@ from (
     loan_init_term,
     loan_active_date,
     loan_init_principal,
-    should_repay_date,
-    sum(should_repay_principal) over(partition by due_bill_no,should_repay_date) as unposted_principal,
+    sum(should_repay_principal) over(partition by due_bill_no) as unposted_principal,
     product_id
   from ods_new_s.repay_schedule
   where 1 > 0
     and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-    and '${ST9}' between s_d_date and date_sub(e_d_date,1)
+    and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
     and schedule_status = 'N'
-    -- and product_id = '001802'
-    -- and loan_active_date = '2020-06-10'
-    -- and should_repay_date = '${ST9}'
+    and product_id = '001801'
+    and loan_active_date = '2020-06-04'
+  order by product_id,loan_active_date,loan_init_term,due_bill_no
+) as tmp
+group by product_id,loan_active_date,loan_init_term
+order by product_id,loan_active_date,loan_init_term
+;
+
+
+
+
+select
+  nvl(loan_init_term_unposted,loan_init_term)     as loan_terms,
+  nvl(loan_active_date_unposted,loan_active_date) as loan_active_date,
+  nvl(loan_principal,loan_principal_unposted)     as loan_principal,
+  nvl(unposted_principal,0)                       as unposted_principal,
+  nvl(should_repay_loan_num,0)                    as should_repay_loan_num,
+  nvl(should_repay_principal,0)                   as should_repay_principal,
+  nvl(product_id_unposted,product_id)             as product_id
+from (
+  select
+    loan_init_term           as loan_init_term_unposted,
+    loan_active_date         as loan_active_date_unposted,
+    sum(loan_init_principal) as loan_principal_unposted,
+    sum(unposted_principal)  as unposted_principal,
+    product_id               as product_id_unposted
+  from (
+    select distinct
+      due_bill_no,
+      loan_init_term,
+      loan_active_date,
+      loan_init_principal,
+      sum(should_repay_principal) over(partition by due_bill_no) as unposted_principal,
+      product_id
+    from ods_new_s${db_suffix}.repay_schedule
+    where 1 > 0
+      -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+      and '${ST9}' between s_d_date and date_sub(e_d_date,1)
+      and schedule_status = 'N'
+      and due_bill_no in (
+        '1120061000012073790761',
+        '1120061011512861060415',
+        '1120061013134335836918',
+        '1120061013161185386540',
+        '1120061013360468176022',
+        '1120061014365453444208',
+        '1120061016280256025422',
+        '1120061000103324786981',
+        '1120061011544781457313',
+        '1120061013515845004113',
+        '1120061016231814341220',
+        '1120061017103316886217',
+        '1120061017184270790727',
+        '1120061018425695211501',
+        '1120061018550688216424',
+        '1120061001471513090295',
+        '1120061011271721422325',
+        '1120061011422980346806',
+        '1120061013281886916711',
+        '1120061014440200547513',
+        '1120061016190085340011',
+        '1120061016515328961501',
+        '1120061017154182696707',
+        '1120061014330468851823',
+        '1120061016424611493709',
+        '1120061017474204201521'
+      )
+    -- order by product_id,loan_active_date,loan_init_term,due_bill_no;
+  ) as tmp
+  group by product_id,loan_active_date,loan_init_term
+) as unposted_schedule
+full join (
+  select
+    loan_init_term                     as loan_init_term,
+    loan_active_date                   as loan_active_date,
+    sum(loan_init_principal)           as loan_principal,
+    count(distinct due_bill_no)        as should_repay_loan_num,
+    sum(nvl(should_repay_principal,0)) as should_repay_principal,
+    product_id                         as product_id
+  from ods_new_s${db_suffix}.repay_schedule
+  where 1 > 0
+    -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+    and '${ST9}' between s_d_date and date_sub(e_d_date,1)
+    and should_repay_date = '${ST9}'
     and due_bill_no in (
       '1120061000012073790761',
       '1120061011512861060415',
@@ -9839,15 +9919,60 @@ from (
       '1120061016424611493709',
       '1120061017474204201521'
     )
-  -- order by product_id,loan_active_date,loan_init_term,due_bill_no
-) as tmp
-group by product_id,loan_active_date,should_repay_date,loan_init_term
-order by product_id,loan_active_date,loan_init_term,should_repay_date
+  group by product_id,loan_active_date,loan_init_term
+) as repay_schedule
+on  product_id_unposted       = product_id
+and loan_active_date_unposted = loan_active_date
+and loan_init_term_unposted   = loan_init_term
+-- where nvl(product_id_unposted,product_id) in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+-- limit 10
 ;
 
 
 
 
+select
+  sum(loan_init_principal) as loan_principal,
+  loan_active_date         as loan_active_date,
+  should_repay_date        as should_repay_date,
+  product_id               as product_id
+from (
+  select distinct
+    due_bill_no,
+    loan_init_principal,
+    loan_init_term,
+    should_repay_date,
+    loan_active_date,
+    product_id
+  from ods_new_s${var:db_suffix}.repay_schedule
+  where 1 > 0
+    and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+    and '2020-06-02' between s_d_date and date_sub(e_d_date,1)
+) as tmp
+group by loan_active_date,product_id,should_repay_date
+order by loan_active_date,product_id,should_repay_date;
 
 
 
+
+select
+  sum(loan_principal)         as loan_principal,
+  sum(should_repay_principal) as should_repay_principal,
+  loan_active_date            as loan_active_date,
+  should_repay_date           as should_repay_date,
+  product_id                  as product_id
+from (
+  select distinct
+    loan_principal,
+    should_repay_principal,
+    loan_active_date,
+    loan_terms,
+    biz_date as should_repay_date,
+    product_id
+  from dw_new${var:db_suffix}.dw_loan_base_stat_should_repay_day
+  where 1 > 0
+    and biz_date = '2020-06-02'
+    and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+) as tmp
+group by loan_active_date,product_id,should_repay_date
+order by loan_active_date,product_id,should_repay_date;
