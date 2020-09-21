@@ -9048,7 +9048,7 @@ select
 from ods.ecas_loan_asset
 where 1 > 0
   -- and product_code in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and due_bill_no = '1120060510301108020593'
+  and due_bill_no = 'DD00023036201911012315002a3566'
   -- and d_date between '2020-07-20' and '2020-07-21'
   -- and d_date between '2020-08-05' and '2020-08-10'
   -- and d_date = '2020-08-05'
@@ -9100,9 +9100,10 @@ select
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  -- and due_bill_no = '1120060510300702585877'
-  and s_d_date = '2020-06-02'
+  -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and due_bill_no = 'DD00023036201911012315002a3566'
+  -- and '2020-01-03' between s_d_date and date_sub(e_d_date,1)
+  -- and s_d_date = '2020-01-03'
 order by due_bill_no,s_d_date
 -- limit 100
 ;
@@ -9546,18 +9547,30 @@ select
   loan_term2,
   overdue_days,
   should_repay_date,
-  case
-  when loan_init_term = loan_term1 and overdue_days > 0 then loan_term1
-  when overdue_days > 0 then loan_term1 - 1 else null end as overdue_term,
-  max(if(overdue_days > 0,loan_term2,null)) over(partition by due_bill_no order by s_d_date) as overdue_terms_max,
+  overdue_terms_max,
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120060510301667313582'
+  and due_bill_no = '1120060510300702585877'
   -- 1120062009364346847397
 order by due_bill_no,s_d_date
+;
+
+invalidate metadata dm_eagle.eagle_loan_info;
+select
+  due_bill_no,
+  loan_term,
+  overdue_days,
+  overdue_terms_max,
+  biz_date,
+  product_id
+from dm_eagle.eagle_loan_info
+where 1 > 0
+  and due_bill_no = '1120060510300702585877'
+  -- 1120062009364346847397
+order by due_bill_no,biz_date
 ;
 
 
@@ -9743,7 +9756,6 @@ group by product_id,loan_active_date,loan_init_term,should_repay_date
 order by product_id,should_repay_date,loan_active_date,loan_init_term;
 
 
-| 2020-06-04  | 2020-06-16        | 240.0000      | 3522.9100     | -3282.9100      | 001801     |
 
 
 
@@ -9976,3 +9988,99 @@ from (
 ) as tmp
 group by loan_active_date,product_id,should_repay_date
 order by loan_active_date,product_id,should_repay_date;
+
+
+
+
+
+
+
+
+select
+  loan_active_date,
+  sum(paid_principal)     as repaid_principal,
+  sum(remain_principal)   as remain_principal,
+  sum(unposted_principal) as unposted_principal,
+  sum(overdue_principal)  as overdue_principal,
+  product_id
+from dw_new${var:db_suffix}.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and biz_date = '2020-06-02'
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+group by loan_active_date,product_id
+;
+
+
+
+
+
+invalidate metadata dm_eagle.eagle_migration_rate_month;
+select distinct
+  overdue_stage,
+  mob,
+  loan_month,
+  biz_month,
+  product_id
+from dm_eagle.eagle_migration_rate_month
+where 1 > 0
+  and mob <= 0
+order by biz_month,loan_month,product_id
+;
+
+
+invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
+
+select distinct
+  loan_active_date,
+  overdue_mob,
+  biz_date,
+  product_id
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id = 'DIDI201908161538'
+  and overdue_mob < 0
+order by biz_date,loan_active_date,product_id
+;
+
+
+invalidate metadata ods_new_s.loan_info;
+
+select
+  (year('2020-04-30') - year(loan_active_date)) * 12 + month('2020-04-30') - month(loan_active_date) as overdue_mob
+from ods_new_s.loan_info
+where 1 > 0
+  -- and product_id = 'DIDI201908161538'
+  -- and loan_active_date = '2020-04-30'
+  and loan_active_date = '2020-05-01'
+  and '2020-04-30' between s_d_date and date_sub(e_d_date,1)
+;
+
+select distinct
+  (year('2020-04-30') - year(active_date)) * 12 + month('2020-04-30') - month(active_date) as overdue_mob
+from ods.ecas_loan
+where 1 > 0
+  and d_date = '2020-04-30'
+  and product_code = 'DIDI201908161538'
+  and active_date = '2020-05-01'
+;
+
+
+
+
+invalidate metadata dm_eagle.eagle_asset_scale_repaid_day;
+select distinct
+  overdue_stage,
+  mob,
+  loan_month,
+  biz_month,
+  product_id
+from dm_eagle.eagle_asset_scale_repaid_day
+where 1 > 0
+  and mob <= 0
+order by biz_month,loan_month,product_id
+;
+
+
+
+
+
