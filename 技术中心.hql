@@ -9074,8 +9074,8 @@ select
   d_date
 from ods.ecas_repay_schedule_asset
 where 1 > 0
-  and due_bill_no = '1120060318015544273567'
-  and d_date between '2020-07-20' and '2020-07-21'
+  and due_bill_no = '1120081711575795621662'
+  -- and d_date between '2020-07-20' and '2020-07-21'
 order by due_bill_no,d_date
 ;
 
@@ -9091,9 +9091,12 @@ select
   should_repay_date as should_date,
   loan_status_cn,
   overdue_days,
-  overdue_terms_max as otm,
-  paid_out_date,
-  paid_principal,
+  -- overdue_terms_max as otm,
+  -- paid_out_date,
+  -- paid_principal,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_principal,
   remain_principal as r_p,
   s_d_date,
   e_d_date,
@@ -9101,7 +9104,7 @@ select
 from ods_new_s.loan_info
 where 1 > 0
   -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and due_bill_no = 'DD00023036201911012315002a3566'
+  and due_bill_no = '1120060711442429922460'
   -- and '2020-01-03' between s_d_date and date_sub(e_d_date,1)
   -- and s_d_date = '2020-01-03'
 order by due_bill_no,s_d_date
@@ -9155,8 +9158,8 @@ select
   loan_init_principal as init_principal,
   loan_init_term as init_term,
   loan_term,
-  should_repay_date as repay_date,
-  should_repay_principal as repay_principal,
+  should_repay_date as should_date,
+  should_repay_principal as should_principal,
   paid_principal,
   schedule_status_cn,
   paid_out_date,
@@ -9166,37 +9169,37 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  -- and due_bill_no = '1120060315434201160683'
-  and due_bill_no in (
-    '1120061000012073790761',
-    '1120061011512861060415',
-    '1120061013134335836918',
-    '1120061013161185386540',
-    '1120061013360468176022',
-    '1120061014365453444208',
-    '1120061016280256025422',
-    '1120061000103324786981',
-    '1120061011544781457313',
-    '1120061013515845004113',
-    '1120061016231814341220',
-    '1120061017103316886217',
-    '1120061017184270790727',
-    '1120061018425695211501',
-    '1120061018550688216424',
-    '1120061001471513090295',
-    '1120061011271721422325',
-    '1120061011422980346806',
-    '1120061013281886916711',
-    '1120061014440200547513',
-    '1120061016190085340011',
-    '1120061016515328961501',
-    '1120061017154182696707',
-    '1120061014330468851823',
-    '1120061016424611493709',
-    '1120061017474204201521'
-  )
+  and due_bill_no = '1120081711575795621662'
+  -- and due_bill_no in (
+  --   '1120061000012073790761',
+  --   '1120061011512861060415',
+  --   '1120061013134335836918',
+  --   '1120061013161185386540',
+  --   '1120061013360468176022',
+  --   '1120061014365453444208',
+  --   '1120061016280256025422',
+  --   '1120061000103324786981',
+  --   '1120061011544781457313',
+  --   '1120061013515845004113',
+  --   '1120061016231814341220',
+  --   '1120061017103316886217',
+  --   '1120061017184270790727',
+  --   '1120061018425695211501',
+  --   '1120061018550688216424',
+  --   '1120061001471513090295',
+  --   '1120061011271721422325',
+  --   '1120061011422980346806',
+  --   '1120061013281886916711',
+  --   '1120061014440200547513',
+  --   '1120061016190085340011',
+  --   '1120061016515328961501',
+  --   '1120061017154182696707',
+  --   '1120061014330468851823',
+  --   '1120061016424611493709',
+  --   '1120061017474204201521'
+  -- )
   -- and product_id = '001802'
-  and '2020-08-16' between s_d_date and date_sub(e_d_date,1)
+  -- and '2020-08-26' between s_d_date and date_sub(e_d_date,1)
   -- and loan_active_date = '2020-06-11'
   -- and should_repay_date = '2020-06-22'
 order by init_term,due_bill_no,loan_term,s_d_date
@@ -10089,13 +10092,25 @@ select
   -- distinct biz_date,product_id
 from dm_eagle.eagle_overdue_rate_month
 where 1 > 0
-  -- and product_id in ('vt_001801','vt_001802','vt_001803','vt_001804','vt_001901','vt_001902','vt_001903','vt_001904','vt_001905','vt_001906','vt_001907','vt_002001','vt_002002','vt_002003','vt_002004','vt_002005','vt_002006','vt_002007')
-  and product_id = 'vt_001801'
+  and product_id in ('vt_001801','vt_001802','vt_001803','vt_001804','vt_001901','vt_001902','vt_001903','vt_001904','vt_001905','vt_001906','vt_001907','vt_002001','vt_002002','vt_002003','vt_002004','vt_002005','vt_002006','vt_002007')
+  -- and product_id = 'vt_001801'
   -- and biz_date like '2020-06%'
-  and biz_date = '2020-06-18'
+  -- and biz_date = '2020-06-19'
   -- and biz_date >= '2020-06-15'
-  -- and biz_date in ('2020-06-15','2020-06-16')
-  -- and loan_principal_deferred < overdue_principal
+  -- and biz_date in ('2020-09-04','2020-09-05','2020-09-06')
+  -- and loan_terms = 6
+  -- and dpd = '30+'
 -- order by product_id,biz_date,loan_month,loan_terms,dpd
+having
+-- loan_principal_deferred < overdue_principal
+-- or
+-- overdue_principal > overdue_principal_once
+-- or
+overdue_remain_principal > overdue_remain_principal_once
 order by product_id,biz_date
+limit 100
 ;
+
+
+
+
