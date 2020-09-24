@@ -10086,31 +10086,6 @@ order by biz_month,loan_month,product_id
 
 
 
-invalidate metadata dm_eagle.eagle_overdue_rate_month;
-select
-  *
-  -- distinct biz_date,product_id
-from dm_eagle.eagle_overdue_rate_month
-where 1 > 0
-  and product_id in ('vt_001801','vt_001802','vt_001803','vt_001804','vt_001901','vt_001902','vt_001903','vt_001904','vt_001905','vt_001906','vt_001907','vt_002001','vt_002002','vt_002003','vt_002004','vt_002005','vt_002006','vt_002007')
-  -- and product_id = 'vt_001801'
-  -- and biz_date like '2020-06%'
-  -- and biz_date = '2020-06-19'
-  -- and biz_date >= '2020-06-15'
-  -- and biz_date in ('2020-09-04','2020-09-05','2020-09-06')
-  -- and loan_terms = 6
-  -- and dpd = '30+'
--- order by product_id,biz_date,loan_month,loan_terms,dpd
-having
--- loan_principal_deferred < overdue_principal
--- or
--- overdue_principal > overdue_principal_once
--- or
-overdue_remain_principal > overdue_remain_principal_once
-order by product_id,biz_date
-limit 100
-;
-
 
 
 
