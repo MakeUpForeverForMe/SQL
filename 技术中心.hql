@@ -10085,7 +10085,82 @@ order by biz_month,loan_month,product_id
 
 
 
+-- invalidate metadata dm_eagle.eagle_inflow_rate_day;
+select
+  -- *
+  count(1) as cnt,
+  biz_date
+  -- ,product_id
+from dm_eagle.eagle_inflow_rate_day
+-- where 1 > 0
+--   and dob is null
+group by biz_date
+-- ,product_id
+order by biz_date
+-- ,product_id
+-- limit 100
+;
+
+
+select
+  due_bill_no,
+  txn_date,
+  min(d_date) as d_date
+from ods.ecas_repay_hst_asset
+group by due_bill_no,txn_date
+having txn_date != min(d_date)
+order by txn_date,d_date
+limit 100
+;
 
 
 
+select
+  sum(repay_principal) as cnt,
+  biz_date
+from dm_eagle.eagle_asset_scale_repaid_day
+where 1 > 0
+  and biz_date = '2020-06-24'
+  and product_id = 'vt_001802'
+group by biz_date
+;
 
+
+select
+  sum(repaid_principal) as cnt,
+  biz_date
+from dw_new.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and biz_date = '2020-06-24'
+  and product_id = '001802'
+group by biz_date
+;
+
+
+select
+  *
+  -- sum(repay_amount) as cnt,
+  -- biz_date
+from ods_new_s.repay_detail
+where 1 > 0
+  -- and biz_date = '2020-06-24'
+  -- and product_id = '001802'
+  -- and bnp_type = 'Pricinpal'
+  and payment_id = '000015943861031admin000083000003'
+-- group by biz_date
+;
+
+
+select
+  *
+  -- sum(repay_amount) as cnt,
+  -- biz_date
+from ods.ecas_repay_hst_asset
+where 1 > 0
+  -- and biz_date = '2020-06-24'
+  -- and product_id = '001802'
+  -- and bnp_type = 'Pricinpal'
+  and payment_id = '000015943861031admin000083000003'
+-- group by biz_date
+order by d_date
+;
