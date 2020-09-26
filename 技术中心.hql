@@ -10085,19 +10085,21 @@ order by biz_month,loan_month,product_id
 
 
 
--- invalidate metadata dm_eagle.eagle_inflow_rate_day;
+invalidate metadata dm_eagle.eagle_inflow_rate_day;
 select
-  -- *
-  count(1) as cnt,
-  biz_date
+  *
+  -- count(1) as cnt,
+  -- biz_date
   -- ,product_id
 from dm_eagle.eagle_inflow_rate_day
--- where 1 > 0
---   and dob is null
-group by biz_date
+where 1 > 0
+  -- and dob is null
+  and biz_date = '2020-07-03'
+  and product_id = 'vt_001801'
+-- group by biz_date
 -- ,product_id
 order by biz_date
--- ,product_id
+,product_id
 -- limit 100
 ;
 
@@ -10143,11 +10145,13 @@ select
   -- biz_date
 from ods_new_s.repay_detail
 where 1 > 0
-  -- and biz_date = '2020-06-24'
+  and biz_date = '2020-06-24'
+  and biz_date != to_date(txn_time)
   -- and product_id = '001802'
-  -- and bnp_type = 'Pricinpal'
-  and payment_id = '000015943861031admin000083000003'
+  and bnp_type = 'Pricinpal'
+  -- and payment_id = '000015943861031admin000083000003'
 -- group by biz_date
+limit 20
 ;
 
 
@@ -10157,10 +10161,14 @@ select
   -- biz_date
 from ods.ecas_repay_hst_asset
 where 1 > 0
-  -- and biz_date = '2020-06-24'
+  and d_date <= '2020-06-25'
+  -- and d_date != txn_date
+  -- and d_date between '2020-06-23' and '2020-06-30'
   -- and product_id = '001802'
-  -- and bnp_type = 'Pricinpal'
+  and bnp_type = 'Pricinpal'
   and payment_id = '000015943861031admin000083000003'
+  and due_bill_no = '1120061910384241252747'
 -- group by biz_date
-order by d_date
+order by d_date,term
+limit 10
 ;
