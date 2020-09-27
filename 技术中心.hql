@@ -9035,20 +9035,11 @@ group by product_id
 
 invalidate metadata ods.ecas_loan_asset;
 select
-  due_bill_no,
-  loan_status,
-  loan_init_term,
-  curr_term,
-  loan_init_prin,
-  paid_principal,
-  active_date,
-  paid_out_date,
-  product_code,
-  d_date
+  *
 from ods.ecas_loan_asset
 where 1 > 0
   -- and product_code in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and due_bill_no = 'DD00023036201911012315002a3566'
+  and due_bill_no = '1120060510300944421982'
   -- and d_date between '2020-07-20' and '2020-07-21'
   -- and d_date between '2020-08-05' and '2020-08-10'
   -- and d_date = '2020-08-05'
@@ -9153,23 +9144,24 @@ order by due_bill_no,biz_date
 
 invalidate metadata ods_new_s.repay_schedule;
 select
-  due_bill_no,
-  loan_active_date,
-  loan_init_principal as init_principal,
-  loan_init_term as init_term,
-  loan_term,
-  should_repay_date as should_date,
-  should_repay_principal as should_principal,
-  paid_principal,
-  schedule_status_cn,
-  paid_out_date,
-  paid_out_type_cn,
-  s_d_date,
-  e_d_date,
-  product_id
+  *
+  -- due_bill_no,
+  -- loan_active_date,
+  -- loan_init_principal as init_principal,
+  -- loan_init_term as init_term,
+  -- loan_term,
+  -- should_repay_date as should_date,
+  -- should_repay_principal as should_principal,
+  -- paid_principal,
+  -- schedule_status_cn,
+  -- paid_out_date,
+  -- paid_out_type_cn,
+  -- s_d_date,
+  -- e_d_date,
+  -- product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120081711575795621662'
+  and due_bill_no = '1120071313325167461980'
   -- and due_bill_no in (
   --   '1120061000012073790761',
   --   '1120061011512861060415',
@@ -9202,7 +9194,7 @@ where 1 > 0
   -- and '2020-08-26' between s_d_date and date_sub(e_d_date,1)
   -- and loan_active_date = '2020-06-11'
   -- and should_repay_date = '2020-06-22'
-order by init_term,due_bill_no,loan_term,s_d_date
+order by loan_init_principal,due_bill_no,loan_term,s_d_date
 ;
 
 
