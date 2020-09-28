@@ -10164,3 +10164,45 @@ where 1 > 0
 order by d_date,term
 limit 10
 ;
+
+
+
+
+
+
+
+invalidate metadata ods_new_s.repay_schedule;
+select *
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('002002','002006')
+order by product_id,due_bill_no,s_d_date
+;
+
+
+invalidate metadata ods_new_s.loan_info;
+select *
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id in ('002002','002006')
+order by product_id,due_bill_no,s_d_date
+;
+
+
+invalidate metadata dw_new.dw_loan_base_stat_overdue_num_day;
+select
+  unposted_principal,
+  overdue_principal,
+  remain_principal,
+  biz_date,
+  product_id
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and product_id in ('002002','002006')
+order by biz_date,product_id
+;
+
+
+
+
+

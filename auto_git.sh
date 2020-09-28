@@ -31,6 +31,8 @@ for dir in ${dirs//,/ }; do
   pwd &>> $log
   [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/code/HiveUDF/src &>> $log
 
+  git pull
+
   echo -e '\n' &>> $log
 
   echo "git add -u $dir" &>> $log
