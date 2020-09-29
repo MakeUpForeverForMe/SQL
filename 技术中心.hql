@@ -9214,11 +9214,11 @@ select
 from ${var:table}
 where 1 > 0
   -- and product_id in (${var:product_id})
-  and product_id = '001802'
+  -- and product_id = '001802'
   and bnp_type = 'Pricinpal'
   -- and biz_date = '2020-06-23'
-  and due_bill_no = '1120060711272979096947'
-  -- and payment_id = '000015927131361admin000083000000'
+  and due_bill_no = '1120060818031488541906'
+  -- and payment_id = '000015925382151admin000083000018'
 order by due_bill_no,biz_date,repay_term
 -- limit 10
 ;
@@ -9242,12 +9242,11 @@ where 1 > 0
   and d_date <= to_date(current_timestamp())
   -- and d_date = '2020-06-04'
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120060711272979096947'
+  and due_bill_no = '1120060818031488541906'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
-  -- and payment_id = '000015927131361admin000083000000'
-  and payment_id != '000015943861031admin000083000002'
+  -- and payment_id = '000015925382151admin000083000018'
   -- and if('${var:tb_suffix}' = '_asset',
   --   -- 代偿前
   --   payment_id in (
@@ -10206,3 +10205,12 @@ order by biz_date,product_id
 
 
 
+
+select distinct biz_date,product_id from dw_new.dw_loan_base_stat_repay_detail_day
+where product_id = 'DIDI201908161538'
+order by biz_date;
+
+
+select distinct biz_date,product_id from ods_new_s.repay_detail
+where product_id = 'DIDI201908161538'
+order by biz_date;
