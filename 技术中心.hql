@@ -9113,19 +9113,20 @@ select
   loan_term2,
   should_repay_date,
   overdue_days,
+  paid_out_date,
   s_d_date,
   e_d_date,
   product_id
 from ods_new_s.loan_info
 where 1 > 0
-  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
   -- and should_repay_date = s_d_date
   -- and loan_init_term = 1
   -- and loan_term1 != loan_init_term
   -- and loan_term1 = loan_term2
-  and overdue_days > 60
+  -- and overdue_days > 60
   -- and should_repay_date <= '2020-09-05'
-  -- and due_bill_no = '1120060318015544273567'
+  and due_bill_no = 'DD0002303620191015150200eafd91'
 order by due_bill_no,s_d_date
 limit 10
 ;
@@ -9144,24 +9145,24 @@ order by due_bill_no,biz_date
 
 invalidate metadata ods_new_s.repay_schedule;
 select
-  *
-  -- due_bill_no,
-  -- loan_active_date,
-  -- loan_init_principal as init_principal,
-  -- loan_init_term as init_term,
-  -- loan_term,
-  -- should_repay_date as should_date,
-  -- should_repay_principal as should_principal,
-  -- paid_principal,
-  -- schedule_status_cn,
-  -- paid_out_date,
-  -- paid_out_type_cn,
-  -- s_d_date,
-  -- e_d_date,
-  -- product_id
+  -- *
+  due_bill_no,
+  loan_active_date,
+  loan_init_principal as init_principal,
+  loan_init_term as init_term,
+  loan_term,
+  should_repay_date as should_date,
+  should_repay_principal as should_principal,
+  paid_principal,
+  schedule_status_cn,
+  paid_out_date,
+  paid_out_type_cn,
+  s_d_date,
+  e_d_date,
+  product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120071313325167461980'
+  and due_bill_no = '006df96df576426a9e09ed928321e785'
   -- and due_bill_no in (
   --   '1120061000012073790761',
   --   '1120061011512861060415',
@@ -9215,18 +9216,20 @@ from ${var:table}
 where 1 > 0
   -- and product_id in (${var:product_id})
   -- and product_id = '001802'
+  -- and product_id = '__HIVE_DEFAULT_PARTITION__'
+  -- and product_id is null
   and bnp_type = 'Pricinpal'
-  -- and biz_date = '2020-06-23'
-  and due_bill_no = '1120060818031488541906'
+  -- and biz_date = '2020-08-26'
+  and due_bill_no = '1000000002'
   -- and payment_id = '000015925382151admin000083000018'
 order by due_bill_no,biz_date,repay_term
--- limit 10
+limit 10
 ;
 
 
 
-set var:tb_suffix=_asset;
--- set var:tb_suffix=;
+-- set var:tb_suffix=_asset;
+set var:tb_suffix=;
 
 set var:table=ods.ecas_repay_hst${var:tb_suffix};
 
@@ -9242,7 +9245,7 @@ where 1 > 0
   and d_date <= to_date(current_timestamp())
   -- and d_date = '2020-06-04'
   and bnp_type = 'Pricinpal'
-  and due_bill_no = '1120060818031488541906'
+  and due_bill_no = '1000000002'
   -- and d_date = '2020-06-04'
   -- and d_date <= '2020-06-30'
   -- and (d_date = '2020-06-03' or d_date = '2020-06-04')
@@ -9263,6 +9266,7 @@ where 1 > 0
   --   )
   -- )
 order by due_bill_no,d_date,term,bnp_type
+limit 10
 ;
 
 
@@ -10214,3 +10218,26 @@ order by biz_date;
 select distinct biz_date,product_id from ods_new_s.repay_detail
 where product_id = 'DIDI201908161538'
 order by biz_date;
+
+
+
+
+
+
+
+select should_repay_date,product_id,sum(should_repay_principal)
+from ods_new_s_cps.repay_schedule
+where 1 > 0
+  and product_id in ('001901','001902','001903','001904','001905','001906','001907')
+  and should_repay_date between '2020-08-16' and '2020-09-01'
+group by should_repay_date,product_id
+;
+
+
+
+
+
+set hivevar:ST9=2020-07-05;
+
+
+

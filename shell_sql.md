@@ -80,6 +80,17 @@
 | 测试 | https://10.83.0.44/owa  |   25 | apb-report@weshareholdings.com.cn      | Ws2018!08@       |
 
 
+
+## 1.5 Davinci 账号密码
+| 名称 |               属性              | 备注 |
+|------|---------------------------------|------|
+| 地址 | http://10.80.1.172:8097/#/login |      |
+| 用户 | davinci/FKD4WKmQpdJ#:apjfAPn    |      |
+| 用户 | weshare/ZmG!TN+_8hWuUa@s        |      |
+| 用户 | yunan.huang/IBxkYU2N            |      |
+| 用户 | weiximing/000000                |      |
+
+
 # 2、命令脚本操作
 ## 2.1 Shell 命令
 ### 2.1.1 基础 Shell 命令
