@@ -9126,9 +9126,9 @@ where 1 > 0
   -- and loan_term1 = loan_term2
   -- and overdue_days > 60
   -- and should_repay_date <= '2020-09-05'
-  and due_bill_no = 'DD0002303620191015150200eafd91'
+  and due_bill_no = '1120060420501004691039'
 order by due_bill_no,s_d_date
-limit 10
+-- limit 10
 ;
 
 
@@ -9162,7 +9162,7 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '006df96df576426a9e09ed928321e785'
+  and due_bill_no = 'DD0002303620191015150200eafd91'
   -- and due_bill_no in (
   --   '1120061000012073790761',
   --   '1120061011512861060415',
@@ -10237,7 +10237,7 @@ group by should_repay_date,product_id
 
 
 
-set hivevar:ST9=2020-07-05;
+set hivevar:ST9=2020-08-03;
 
 
 
