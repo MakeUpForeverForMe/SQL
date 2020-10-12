@@ -10241,3 +10241,11 @@ set hivevar:ST9=2020-08-03;
 
 
 
+invalidate metadata ods_new_s.customer_info;
+
+
+
+
+
+
+
