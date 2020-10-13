@@ -9126,19 +9126,22 @@ where 1 > 0
   -- and loan_term1 = loan_term2
   -- and overdue_days > 60
   -- and should_repay_date <= '2020-09-05'
-  and due_bill_no = '1120060420501004691039'
+  and due_bill_no = '1120101110572133470079'
 order by due_bill_no,s_d_date
 -- limit 10
 ;
 
 
+invalidate metadata ods_new_s.loan_apply;
 select
   due_bill_no,
+  user_hash_no,
+  cust_id,
   biz_date,
   product_id
 from ods_new_s.loan_apply
 where 1 > 0
-  and due_bill_no = '1120071313325167461980'
+  and due_bill_no = '1120101110572133470079'
 order by due_bill_no,biz_date
 ;
 
@@ -10242,10 +10245,166 @@ set hivevar:ST9=2020-08-03;
 
 
 invalidate metadata ods_new_s.customer_info;
+select *
+from ods_new_s.customer_info
+where 1 > 0
+  and cust_id = '0006_a_68a52555e0c96d6c852eab07881a763d6b163baded81567d2fd4d46d6b4bc0b8'
+;
+
+
+invalidate metadata ods_new_s.loan_apply;
+select
+  cust_id,
+  user_hash_no,
+  birthday,
+  pre_apply_no,
+  apply_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  loan_usage,
+  loan_usage_cn,
+  repay_type,
+  repay_type_cn,
+  interest_rate,
+  credit_coef,
+  penalty_rate,
+  apply_status,
+  apply_resut_msg,
+  issue_time,
+  loan_amount_approval,
+  loan_amount,
+  create_time,
+  update_time,
+  biz_date,
+  product_id
+from ods_new_s.loan_apply
+where 1 > 0
+  and cust_id = '0006_a_68a52555e0c96d6c852eab07881a763d6b163baded81567d2fd4d46d6b4bc0b8'
+;
+
+
+invalidate metadata ods_new_s.loan_info;
+select cust_id,due_bill_no,loan_init_principal,s_d_date,e_d_date,product_id
+from ods_new_s.loan_info
+where due_bill_no = '1120092923541012608098'
+;
+
+
+select '2020-10-12' in (current_date,date_sub(current_date,1));
 
 
 
 
 
 
+invalidate metadata ods_new_s.customer_info;
 
+
+insert overwrite table ods_new_s.customer_info partition(product_id)
+select * from ods_new_s.customer_info_tmp;
+
+
+
+invalidate metadata ods_new_s.loan_info;
+select cust_id,due_bill_no,loan_init_principal,s_d_date,e_d_date,product_id,loan_id
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120092923541012608098'
+  -- and overdue_days != dpd_days
+limit 10
+;
+
+
+
+
+invalidate metadata ods_new_s.loan_info;
+invalidate metadata ods_new_s.repay_schedule;
+
+set var:ST9=2020-08-01;
+select
+  sum(should_repay_principal) as should_repay_principal,
+  repay_schedule.product_id as product_id
+from (
+  select
+    due_bill_no,
+    should_repay_principal,
+    product_id
+  from ods_new_s.repay_schedule
+  where 1 > 0
+    and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+    and date_sub('${var:ST9}',1) between s_d_date and date_sub(e_d_date,1)
+    and should_repay_date = '${var:ST9}'
+    and loan_active_date like '2020-06%'
+    and schedule_status = 'N'
+) as repay_schedule
+left join (
+  select
+    due_bill_no
+  from ods_new_s.loan_info
+  where 1 > 0
+    and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+    and date_sub('${var:ST9}',1) between s_d_date and date_sub(e_d_date,1)
+    and overdue_days = 0
+    and loan_active_date like '2020-06%'
+) as loan_info
+on repay_schedule.due_bill_no = loan_info.due_bill_no
+group by repay_schedule.product_id
+order by repay_schedule.product_id
+;
+
+
+
+select
+  sum(should_repay_principal) as should_repay_principal,
+  product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and date_sub('${var:ST9}',1) between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '${var:ST9}'
+  and schedule_status = 'N'
+  and loan_active_date like '2020-06%'
+group by product_id
+;
+
+
+
+
+
+select
+  -- *
+  sum(should_repay_principal) as should_repay_principal
+  -- product_id
+from ods.ecas_repay_schedule
+where 1 > 0
+  and product_id in ('001901', '001902', '001903', '001906')
+  and '2020-10-11' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '2020-10-11'
+  -- and schedule_status = 'N'
+  -- and loan_active_date like '2020-06%'
+-- group by product_id
+limit 10
+;
+
+
+
+
+
+CREATE EXTERNAL TABLE student_jdbc
+(
+  name string,
+  age int,
+  gpa double
+)
+STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
+TBLPROPERTIES (
+    "hive.sql.database.type" = "MYSQL",
+    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
+    "hive.sql.jdbc.url" = "jdbc:mysql://localhost/sample",
+    "hive.sql.dbcp.username" = "hive",
+    "hive.sql.dbcp.password" = "hive",
+    "hive.sql.table" = "STUDENT",
+    "hive.sql.dbcp.maxActive" = "1"
+);
