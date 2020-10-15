@@ -10389,22 +10389,56 @@ limit 10
 ;
 
 
+set hivevar:ST9=2020-10-14;
+
+
+-- DROP TABLE IF EXISTS loan_info_bak;
+
+show tables;
+
+use ods_new_s;
+
+
+use ods_new_s_cps;
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule RENAME TO ods_new_s${db_suffix}.repay_schedule_bak_20201015;
+
+ALTER TABLE loan_info_new RENAME TO loan_info;
 
 
 
-CREATE EXTERNAL TABLE student_jdbc
-(
-  name string,
-  age int,
-  gpa double
-)
-STORED BY 'org.apache.hive.storage.jdbc.JdbcStorageHandler'
-TBLPROPERTIES (
-    "hive.sql.database.type" = "MYSQL",
-    "hive.sql.jdbc.driver" = "com.mysql.jdbc.Driver",
-    "hive.sql.jdbc.url" = "jdbc:mysql://localhost/sample",
-    "hive.sql.dbcp.username" = "hive",
-    "hive.sql.dbcp.password" = "hive",
-    "hive.sql.table" = "STUDENT",
-    "hive.sql.dbcp.maxActive" = "1"
-);
+
+
+
+
+select
+  count(1) as cnt,
+  count(distinct due_bill_no) as due_bill_no,
+  count(distinct due_bill_no,loan_term) as due_bill_no_loan_term
+  -- product_id
+from ods_new_s.repay_schedule
+where 1 > 0
+  -- and schedule_status = 'F'
+-- group by product_id
+;
+
+
+
+select
+  count(1) as cnt,
+  count(distinct due_bill_no) as due_bill_no,
+  count(distinct due_bill_no,curr_term) as due_bill_no_loan_term
+from ods.ecas_repay_schedule_asset
+where 1 > 0
+  and d_date = '2020-10-13'
+  and schedule_status = 'F'
+;
+
+
+

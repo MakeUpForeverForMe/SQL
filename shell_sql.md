@@ -1416,6 +1416,9 @@ set hive.input.format=org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;      
 
 -- 增加 Map 数，在文件中的数据量大的时候，可以拆分成 Map 执行
 set mapred.reduce.tasks=10;                                                        -- 设置 reduce 的数量
+set hive.execution.engine=mr;
+set mapreduce.map.memory.mb=6144;
+set mapreduce.reduce.memory.mb=6144;
 
 -- 设置 Reduce 数
 set hive.exec.reducers.max=1099;                                                   -- 设置 每个任务最大的 reduce 数，默认为 1099）
@@ -1737,6 +1740,9 @@ TBLPROPERTIES (
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
 ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+ADD JAR hdfs://node233:8020/user/hive/auxlib/hive-jdbc-handler-1.2.1.jar;
+ADD JAR hdfs://node233:8020/user/hive/auxlib/mysql-connector-java.jar;
+ADD JAR hdfs://node233:8020/user/hive/auxlib/hive-jdbc.jar;
 
 DROP FUNCTION IF EXISTS encrypt_aes;
 DROP FUNCTION IF EXISTS decrypt_aes;
