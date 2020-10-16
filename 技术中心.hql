@@ -10442,3 +10442,143 @@ where 1 > 0
 
 
 
+
+
+select
+  *
+from ods.ecas_repay_schedule_asset
+where 1 > 0
+  -- and d_date = '2020-10-13'
+  and product_code in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and nvl(lst_upd_time,cast(create_user as bigint)) is null
+limit 10
+;
+
+
+
+
+
+select
+  original_msg
+from (
+  select
+    datefmt(create_time,'ms','yyyy-MM-dd HH:mm:ss') as create_time,
+    datefmt(update_time,'ms','yyyy-MM-dd HH:mm:ss') as update_time,
+    regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\\\{','\\\{'),'\\\}\\\\\"','\\\}'),'\\\"\\\{','\\\{'),'\\\}\\\"','\\\}'),'\\\\\\\\\\\\\"','\\\"'),'\\\\\"','\\\"'),'\\\\\\\\','\\\\') as original_msg
+    -- regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(original_msg,'\\\\\"\{','\{'),'\}\\\\\"','\}'),'\"\{','\{'),'\}\"','\}'),'\\\\\\\\\\\\\"','\"'),'\\\\\"','\"'),'\\\\\\\\','\\\\') as original_msg
+  from ods.ecas_msg_log
+  where 1 > 0
+    and msg_type = 'WIND_CONTROL_CREDIT'
+    and original_msg is not null
+    and deal_date in ('2020-10-11','2020-10-12','2020-10-13','2020-10-14')
+) as loan_apply
+where 1 > 0
+  and get_json_object(loan_apply.original_msg,'$.reqContent.jsonReq.content.reqData.applyNo') = '1120101210003715553544'
+;
+
+
+
+
+
+
+
+
+
+select
+  *
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120081711491412053630'
+order by s_d_date
+;
+
+
+
+
+select
+  *
+from ods.ecas_loan_asset
+where 1 > 0
+  and due_bill_no = '1120081713350722712386'
+order by d_date
+;
+
+
+
+select
+  *
+from ods_new_s.repay_schedule_bak_20201015
+where 1 > 0
+  and due_bill_no = '1120061017361786522786'
+order by s_d_date
+;
+
+
+select
+  *
+from ods.ecas_repay_schedule_asset
+where 1 > 0
+  and due_bill_no = '1120061017361786522786'
+order by s_d_date
+;
+
+
+
+
+
+select
+  count(1) as cnt,
+  count(distinct due_bill_no) as due_bill_no,
+  count(distinct due_bill_no,loan_term) as due_bill_no_loan_term
+  -- product_id
+from ods_new_s.loan_info
+where 1 > 0
+  -- and schedule_status = 'F'
+-- group by product_id
+;
+
+
+
+invalidate metadata ods.ecas_loan_asset;
+select
+  count(1) as cnt,
+  count(distinct due_bill_no) as due_bill_no,
+  count(distinct due_bill_no,curr_term) as due_bill_no_loan_term
+from ods.ecas_loan_asset
+where 1 > 0
+  and d_date = '2020-10-14'
+;
+
+
+
+
+select
+  *
+  -- loan_term,
+  -- product_id,
+  -- count(due_bill_no)
+from ods_new_s.repay_schedule
+where 1 > 0
+  and due_bill_no = '1120061017361786522786'
+-- group by loan_term,product_id
+order by product_id,loan_term
+,s_d_date
+;
+
+
+
+
+set var:ST9=2020-09-15;
+select
+  tt,
+  if(tt > '${var:ST9}','9999-99-99',if(tt = '${var:ST9}','3000-12-31',tt)) as tt
+from (
+  select '2020-08-25' as tt union all
+  select '2020-09-03' as tt union all
+  select '2020-09-04' as tt union all
+  select '2020-09-14' as tt union all
+  select '3000-12-31' as tt union all
+  select '3000-12-31' as tt
+) as tmp
+;
+

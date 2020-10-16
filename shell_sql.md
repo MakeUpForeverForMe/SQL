@@ -939,80 +939,6 @@ g.V().has('name','蜀国').next() // 返回 ==>v[8360]
 g.V(8360).in('belongs').valueMap()
 ```
 
-## 2.10 Sublime 远程同步文件操作到 Linux
-在想要添加同步的文件中右键点击“SFTP/FTP”，选择 Map to Remote 进行编辑
-
-<img src="https://img-blog.csdnimg.cn/20200526103111136.png" alt="图片" style="zoom:70%;"/>
-```javascript
-{
-    // The tab key will cycle through the settings when first created
-    // Visit http://wbond.net/sublime_packages/sftp/settings for help
-
-    // sftp, ftp or ftps
-    "type": "sftp",
-
-    "save_before_upload": true,
-    "upload_on_save": true,             // 由 false 修改为 true，作用是在保存本地时，同步保存远端
-    "sync_down_on_open": false,
-    "sync_skip_deletes": false,
-    "sync_same_age": true,
-    "confirm_downloads": false,
-    "confirm_sync": true,
-    "confirm_overwrite_newer": false,
-
-    "host": "localhost",                // 修改为想要同步的 Linux 的 ip 或 host。由 example.com 修改为 ip
-    "user": "username",                 // 修改为自己的 Linux 用户名
-    "password": "password",             // 将这一行的注释打开，并填写自己的密码
-    //"port": "22",                     // 有必要的情况下打开此项
-
-    "remote_path": "/example/path/",    // 修改为远程的目录
-    "ignore_regexes": [
-        "\\.sublime-(project|workspace)", "sftp-config(-alt\\d?)?\\.json",
-        "sftp-settings\\.json", "/venv/", "\\.svn/", "\\.hg/", "\\.git/",
-        "\\.bzr", "_darcs", "CVS", "\\.DS_Store", "Thumbs\\.db", "desktop\\.ini"
-    ],
-    //"file_permissions": "664",
-    //"dir_permissions": "775",
-
-    //"extra_list_connections": 0,
-
-    "connect_timeout": 30,
-    //"keepalive": 120,
-    //"ftp_passive_mode": true,
-    //"ftp_obey_passive_host": false,
-    //"ssh_key_file": "~/.ssh/id_rsa",
-    //"sftp_flags": ["-F", "/path/to/ssh_config"],
-
-    //"preserve_modification_times": false,
-    //"remote_time_offset_in_hours": 0,
-    //"remote_encoding": "utf-8",
-    //"remote_locale": "C",
-    //"allow_config_upload": false,
-}
-```
-
-## 2.11 Sublime 使用 OmniMarkupPreviewer 时的问题
-```javascript
-// 安装 OmniMarkupPreviewer 后，浏览器打开报 404，修改配置文件
-"renderer_options-MarkdownRenderer": {
-  "extensions": [
-    "tables",
-    "toc",
-    "fenced_code",
-    "codehilite"
-  ]
-}
-// 安装 Pretty Json 后，浏览器查看失效
-"renderer_options-MarkdownRenderer": {
-  "extensions": [
-    "markdown.extensions.tables",
-    "markdown.extensions.toc",
-    "markdown.extensions.fenced_code",
-    "markdown.extensions.codehilite"
-  ]
-}
-```
-
 
 
 
@@ -1832,3 +1758,111 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | 引用文本 |                                               | `> 引用文本`                                                                                  | > 引用文本                                                                                  |
 | 下标     |                                               | `H~2~O is是液体。`                                                                            | H~2~O is是液体。                                                                            |
 | 幂运算   |                                               | `2^10^ 运算结果是 1024`                                                                       | 2^10^ 运算结果是 1024                                                                       |
+
+
+
+# 6、Sublime 操作
+## 6.1 Sublime 远程同步文件操作到 Linux
+在想要添加同步的文件中右键点击“SFTP/FTP”，选择 Map to Remote 进行编辑
+
+<img src="https://img-blog.csdnimg.cn/20200526103111136.png" alt="图片" style="zoom:70%;"/>
+```javascript
+{
+    // The tab key will cycle through the settings when first created
+    // Visit http://wbond.net/sublime_packages/sftp/settings for help
+
+    // sftp, ftp or ftps
+    "type": "sftp",
+
+    "save_before_upload": true,
+    "upload_on_save": true,             // 由 false 修改为 true，作用是在保存本地时，同步保存远端
+    "sync_down_on_open": false,
+    "sync_skip_deletes": false,
+    "sync_same_age": true,
+    "confirm_downloads": false,
+    "confirm_sync": true,
+    "confirm_overwrite_newer": false,
+
+    "host": "localhost",                // 修改为想要同步的 Linux 的 ip 或 host。由 example.com 修改为 ip
+    "user": "username",                 // 修改为自己的 Linux 用户名
+    "password": "password",             // 将这一行的注释打开，并填写自己的密码
+    //"port": "22",                     // 有必要的情况下打开此项
+
+    "remote_path": "/example/path/",    // 修改为远程的目录
+    "ignore_regexes": [
+        "\\.sublime-(project|workspace)", "sftp-config(-alt\\d?)?\\.json",
+        "sftp-settings\\.json", "/venv/", "\\.svn/", "\\.hg/", "\\.git/",
+        "\\.bzr", "_darcs", "CVS", "\\.DS_Store", "Thumbs\\.db", "desktop\\.ini"
+    ],
+    //"file_permissions": "664",
+    //"dir_permissions": "775",
+
+    //"extra_list_connections": 0,
+
+    "connect_timeout": 30,
+    //"keepalive": 120,
+    //"ftp_passive_mode": true,
+    //"ftp_obey_passive_host": false,
+    //"ssh_key_file": "~/.ssh/id_rsa",
+    //"sftp_flags": ["-F", "/path/to/ssh_config"],
+
+    //"preserve_modification_times": false,
+    //"remote_time_offset_in_hours": 0,
+    //"remote_encoding": "utf-8",
+    //"remote_locale": "C",
+    //"allow_config_upload": false,
+}
+```
+
+## 6.2 Sublime 使用 OmniMarkupPreviewer 时的问题
+```javascript
+// 安装 OmniMarkupPreviewer 后，浏览器打开报 404，修改配置文件
+"renderer_options-MarkdownRenderer": {
+  "extensions": [
+    "tables",
+    "toc",
+    "fenced_code",
+    "codehilite"
+  ]
+}
+// 安装 Pretty Json 后，浏览器查看失效
+"renderer_options-MarkdownRenderer": {
+  "extensions": [
+    "markdown.extensions.tables",
+    "markdown.extensions.toc",
+    "markdown.extensions.fenced_code",
+    "markdown.extensions.codehilite"
+  ]
+}
+```
+## 6.3 Sublime 配置
+|                名称               |                             配置                             |                      解释                      |                                       示例                                      |           备注          |
+|-----------------------------------|--------------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------|-------------------------|
+| auto_find_in_selection            | true                                                         | 开启选中范围内搜索                             | "auto_find_in_selection": true,                                                 |                         |
+| bold_folder_labels                | true                                                         | 侧边栏文件夹显示加粗，区别于文件               | "bold_folder_labels": true,                                                     |                         |
+| color_scheme                      | Packages/Color Scheme - Default/Monokai.sublime-color-scheme | 颜色格式设置                                   | "color_scheme": "Packages/Color Scheme - Default/Monokai.sublime-color-scheme", |                         |
+| default_encoding                  | UTF-8                                                        | 设置默认编码格式为 UTF-8                       | "default_encoding": "UTF-8",                                                    |                         |
+| default_line_ending               | unix                                                         | 使用 unix 风格的换行符                         | "default_line_ending": "unix",                                                  |                         |
+| draw_minimap_border               | true                                                         | 用于右侧代码预览时给所在区域加上边框，方便识别 | "draw_minimap_border": true,                                                    |                         |
+| draw_white_space                  | all                                                          | 显示Tab、空格                                  | "draw_white_space": "all",                                                      |                         |
+| ensure_newline_at_eof_on_save     | true                                                         | 文件末尾自动保留一个空行                       | "ensure_newline_at_eof_on_save": true,                                          |                         |
+| fade_fold_buttons                 | false                                                        | 默认显示行号右侧的代码段闭合展开三角号         | "fade_fold_buttons": false,                                                     |                         |
+| font_face                         | Microsoft YaHei Mono                                         | 设置字体                                       | "font_face": "Microsoft YaHei Mono",                                            |                         |
+| font_options                      | gdi                                                          | 设置字体适配                                   | "font_options": ["gdi",],                                                       | gdi仅适用于Windows      |
+| font_size                         | 15                                                           | 设置字体大小为15号                             | "font_size": 15,                                                                |                         |
+| highlight_line                    | true                                                         | 高亮编辑的那一行                               | "highlight_line": true,                                                         |                         |
+| highlight_modified_tabs           | true                                                         | 高亮未保存文件                                 | "highlight_modified_tabs": true,                                                |                         |
+| ignored_packages                  | Vintage                                                      | 过滤Package Control包                          | "ignored_packages": ["Vintage"],                                                | 去除可以使用Vim编辑模式 |
+| line_numbers                      | true                                                         | 设置是否显示行号                               | "line_numbers": true,                                                           |                         |
+| rulers                            | 126                                                          | 在长度为126时，显示分割线                      | "rulers":[126],                                                                 |                         |
+| save_on_focus_lost                | true                                                         | 窗口失焦立即保存文件                           | "save_on_focus_lost": true,                                                     |                         |
+| show_encoding                     | true                                                         | 显示文件编码格式                               | "show_encoding": true,                                                          |                         |
+| show_full_path                    | true                                                         | 显示全路径                                     | "show_full_path": true,                                                         |                         |
+| show_line_endings                 | true                                                         | 显示换行符格式                                 | "show_line_endings": true,                                                      |                         |
+| tab_size                          | 2                                                            | tab的长度                                      | "tab_size": 2,                                                                  |                         |
+| theme                             | Default.sublime-theme                                        | 主题设置                                       | "theme": "Default.sublime-theme",                                               |                         |
+| translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                         |
+| trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                         |
+| update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                         |
+| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                         |
+| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                                                                |                         |
