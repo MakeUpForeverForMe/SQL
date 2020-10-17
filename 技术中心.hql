@@ -10484,23 +10484,16 @@ where 1 > 0
 
 
 
-select
-  *
-from ods_new_s.loan_info
-where 1 > 0
-  and due_bill_no = '1120081711491412053630'
-order by s_d_date
-;
-
-
 
 
 select
-  *
-from ods.ecas_loan_asset
+  product_code,
+  min(d_date) as d_date
+from ods.ecas_loan
 where 1 > 0
-  and due_bill_no = '1120081713350722712386'
-order by d_date
+  -- and due_bill_no = '1120081420353053488508'
+group by product_code
+order by product_code
 ;
 
 
@@ -10580,5 +10573,40 @@ from (
   select '3000-12-31' as tt union all
   select '3000-12-31' as tt
 ) as tmp
+;
+
+
+
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001901');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001902');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '001906');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '002001');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '002002');
+ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',product_id = '002006');
+
+
+
+
+
+
+invalidate metadata ods_new_s_cps.loan_info;
+select
+  *
+from ods_new_s_cps.loan_info
+where 1 > 0
+  and due_bill_no = '1120081420353053488508'
+order by s_d_date
+;
+
+
+
+
+invalidate metadata ods.ecas_loan;
+select
+  *
+from ods.ecas_loan
+where 1 > 0
+  and due_bill_no = '1120081420353053488508'
+order by d_date
 ;
 
