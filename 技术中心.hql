@@ -10588,30 +10588,59 @@ select
   *
 from ods.ecas_loan
 where 1 > 0
-  and due_bill_no = '1120081420353053488508'
+  and due_bill_no = 'DD000230362019111701130061a514'
 order by d_date
 ;
 
 
 
-invalidate metadata ods_new_s_cps.repay_schedule;
+invalidate metadata ods_new_s.repay_schedule_rerun;
 select
   *
-from ods_new_s_cps.repay_schedule
+from ods_new_s.repay_schedule_rerun
 where 1 > 0
-  and due_bill_no = '1120061017361786522786'
+  and due_bill_no = '1120060510300559326682'
 order by s_d_date
 ;
 
 
 
-invalidate metadata ods.ecas_loan;
+invalidate metadata ods.ecas_repay_schedule_asset;
 select
-  *
+  product_code,
+  schedule_id,
+  due_bill_no,
+  loan_init_prin,
+  loan_init_term,
+  curr_term,
+  start_interest_date,
+  curr_bal,
+  pmt_due_date,
+  origin_pmt_due_date,
+  grace_date,
+  due_term_prin,
+  due_term_int,
+  due_term_fee,
+  due_svc_fee,
+  due_penalty,
+  due_mult_amt,
+  penalty_acru,
+  reduced_amt,
+  reduce_term_prin,
+  reduce_term_int,
+  reduce_term_fee,
+  reduce_svc_fee,
+  reduce_penalty,
+  reduce_mult_amt,
+  schedule_status,
+  paid_out_date,
+  paid_out_type,
+  d_date
 from ods.ecas_repay_schedule_asset
 where 1 > 0
-  and due_bill_no = '1120061017361786522786'
-order by s_d_date
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120060510300559326682'
+order by d_date
 ;
 
 
@@ -10621,29 +10650,36 @@ select datediff('2020-10-14','2020-06-02');
 
 
 
-invalidate metadata ods_new_s_cps.repay_detail;
+invalidate metadata ods_new_s.repay_detail;
 select
   *
-from ods_new_s_cps.repay_detail
+from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120081712271814461361'
+  and due_bill_no = '1120060510300559326682'
 order by due_bill_no,biz_date,repay_term
 ;
 
 
 
 
-invalidate metadata ods.ecas_repay_hst;
+-- invalidate metadata ods.ecas_repay_hst_asset;
 select
   *
-from ods.ecas_repay_hst
+from ods.ecas_repay_hst_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120081712271814461361'
+  and due_bill_no = '1120060510300559326682'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
 
-ALTER TABLE ods_new_s_cps.repay_detail DROP IF EXISTS PARTITION (biz_date = '9999-10-08',product_id = '001906');
 
-alter table ods_new_s_cps.repay_detail partition(biz_date = '2020-10-08',product_id = '001906') rename to partition(biz_date = '9999-10-08',product_id = '001906');
+alter table ods_new_s.repay_detail partition(biz_date = '2020-10-06',product_id = '002006') rename to partition(biz_date = '9999-10-06',product_id = '002006');
+
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '9999-10-06',product_id = '002006');
+
+
+
+
+
+
