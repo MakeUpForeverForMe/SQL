@@ -10571,24 +10571,24 @@ ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',
 
 
 
-invalidate metadata ods_new_s_cps.loan_info;
+invalidate metadata ods_new_s.loan_info;
 select
   *
-from ods_new_s_cps.loan_info
+from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120081420353053488508'
+  and due_bill_no = '1120060216004289090275'
 order by s_d_date
 ;
 
 
 
 
-invalidate metadata ods.ecas_loan;
+invalidate metadata ods.ecas_loan_asset;
 select
   *
-from ods.ecas_loan
+from ods.ecas_loan_asset
 where 1 > 0
-  and due_bill_no = 'DD000230362019111701130061a514'
+  and due_bill_no = '1120060216004289090275'
 order by d_date
 ;
 
@@ -10599,10 +10599,20 @@ select
   *
 from ods_new_s.repay_schedule_rerun
 where 1 > 0
-  and due_bill_no = '1120060510300559326682'
-order by s_d_date
+  and due_bill_no = '1120070108300450701117'
+order by due_bill_no,loan_term,s_d_date
 ;
 
+
+
+invalidate metadata ods_new_s_cps.repay_schedule_tmp;
+select distinct
+  *
+from ods_new_s_cps.repay_schedule_tmp
+where 1 > 0
+  and due_bill_no = '1120093017342361952169'
+order by due_bill_no,loan_term,s_d_date
+;
 
 
 invalidate metadata ods.ecas_repay_schedule_asset;
@@ -10624,6 +10634,12 @@ select
   due_svc_fee,
   due_penalty,
   due_mult_amt,
+  paid_term_pric,
+  paid_term_int,
+  paid_term_fee,
+  paid_svc_fee,
+  paid_penalty,
+  paid_mult_amt,
   penalty_acru,
   reduced_amt,
   reduce_term_prin,
@@ -10639,7 +10655,7 @@ select
 from ods.ecas_repay_schedule_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060510300559326682'
+  and due_bill_no = '1120093017342361952169'
 order by d_date
 ;
 
@@ -10655,22 +10671,44 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120060510300559326682'
+  and due_bill_no = '1120070108300450701117'
 order by due_bill_no,biz_date,repay_term
 ;
 
 
 
 
--- invalidate metadata ods.ecas_repay_hst_asset;
+invalidate metadata ods.ecas_repay_hst_asset;
 select
   *
 from ods.ecas_repay_hst_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060510300559326682'
+  and due_bill_no = '1120070108300450701117'
 order by due_bill_no,d_date,term,bnp_type
 ;
+
+
+
+invalidate metadata ods.ecas_order_asset;
+select
+  order_id,
+  due_bill_no,
+  loan_usage,
+  term,
+  nvl(datefmt(txn_time,'ms','yyyy-MM-dd'),txn_date) as txn_date,
+  d_date,
+  purpose
+from ods.ecas_order_asset
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120070108300450701117'
+  and loan_usage = 'T'
+order by due_bill_no,d_date,txn_date,term,loan_usage
+;
+
+
+
 
 
 
@@ -10681,5 +10719,68 @@ ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '9999-10
 
 
 
+ALTER TABLE ods_new_s.customer_info CHANGE COLUMN customer_type cutomer_type string;
 
 
+invalidate metadata ods_new_s.customer_info;
+
+
+
+set hivevar:ST9=2020-07-02;
+
+select
+  if(due_bill_no_order is not null,due_term_prin,coalesce(repayhst_paid_principal,paid_term_pric,0)) as paid_principal,
+  d_date                                                                                   as d_date
+from (
+  select
+    *
+  from ods.ecas_repay_schedule${tb_suffix}
+  where 1 > 0
+    and d_date = '${ST9}'
+    and product_code in (${product_id})
+    and due_bill_no = '1120070108300450701117'
+) as schedule
+left join (
+  select
+    due_bill_no                                         as repayhst_due_bill_no,
+    term                                                as repayhst_term,
+    sum(if(bnp_type = 'Pricinpal',        repay_amt,0))
+    - case when due_bill_no = '1120070912093993172613' and d_date between '2020-07-10' and '2020-07-13' then 2500 else 0 end
+                                                        as repayhst_paid_principal,
+    sum(if(bnp_type = 'Interest',         repay_amt,0)) as repayhst_paid_interest,
+    sum(if(bnp_type = 'TERMFee',          repay_amt,0)) as repayhst_paid_term_fee,
+    sum(if(bnp_type = 'SVCFee',           repay_amt,0)) as repayhst_paid_svc_fee,
+    sum(if(bnp_type = 'Penalty',          repay_amt,0)) as repayhst_paid_penalty,
+    sum(if(bnp_type = 'LatePaymentCharge',repay_amt,0)) as repayhst_paid_mult
+  from ods.ecas_repay_hst${tb_suffix}
+  where 1 > 0
+    and due_bill_no = '1120070108300450701117'
+    and d_date = '${ST9}'
+    and if('${tb_suffix}' = '_asset',
+      payment_id not in ( -- 代偿前
+        '000015943861031admin000083000003'
+      ),
+      payment_id not in ( -- 代偿后
+        '000015943861031admin000083000002',
+        '000015945007161admin000083000002',
+        '000015945007161admin000083000003',
+        '000015945007161admin000083000004',
+        '000015945007161admin000083000005',
+        '000015945007161admin000083000006'
+      )
+    )
+  group by due_bill_no,term,d_date
+) as repayhst
+on  schedule.due_bill_no = repayhst.repayhst_due_bill_no
+and schedule.curr_term   = repayhst.repayhst_term
+left join (
+  select order_id as order_id_order,due_bill_no as due_bill_no_order
+  from ods.ecas_order_asset
+  where 1 > 0
+    and due_bill_no = '1120070108300450701117'
+    and d_date <= to_date(current_timestamp())
+    and d_date = '${ST9}'
+    and loan_usage = 'T'
+) as order_info
+on repayhst.repayhst_due_bill_no = order_info.due_bill_no_order
+;
