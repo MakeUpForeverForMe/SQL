@@ -1299,7 +1299,7 @@ set hive.cli.print.header=true;                                                 
 set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
 set hive.variable.substitute.depth=200;                                            -- 设置 替换变量的长度（默认：40）
 
-
+set mapred.job.name=my_job_name;                                                   -- 设置 Hive 任务名称
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
 set mapreduce.job.queuename=root.default;                                          -- 设置 MapReduce 的 Yarn 对列
