@@ -1299,6 +1299,9 @@ set hive.cli.print.header=true;                                                 
 set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
 set hive.variable.substitute.depth=200;                                            -- 设置 替换变量的长度（默认：40）
 
+set spark.sql.shuffle.partitions=200;                                              -- 设置 shuffle 的并发度（用于sparkSQL）
+set spark.default.parallelism=200;                                                 -- 设置 shuffle 的并发度（用于sparkRDD）
+
 set mapred.job.name=my_job_name;                                                   -- 设置 Hive 任务名称
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
@@ -1701,8 +1704,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*year*';
-DESC FUNCTION EXTENDED substring;
+SHOW FUNCTIONS LIKE '*array*';
+DESC FUNCTION EXTENDED array;
 ```
 
 

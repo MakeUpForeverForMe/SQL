@@ -10594,13 +10594,17 @@ order by d_date
 
 
 
-invalidate metadata ods_new_s.repay_schedule_rerun;
+invalidate metadata ods_new_s.repay_schedule;
 select
-  *
-from ods_new_s.repay_schedule_rerun
+  distinct due_bill_no
+from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120093017342361952169'
-order by due_bill_no,loan_term,s_d_date
+  -- and due_bill_no = '1120092723422797250119'
+  and d_date = '2020-10-20'
+  and loan_init_term = 18
+  and pmt_due_date < '2020-10-20'
+  and schedule_status = 'O'
+-- order by due_bill_no,loan_term,s_d_date
 ;
 
 
@@ -10610,54 +10614,25 @@ select
   *
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120061017361786522786'
+  and due_bill_no = '1120060702312416311915'
 order by due_bill_no,loan_term,s_d_date
 ;
 
 
-invalidate metadata ods_new_s_cps.repay_schedule_tmp;
-select distinct
-  *
-from ods_new_s_cps.repay_schedule_tmp
-where 1 > 0
-  and due_bill_no = '1120093017342361952169'
-order by due_bill_no,loan_term,s_d_date
-;
 
 
 invalidate metadata ods.ecas_repay_schedule_asset;
 select
   product_code,
-  schedule_id,
   due_bill_no,
   loan_init_prin,
   loan_init_term,
   curr_term,
-  start_interest_date,
-  curr_bal,
   pmt_due_date,
-  origin_pmt_due_date,
-  grace_date,
   due_term_prin,
   due_term_int,
-  due_term_fee,
-  due_svc_fee,
-  due_penalty,
-  due_mult_amt,
   paid_term_pric,
   paid_term_int,
-  paid_term_fee,
-  paid_svc_fee,
-  paid_penalty,
-  paid_mult_amt,
-  penalty_acru,
-  reduced_amt,
-  reduce_term_prin,
-  reduce_term_int,
-  reduce_term_fee,
-  reduce_svc_fee,
-  reduce_penalty,
-  reduce_mult_amt,
   schedule_status,
   paid_out_date,
   paid_out_type,
@@ -10665,9 +10640,49 @@ select
 from ods.ecas_repay_schedule_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120093017342361952169'
-order by d_date
+  and due_bill_no = '1120060702312416311915'
+order by due_bill_no,d_date,curr_term
 ;
+
+
+
+invalidate metadata ods_new_s_cps.repay_schedule_rerun;
+select distinct
+  *
+from ods_new_s_cps.repay_schedule_rerun
+where 1 > 0
+  and due_bill_no = '1120060702312416311915'
+order by due_bill_no,loan_term,s_d_date
+;
+
+
+
+invalidate metadata ods.ecas_repay_schedule;
+select
+  product_code,
+  due_bill_no,
+  loan_init_prin,
+  loan_init_term,
+  curr_term,
+  pmt_due_date,
+  due_term_prin,
+  due_term_int,
+  paid_term_pric,
+  paid_term_int,
+  schedule_status,
+  paid_out_date,
+  paid_out_type,
+  d_date
+from ods.ecas_repay_schedule
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120060702312416311915'
+order by due_bill_no,d_date,curr_term
+;
+
+
+
+
 
 
 select datediff('2020-10-14','2020-06-02');
@@ -10681,7 +10696,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120070108300450701117'
+  and due_bill_no = '1120092723422797250119'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10694,7 +10709,7 @@ select
 from ods.ecas_repay_hst_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120070108300450701117'
+  and due_bill_no = '1120092723422797250119'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -10737,11 +10752,18 @@ invalidate metadata ods_new_s.customer_info;
 
 
 
-
-select * from ods_new_s.loan_apply_tmp where due_bill_no = '1120101210003715553544';
+invalidate metadata ods_new_s.loan_apply;
+select * from ods_new_s.loan_apply where due_bill_no = '1120101210003715553544';
 
 
 select nvl(1 / 0,0);
 select nvl(0.25 / 0.00,0);
 select nvl(0.25 / 0.1,0);
+
+
+
+select substring('asdb_1',1,length('asdb_1') - 2);
+
+select split('a_b','_')[0];
+
 
