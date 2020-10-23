@@ -1303,6 +1303,10 @@ set spark.sql.shuffle.partitions=200;                                           
 set spark.default.parallelism=200;                                                 -- 设置 shuffle 的并发度（用于sparkRDD）
 
 set mapred.job.name=my_job_name;                                                   -- 设置 Hive 任务名称
+set spark.app.name=my_job_name;                                                    -- 设置 Spark 任务名称
+
+set spark.sql.autoBroadcastJoinThreshold=1073741824;                               -- 设置广播变量的大小（b）（默认10M）设置1G
+
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
 set mapreduce.job.queuename=root.default;                                          -- 设置 MapReduce 的 Yarn 对列

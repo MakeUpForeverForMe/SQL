@@ -10571,13 +10571,38 @@ ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',
 
 
 
-invalidate metadata ods_new_s.loan_info;
+invalidate metadata ods_new_s.loan_info_rerun;
 select
   *
-from ods_new_s.loan_info
+from ods_new_s.loan_info_rerun
 where 1 > 0
-  and due_bill_no = '1120092515390418631938'
-order by s_d_date
+  -- and due_bill_no = '1120060216004289090275'
+  and due_bill_no in (
+    '1120060216004289090275',
+    '1120060420501158464265',
+    '1120060510291219831303',
+    '1120060510292928006247',
+    '1120060510293236264396',
+    '1120060510300702357685',
+    '1120060510303029749221',
+    '1120060510313484801510',
+    '1120060510314443303533',
+    '1120060510314637234204',
+    '1120060510324386931800',
+    '1120060510455040992322',
+    '1120060510455756944221',
+    '1120060510462216533625',
+    '1120060510470989937022',
+    '1120060510474405236124',
+    '1120060510483166645034',
+    '1120060510483511719117',
+    '1120060511110961602615',
+    '1120060511132383103016',
+    '1120060511174298184833',
+    '1120060511312194364430',
+    '1120060511315016692632'
+  )
+order by due_bill_no,s_d_date
 ;
 
 
@@ -10585,12 +10610,41 @@ order by s_d_date
 
 invalidate metadata ods.ecas_loan_asset;
 select
-  *
+  due_bill_no,
+  active_date,
+  loan_init_term,
+  loan_init_prin,
+  repay_term,
+  remain_term,
+  loan_status,
+  paid_out_date,
+  overdue_prin,
+  overdue_date,
+  overdue_days,
+  paid_principal,
+  d_date,
+  product_code
 from ods.ecas_loan_asset
 where 1 > 0
-  and due_bill_no = '1120092515390418631938'
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120060216004289090275'
 order by d_date
 ;
+
+
+
+
+invalidate metadata ods_new_s.repay_detail;
+select
+  *
+from ods_new_s.repay_detail
+where 1 > 0
+  and due_bill_no = '1120060216004289090275'
+order by due_bill_no,biz_date,repay_term
+;
+
+
+
 
 
 
@@ -10614,7 +10668,7 @@ select
   *
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120060702312416311915'
+  and due_bill_no = '1120092817570575464515'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -10696,7 +10750,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120092723422797250119'
+  and due_bill_no = '1120060216004289090275'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10709,7 +10763,7 @@ select
 from ods.ecas_repay_hst_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120092723422797250119'
+  and due_bill_no = '1120060216004289090275'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -10721,14 +10775,14 @@ select
   due_bill_no,
   loan_usage,
   term,
-  nvl(datefmt(txn_time,'ms','yyyy-MM-dd'),txn_date) as txn_date,
+  nvl(from_unixtime(txn_time,'yyyy-MM-dd'),txn_date) as txn_date,
   d_date,
   purpose
 from ods.ecas_order_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120070108300450701117'
-  and loan_usage = 'T'
+  and due_bill_no = '1120092817570575464515'
+  -- and loan_usage = 'T'
 order by due_bill_no,d_date,txn_date,term,loan_usage
 ;
 
@@ -10739,7 +10793,7 @@ order by due_bill_no,d_date,txn_date,term,loan_usage
 
 alter table ods_new_s.repay_detail partition(biz_date = '2020-10-06',product_id = '002006') rename to partition(biz_date = '9999-10-06',product_id = '002006');
 
-ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '9999-10-06',product_id = '002006');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-07',product_id = '002006');
 
 
 
@@ -10765,5 +10819,21 @@ select nvl(0.25 / 0.1,0);
 select substring('asdb_1',1,length('asdb_1') - 2);
 
 select split('a_b','_')[0];
+
+
+
+
+select
+  due_bill_no,
+  to_date(batch_date) as batch_date,
+  biz_date
+from ods_new_s.repay_detail
+where to_date(batch_date) != biz_date
+and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+;
+
+
+
+
 
 
