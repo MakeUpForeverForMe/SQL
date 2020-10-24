@@ -10576,32 +10576,7 @@ select
   *
 from ods_new_s.loan_info_rerun
 where 1 > 0
-  -- and due_bill_no = '1120060216004289090275'
-  and due_bill_no in (
-    '1120060216004289090275',
-    '1120060420501158464265',
-    '1120060510291219831303',
-    '1120060510292928006247',
-    '1120060510293236264396',
-    '1120060510300702357685',
-    '1120060510303029749221',
-    '1120060510313484801510',
-    '1120060510314443303533',
-    '1120060510314637234204',
-    '1120060510324386931800',
-    '1120060510455040992322',
-    '1120060510455756944221',
-    '1120060510462216533625',
-    '1120060510470989937022',
-    '1120060510474405236124',
-    '1120060510483166645034',
-    '1120060510483511719117',
-    '1120060511110961602615',
-    '1120060511132383103016',
-    '1120060511174298184833',
-    '1120060511312194364430',
-    '1120060511315016692632'
-  )
+  and due_bill_no = '1120092723422797250119'
 order by due_bill_no,s_d_date
 ;
 
@@ -10627,7 +10602,7 @@ select
 from ods.ecas_loan_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120092723422797250119'
 order by d_date
 ;
 
@@ -10639,7 +10614,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120070912093993172613'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10750,7 +10725,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120092723422797250119'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10759,11 +10734,19 @@ order by due_bill_no,biz_date,repay_term
 
 invalidate metadata ods.ecas_repay_hst_asset;
 select
-  *
+  due_bill_no,
+  bnp_type,
+  repay_amt,
+  batch_date,
+  term,
+  txn_date,
+  loan_status,
+  overdue_days,
+  d_date
 from ods.ecas_repay_hst_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060216004289090275'
+  and due_bill_no = '1120070912093993172613'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
