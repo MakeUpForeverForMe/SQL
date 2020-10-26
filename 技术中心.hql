@@ -10571,12 +10571,30 @@ ALTER TABLE ods_new_s_cps.loan_info DROP IF EXISTS PARTITION (is_settled = 'no',
 
 
 
-invalidate metadata ods_new_s.loan_info_rerun;
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-22',product_id = '001902');
+
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-23',product_id = '001802');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-23',product_id = '001902');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-23',product_id = '002002');
+
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-24',product_id = '001802');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-24',product_id = '001902');
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-24',product_id = '002002');
+
+
+
+set hivevar:due_bill_no=
+and due_bill_no in ('1120061910384241252747')
+;
+
+
+
+invalidate metadata ods_new_s.loan_info;
 select
   *
-from ods_new_s.loan_info_rerun
+from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120092723422797250119'
+  and due_bill_no = '1120101614300054784633'
 order by due_bill_no,s_d_date
 ;
 
@@ -10602,7 +10620,8 @@ select
 from ods.ecas_loan_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120092723422797250119'
+  and due_bill_no = '1120092515390418631938'
+  -- and due_bill_no = '1120070912093993172613'
 order by d_date
 ;
 
@@ -10614,7 +10633,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120070912093993172613'
+  and due_bill_no = '1120101614300054784633'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10628,11 +10647,11 @@ select
   distinct due_bill_no
 from ods_new_s.repay_schedule
 where 1 > 0
-  -- and due_bill_no = '1120092723422797250119'
-  and d_date = '2020-10-20'
-  and loan_init_term = 18
-  and pmt_due_date < '2020-10-20'
-  and schedule_status = 'O'
+  and due_bill_no = '1120092515390418631938'
+  -- and d_date = '2020-10-20'
+  -- and loan_init_term = 18
+  -- and pmt_due_date < '2020-10-20'
+  -- and schedule_status = 'O'
 -- order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -10643,7 +10662,7 @@ select
   *
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120092817570575464515'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -10669,7 +10688,7 @@ select
 from ods.ecas_repay_schedule_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060702312416311915'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,d_date,curr_term
 ;
 
@@ -10680,7 +10699,7 @@ select distinct
   *
 from ods_new_s_cps.repay_schedule_rerun
 where 1 > 0
-  and due_bill_no = '1120060702312416311915'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -10705,7 +10724,7 @@ select
 from ods.ecas_repay_schedule
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060702312416311915'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,d_date,curr_term
 ;
 
@@ -10720,19 +10739,39 @@ select datediff('2020-10-14','2020-06-02');
 
 
 
-invalidate metadata ods_new_s.repay_detail;
+invalidate metadata ods_new_s_cps.repay_detail;
 select
   *
-from ods_new_s.repay_detail
+from ods_new_s_cps.repay_detail
 where 1 > 0
-  and due_bill_no = '1120092723422797250119'
+  -- and due_bill_no = '1120061910384241252747'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,biz_date,repay_term
 ;
 
 
 
 
-invalidate metadata ods.ecas_repay_hst_asset;
+invalidate metadata ods.ecas_repay_hst;
+select
+  due_bill_no,
+  payment_id,
+  bnp_type,
+  repay_amt,
+  batch_date,
+  term,
+  txn_date,
+  loan_status,
+  overdue_days,
+  d_date
+from ods.ecas_repay_hst
+where 1 > 0
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120092515390418631938'
+order by due_bill_no,d_date,term,bnp_type
+;
+
+
 select
   due_bill_no,
   bnp_type,
@@ -10743,10 +10782,10 @@ select
   loan_status,
   overdue_days,
   d_date
-from ods.ecas_repay_hst_asset
+from ods.ecas_repay_hst
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120070912093993172613'
+  and due_bill_no = '1120092515390418631938'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -10764,7 +10803,7 @@ select
 from ods.ecas_order_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120092817570575464515'
+  and due_bill_no = '1120092515390418631938'
   -- and loan_usage = 'T'
 order by due_bill_no,d_date,txn_date,term,loan_usage
 ;
@@ -10814,6 +10853,11 @@ from ods_new_s.repay_detail
 where to_date(batch_date) != biz_date
 and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
 ;
+
+
+
+
+
 
 
 
