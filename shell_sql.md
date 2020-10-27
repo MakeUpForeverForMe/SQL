@@ -1307,6 +1307,35 @@ set spark.app.name=my_job_name;                                                 
 
 set spark.sql.autoBroadcastJoinThreshold=1073741824;                               -- 设置广播变量的大小（b）（默认10M）设置1G
 
+
+-- Hive 性能调优
+set hive.optimize.reducededuplication.min.reducer=4;
+set hive.optimize.reducededuplication=true;
+set hive.merge.mapfiles=true;
+set hive.merge.mapredfiles=false;
+set hive.merge.smallfiles.avgsize=16000000;
+set hive.merge.size.per.task=256000000;
+set hive.merge.sparkfiles=true;
+set hive.auto.convert.join=true;
+set hive.auto.convert.join.noconditionaltask=true;
+set hive.auto.convert.join.noconditionaltask.size=20M(might need to increase for Spark, 200M);
+set hive.optimize.bucketmapjoin.sortedmerge=false;
+set hive.map.aggr.hash.percentmemory=0.5;
+set hive.map.aggr=true;
+set hive.optimize.sort.dynamic.partition=false;
+set hive.stats.autogather=true;
+set hive.stats.fetch.column.stats=true;
+set hive.compute.query.using.stats=true;
+set hive.limit.pushdown.memory.usage=0.4 (MR and Spark);
+set hive.optimize.index.filter=true;
+set hive.exec.reducers.bytes.per.reducer=67108864;
+set hive.smbjoin.cache.rows=10000;
+set hive.fetch.task.conversion=more;
+set hive.fetch.task.conversion.threshold=1073741824;
+set hive.optimize.ppd=true;
+
+
+
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
 set mapreduce.job.queuename=root.default;                                          -- 设置 MapReduce 的 Yarn 对列
