@@ -10588,10 +10588,24 @@ ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10
 
 invalidate metadata ods_new_s.loan_info;
 select
-  *
+  -- *
+  product_id,
+  due_bill_no,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  loan_term_repaid,
+  paid_principal,
+  remain_principal,
+  overdue_principal,
+  s_d_date,
+  e_d_date
 from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120060510300559326682'
+  and due_bill_no = '1120060602543338694112'
+  -- and due_bill_no in (
+  --   '1120092817570575464515','1120092820510279969428','1120092820514830603406'
+  -- )
 order by due_bill_no,s_d_date
 ;
 
@@ -10600,24 +10614,28 @@ order by due_bill_no,s_d_date
 
 invalidate metadata ods.ecas_loan_asset;
 select
-  due_bill_no,
-  active_date,
-  loan_init_term,
-  loan_init_prin,
-  repay_term,
-  remain_term,
-  loan_status,
-  paid_out_date,
-  overdue_prin,
-  overdue_date,
-  overdue_days,
-  paid_principal,
-  d_date,
-  product_code
+  *
+  -- due_bill_no,
+  -- active_date,
+  -- loan_init_term,
+  -- loan_init_prin,
+  -- repay_term,
+  -- remain_term,
+  -- loan_status,
+  -- paid_out_date,
+  -- overdue_prin,
+  -- overdue_date,
+  -- overdue_days,
+  -- paid_principal,
+  -- d_date,
+  -- product_code
 from ods.ecas_loan_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060510300559326682'
+  -- and due_bill_no = '1120060510300559326682'
+  and due_bill_no in (
+    '1120092817570575464515','1120092820510279969428','1120092820514830603406'
+  )
 order by due_bill_no,d_date
 ;
 
@@ -10629,12 +10647,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  -- and due_bill_no = '1120101614300054784633'
-  and due_bill_no in (
-    '1120092820510279969428',
-    '1120092820514830603406',
-    '1120092817570575464515'
-  )
+  and due_bill_no = '1120102120342424573432'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10648,7 +10661,10 @@ select
   distinct due_bill_no
 from ods_new_s.repay_schedule
 where 1 > 0
-  and due_bill_no = '1120092515390418631938'
+  and due_bill_no = '1120102120342424573432'
+  -- and due_bill_no in (
+  --   '1120092817570575464515','1120092820510279969428','1120092820514830603406'
+  -- )
   -- and d_date = '2020-10-20'
   -- and loan_init_term = 18
   -- and pmt_due_date < '2020-10-20'
@@ -10662,10 +10678,11 @@ invalidate metadata ods_new_s.repay_schedule;
 select
   -- *
   due_bill_no,
-  loan_term,
-  should_repay_principal,
-  schedule_status,
-  schedule_status_cn,
+  loan_term as term,
+  should_repay_principal as should_principal,
+  should_repay_interest  as should_interest,
+  schedule_status as status,
+  schedule_status_cn as status_cn,
   paid_out_date,
   paid_out_type,
   paid_out_type_cn,
@@ -10677,20 +10694,24 @@ select
 from ods_new_s.repay_schedule
 where 1 > 0
   -- and '2020-10-24' between s_d_date and date_sub(e_d_date,1)
-  -- and due_bill_no = '1120092515390418631938'
-  and due_bill_no in (
-    '1120060602543338694112',
-    '1120060602322140630323',
-    '1120060602324557511307',
-    '1120060511173419906330',
-    '1120060511184385512833',
-    '1120060510300944421982',
-    '1120060602323631368511',
-    '1120060511131974539713',
-    '1120060511325696044931',
-    '1120060510300559326682',
-    '1120060602332594205233'
-  )
+  and due_bill_no = '1120092515390418631938'
+  -- and due_bill_no in (
+  --   '1120060602543338694112',
+  --   '1120060602322140630323',
+  --   '1120060602324557511307',
+  --   '1120060511173419906330',
+  --   '1120060511184385512833',
+  --   '1120060510300944421982',
+  --   '1120060602323631368511',
+  --   '1120060511131974539713',
+  --   '1120060511325696044931',
+  --   '1120060510300559326682',
+  --   '1120060602332594205233'
+  -- )
+  -- and due_bill_no in (
+  --   '1120092817570575464515','1120092820510279969428','1120092820514830603406'
+  -- )
+  -- and schedule_id = '000016013843911admin000083000316'
   -- and loan_term = 1
 order by due_bill_no,loan_term,s_d_date
 ;
@@ -10700,30 +10721,33 @@ order by due_bill_no,loan_term,s_d_date
 
 invalidate metadata ods.ecas_repay_schedule_asset;
 select
-  product_code,
-  due_bill_no,
-  loan_init_prin,
-  loan_init_term,
-  curr_term,
-  pmt_due_date,
-  due_term_prin,
-  due_term_int,
-  paid_term_pric,
-  paid_term_int,
-  schedule_status,
-  paid_out_date,
-  paid_out_type,
-  d_date
+  *
+  -- product_code,
+  -- due_bill_no,
+  -- loan_init_prin,
+  -- loan_init_term,
+  -- curr_term,
+  -- pmt_due_date,
+  -- due_term_prin,
+  -- due_term_int,
+  -- paid_term_pric,
+  -- paid_term_int,
+  -- schedule_status,
+  -- paid_out_date,
+  -- paid_out_type,
+  -- d_date
 from ods.ecas_repay_schedule_asset
 where 1 > 0
   and d_date <= to_date(current_timestamp())
-  -- and due_bill_no = '1120092515390418631938'
-  and due_bill_no in (
-    '1120092820510279969428',
-    '1120092820514830603406',
-    '1120092817570575464515'
-  )
-  and curr_term = 1
+  and due_bill_no = '1120092817570575464515'
+  -- and d_date between '2020-09-25' and '2020-10-15'
+  and d_date between '2020-10-16' and to_date(current_timestamp())
+  -- and due_bill_no in (
+  --   '1120092820510279969428',
+  --   '1120092820514830603406',
+  --   '1120092817570575464515'
+  -- )
+  -- and curr_term = 1
 order by due_bill_no,d_date,curr_term
 ;
 
