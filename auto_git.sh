@@ -9,13 +9,16 @@ get_file(){
   for file in $files/*; do
     [[ -d $file ]] && get_file $file || {
       [[ -f $file ]] && {
-        echo $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45} &>> $log
+        echo /d/Users/ximing.wei/Desktop/code/HiveUDF/src/${file:45} $file &>> $log
         rm /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
-        link $file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
+        link /d/Users/ximing.wei/Desktop/code/HiveUDF/src/${file:45} $file
       }
     }
   done
 }
+
+
+
 
 dir1=/d/Users/ximing.wei/Desktop/code
 dir2=/d/Users/ximing.wei/Desktop/技术中心
@@ -29,7 +32,7 @@ prt '-' '50' &>> $log
 for dir in ${dirs//,/ }; do
   cd $dir
   pwd &>> $log
-  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/code/HiveUDF/src &>> $log
+  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src &>> $log
 
   git pull &>> $log
 
