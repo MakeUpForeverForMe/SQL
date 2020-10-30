@@ -1737,8 +1737,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*array*';
-DESC FUNCTION EXTENDED array;
+SHOW FUNCTIONS LIKE '*day*';
+DESC FUNCTION EXTENDED dayofmonth;
 ```
 
 
