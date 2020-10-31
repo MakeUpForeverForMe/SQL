@@ -1299,8 +1299,8 @@ set hive.cli.print.header=true;                                                 
 set hive.auto.convert.join=false;                                                  -- 设置 关闭自动 MapJoin
 set hive.variable.substitute.depth=200;                                            -- 设置 替换变量的长度（默认：40）
 
-set spark.sql.shuffle.partitions=200;                                              -- 设置 shuffle 的并发度（用于sparkSQL）
-set spark.default.parallelism=200;                                                 -- 设置 shuffle 的并发度（用于sparkRDD）
+set spark.sql.shuffle.partitions=2000;                                             -- 设置 shuffle 的并发度（用于sparkSQL）
+set spark.default.parallelism=2000;                                                -- 设置 shuffle 的并发度（用于sparkRDD）
 
 set mapred.job.name=my_job_name;                                                   -- 设置 Hive 任务名称
 set spark.app.name=my_job_name;                                                    -- 设置 Spark 任务名称
@@ -1318,7 +1318,7 @@ set hive.merge.size.per.task=256000000;
 set hive.merge.sparkfiles=true;
 set hive.auto.convert.join=true;
 set hive.auto.convert.join.noconditionaltask=true;
-set hive.auto.convert.join.noconditionaltask.size=20M(might need to increase for Spark, 200M);
+set hive.auto.convert.join.noconditionaltask.size=20M; -- (might need to increase for Spark, 200M)
 set hive.optimize.bucketmapjoin.sortedmerge=false;
 set hive.map.aggr.hash.percentmemory=0.5;
 set hive.map.aggr=true;

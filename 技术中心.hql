@@ -10814,6 +10814,7 @@ invalidate metadata ods_new_s.customer_info;
 
 
 
+
 select distinct
   repay_schedule.due_bill_no,
   loan_active_date,
