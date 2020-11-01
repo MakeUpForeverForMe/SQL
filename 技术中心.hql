@@ -10813,101 +10813,39 @@ invalidate metadata ods_new_s.customer_info;
 
 
 
-
-
-select distinct
-  repay_schedule.due_bill_no,
-  loan_active_date,
-  cycle_day,
-  nvl(day(should_repay_date_history),day(should_repay_date)) as should_repay_day,
-  day(should_repay_date) as should_repay_day_curr,
-  day(should_repay_date_history) as should_repay_day_his,
-  biz_date
-from (
-  select
-    due_bill_no,
-    should_repay_date,
-    should_repay_date_history
-  from ods_new_s.repay_schedule
-  where product_id = 'DIDI201908161538'
-  and s_d_date >= loan_active_date -- 目前针对滴滴，过滤掉提前给数据的情况（如：2020-08-28 给了放款日为 2020-08-29 的数据，这样的需要过滤掉。否则涉及到分母为放款金额的，会出现计算不准确）
-) as repay_schedule
-left join (
-  select
-    due_bill_no,
-    loan_active_date,
-    cycle_day,
-    biz_date
-  from ods_new_s.loan_lending
-  where product_id = 'DIDI201908161538'
-  -- and due_bill_no = 'DD0002303620200829005800e6557d'
-) as loan_info
-on repay_schedule.due_bill_no = loan_info.due_bill_no
-where cycle_day != nvl(day(should_repay_date_history),day(should_repay_date))
-limit 10
-;
-
-
-
 select
-  -- *
+  product_id,
   due_bill_no,
-  loan_active_date as active_date,
-  loan_term as term,
-  should_repay_date as should_date,
-  should_repay_date_history as should_date_his,
-  should_repay_principal as should_prin,
-  should_repay_interest  as should_int,
-  schedule_status as status,
-  schedule_status_cn as status_cn,
-  paid_out_date as paid_date,
-  paid_out_type_cn as type_cn,
-  paid_principal as paid_prin,
-  reduce_principal as reduce_prin,
-  s_d_date,
-  e_d_date,
-  product_id
+  should_repay_date,
+  should_repay_principal
 from ods_new_s.repay_schedule
 where 1 > 0
-  -- and '2020-10-26' between s_d_date and date_sub(e_d_date,1)
-  and due_bill_no = 'DD00023036202006152229009c3700'
-order by due_bill_no,loan_term,s_d_date
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '2020-06-15'
+  and due_bill_no = '1120060420501103686498'
+order by due_bill_no,loan_term,s_d_date,should_repay_date
 ;
 
 
 
 select
-  due_bill_no,
-  txn_date,
-  biz_date
-from (
-  select
-    due_bill_no,
-    txn_date,
-    min(d_date) as biz_date
-  from ods.ecas_repay_hst
-  group by due_bill_no,txn_date
-) as tmp
-join (
-  select
-    due_bill_no as due_bill_no_loan
-  from ods.ecas_loan
-  where product_code in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
-  and d_date = '2020-10-28'
-) as loan
-on due_bill_no = due_bill_no_loan
-where txn_date != biz_date
-order by due_bill_no,txn_date
-limit 10
-;
-
-
-select
-  overdue_days,
-  count(distinct due_bill_no) as cnt
+  *
+  -- product_id,
+  -- due_bill_no,
+  -- should_repay_date
 from ods_new_s.loan_info
-group by overdue_days
-order by overdue_days
+where 1 > 0
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  -- and '2020-06-16' between s_d_date and date_sub(e_d_date,1)
+  -- and should_repay_date = '2020-06-15'
+  and due_bill_no = '1120060314224839353567'
+order by due_bill_no,s_d_date,should_repay_date
 ;
+
+
+
+
+
 
 
