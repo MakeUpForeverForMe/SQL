@@ -10849,3 +10849,15 @@ order by due_bill_no,s_d_date,should_repay_date
 
 
 
+select
+  sum(should_repay_principal) as should_repay_principal,
+  product_id             as product_id
+from ods_new_s${var:db_suffix}.repay_schedule
+where 1 > 0
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and '${var:ST9}' between s_d_date and date_sub(e_d_date,1)
+  and should_repay_date = '${var:ST9}'
+group by product_id
+;
+
+

@@ -599,7 +599,7 @@ done
 ### 2.1.16 Shell 中 find 命令
 ```shell
 # 批量查找文件并删除
-find . -name 'data_log.log.2020-09-2*' -mtime +1 | xargs rm
+find . -name 'data_log.log.2020-09-2*' -type f -mtime +1 | xargs rm
 ```
 
 
@@ -1306,7 +1306,8 @@ set mapred.job.name=my_job_name;                                                
 set spark.app.name=my_job_name;                                                    -- 设置 Spark 任务名称
 
 set spark.sql.autoBroadcastJoinThreshold=1073741824;                               -- 设置广播变量的大小（b）（默认10M）设置1G
-
+set spark.locality.wait=0s;
+set hive.groupby.skewindata=true;
 
 -- Hive 性能调优
 set hive.optimize.reducededuplication.min.reducer=4;
