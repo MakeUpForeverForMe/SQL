@@ -646,8 +646,10 @@ nohup /home/hadoop/hive-2.3.5/bin/hiveserver2 &>/dev/null &
 # 初始化 Hive 数据库
 /home/hadoop/hive-2.3.5/bin/schematool -initSchema -dbType mysql
 
-# 启动 beeline 客户端，连接 hiveserver2 服务
+# 启动 beeline 客户端，连接 hiveserver2 服务，导出数据
 beeline -u jdbc:hive2://node47:10000 -n hive --showHeader=false --outputformat=csv2 -e ''
+# 连接 beeline 客户端
+beeline -n hive -u jdbc:hive2://node47:10000 --color=true --hiveconf hive.resultset.use.unique.column.names=false
 ```
 
 
