@@ -10871,6 +10871,24 @@ select * from stage.t_asset_wind_control_history limit 10;
 
 
 
+select * from dm_eagle.eagle_asset_scale_repaid_day
+where biz_date = '2020-06-03'
+and project_id in ('WS0006200001','WS0006200002','WS0009200001')
+order by product_id
+;
+
+
+select * from ods_new_s.repay_detail
+where biz_date in ('2020-06-02','2020-06-03')
+and product_id = '001801'
+;
+
+
+invalidate metadata dm_eagle.eagle_loan_info;
+invalidate metadata dm_eagle_cps.eagle_loan_info;
+
+
+
 
 
 
