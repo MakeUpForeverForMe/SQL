@@ -10893,4 +10893,19 @@ invalidate metadata dm_eagle_cps.eagle_loan_info;
 
 
 
+select
+  biz_date,
+  count(distinct due_bill_no) as cnt
+from ods_new_s.loan_lending
+group by biz_date
+order by biz_date
+;
+
+
+
+
+
+
+
+
 
