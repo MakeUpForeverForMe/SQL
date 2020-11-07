@@ -10581,6 +10581,8 @@ ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10
 ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-24',product_id = '001902');
 ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10-24',product_id = '002002');
 
+ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-11-05',product_id = '002006');
+
 
 
 
@@ -10642,7 +10644,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120061002421078095028'
+  and due_bill_no = '1120092723422560990728'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10746,7 +10748,7 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120060602543338694112'
+  and due_bill_no = '1120092723422560990728'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10763,14 +10765,13 @@ select
   batch_date,
   term,
   txn_date,
-  loan_status,
-  overdue_days,
+  loan_status as status,
   d_date
 from ods.ecas_repay_hst
 where 1 > 0
   -- and d_date between '2020-10-21' and '2020-10-27'
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120061002421078095028'
+  and due_bill_no = '1120092723422560990728'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -10900,8 +10901,6 @@ from ods_new_s.loan_lending
 group by biz_date
 order by biz_date
 ;
-
-
 
 
 
