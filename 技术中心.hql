@@ -2,6 +2,636 @@ set var:deal_date=2020-01-01;
 
 
 
+
+
+insert overwrite table ods_new_s${db_suffix}.loan_info_bak partition(is_settled,product_id)
+select * from ods_new_s${db_suffix}.loan_info;
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule_bak partition(is_settled,product_id)
+select * from ods_new_s${db_suffix}.repay_schedule;
+
+insert overwrite table ods_new_s${db_suffix}.repay_detail_bak partition(biz_date,product_id)
+select * from ods_new_s${db_suffix}.repay_detail;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+
+from ods_new_s${db_suffix}.loan_info_bak_20201014
+insert overwrite table ods_new_s${db_suffix}.loan_lending partition(biz_date,product_id)
+select
+  user_hash_no,
+  cust_id,
+  apply_no,
+  contract_no,
+  due_bill_no,
+  loan_usage,
+  loan_active_date,
+  cycle_day,
+  loan_expire_date,
+  loan_type,
+  loan_type_cn,
+  loan_init_term,
+  loan_init_principal,
+  nvl(loan_init_interest_rate,0) as loan_init_interest_rate,
+  if(product_id in ('001602','001601','DIDI201908161538','001603'),nvl(loan_init_interest_rate,0),nvl(credit_coef,0)) as credit_coef,
+  nvl(loan_init_term_fee_rate,0) as loan_init_term_fee_rate,
+  nvl(loan_init_svc_fee_rate,0) as loan_init_svc_fee_rate,
+  nvl(loan_init_penalty_rate,0) as loan_init_penalty_rate,
+  loan_active_date as biz_date,
+  product_id
+insert overwrite table ods_new_s${db_suffix}.loan_info partition(is_settled,product_id)
+select
+  due_bill_no,
+  apply_no,
+  loan_active_date,
+  loan_init_term,
+  loan_term2 as loan_term,
+  should_repay_date,
+  loan_term_repaid,
+  loan_term_remain,
+  loan_init_interest,
+  loan_init_term_fee,
+  loan_init_svc_fee,
+  loan_status,
+  loan_status_cn,
+  loan_out_reason,
+  paid_out_type,
+  paid_out_type_cn,
+  paid_out_date,
+  terminal_date,
+  paid_amount,
+  paid_principal,
+  paid_interest,
+  paid_penalty,
+  paid_svc_fee,
+  paid_term_fee,
+  paid_mult,
+  remain_amount,
+  remain_principal,
+  remain_interest,
+  remain_svc_fee,
+  remain_term_fee,
+  overdue_principal,
+  overdue_interest,
+  overdue_svc_fee,
+  overdue_term_fee,
+  overdue_penalty,
+  overdue_mult_amt,
+  overdue_date_first,
+  overdue_date_start,
+  overdue_days,
+  overdue_date,
+  dpd_begin_date,
+  dpd_days,
+  dpd_days_count,
+  dpd_days_max,
+  collect_out_date,
+  overdue_term,
+  overdue_terms_count,
+  overdue_terms_max,
+  overdue_principal_accumulate,
+  overdue_principal_max,
+  s_d_date,
+  e_d_date,
+  effective_time,
+  expire_time,
+  is_settled,
+  product_id
+;
+
+
+-- DROP TABLE IF EXISTS `ods_new_s${db_suffix}.loan_lending_tmp`;
+CREATE TABLE IF NOT EXISTS `ods_new_s${db_suffix}.loan_lending_tmp` like `ods_new_s${db_suffix}.loan_lending`;
+
+set hive.execution.engine=mr;
+
+set mapreduce.map.memory.mb=6144;
+set mapreduce.reduce.memory.mb=6144;
+
+
+insert overwrite table ods_new_s${db_suffix}.loan_lending_tmp partition(biz_date,product_id)
+select distinct * from ods_new_s${db_suffix}.loan_lending
+where 1 > 0
+  and cust_id is not null;
+
+set hive.execution.engine=spark;
+
+
+insert overwrite table ods_new_s${db_suffix}.loan_lending partition(biz_date,product_id)
+select * from ods_new_s${db_suffix}.loan_lending_tmp;
+
+
+
+
+
+invalidate metadata ods_new_s.loan_lending;
+invalidate metadata ods_new_s.loan_lending_tmp;
+invalidate metadata ods_new_s.loan_info_bak_20201014;
+
+-- select distinct product_id
+-- from (
+select
+count(due_bill_no) as cnt,count(distinct due_bill_no) as cnt_distinct,count(due_bill_no) - count(distinct due_bill_no) as diff
+from ods_new_s.loan_info_bak_20201014
+union all
+select
+count(due_bill_no) as cnt,count(distinct due_bill_no) as cnt_distinct,count(due_bill_no) - count(distinct due_bill_no) as diff
+-- ,due_bill_no
+-- ,product_id
+from ods_new_s.loan_lending
+-- group by due_bill_no
+-- ,product_id
+union all
+select
+count(due_bill_no) as cnt,count(distinct due_bill_no) as cnt_distinct,count(due_bill_no) - count(distinct due_bill_no) as diff
+-- ,due_bill_no
+-- ,product_id
+from ods_new_s.loan_lending_tmp
+-- where product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+-- group by due_bill_no
+-- ,product_id
+-- having count(due_bill_no) > 1
+-- ) as tmp
+-- limit 20
+;
+
+
+-- invalidate metadata ods.ecas_order_asset;
+select *
+from
+-- ods_new_s.loan_info
+-- ods_new_s_cps.loan_info
+-- ods_new_s_cps.loan_lending
+-- ods_new_s_cps.loan_lending_tmp
+-- ods_new_s.repay_detail
+-- ods_new_s.order_info
+-- ods.ecas_repay_hst_asset
+-- ods.ecas_order_hst_asset
+-- ods.ecas_order_hst
+-- ods.ecas_order_asset
+-- ods.ecas_order
+where 1 > 0
+  and due_bill_no = '1120101422283729802351'
+order by due_bill_no
+limit 10
+;
+
+
+
+
+
+
+
+
+
+
+
+select *
+from ods_new_s_cps.repay_schedule
+where due_bill_no = 'DD000230362020012321180039ba70'
+order by loan_term,s_d_date
+;
+
+
+
+
+
+
+insert overwrite table dm_eagle${db_suffix}.eagle_loan_info partition(biz_date,product_id)
+select `(age|loan_id|register_date|request_time)?+.+`
+from dm_eagle${db_suffix}.eagle_loan_info_bak_20201014
+;
+
+
+
+
+
+set hivevar:ST9=2020-06-02;
+
+set hivevar:product_id='001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007';
+
+
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+ALTER TABLE ods_new_s${db_suffix}.repay_detail RENAME TO ods_new_s${db_suffix}.repay_detail_bak_20201015;
+
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_detail partition(biz_date,product_id)
+select
+  repay_detail.due_bill_no,
+  loan_lending.loan_active_date,
+  repay_detail.loan_init_term,
+  repay_detail.repay_term,
+  repay_detail.order_id,
+  repay_detail.loan_status,
+  repay_detail.loan_status_cn,
+  repay_detail.overdue_days,
+  repay_detail.payment_id,
+  repay_detail.txn_time,
+  repay_detail.post_time,
+  repay_detail.bnp_type,
+  repay_detail.bnp_type_cn,
+  repay_detail.repay_amount,
+  repay_detail.batch_date,
+  repay_detail.create_time,
+  repay_detail.update_time,
+  repay_detail.biz_date,
+  repay_detail.product_id
+from (
+  select *
+  from ods_new_s${db_suffix}.repay_detail_bak_20201015
+  where 1 > 0
+    and biz_date >= '2020-07-01'
+) as repay_detail
+left join (
+  select
+    due_bill_no,
+    product_id,
+    loan_active_date
+  from ods_new_s${db_suffix}.loan_lending
+) as loan_lending
+on  repay_detail.product_id  = loan_lending.product_id
+and repay_detail.due_bill_no = loan_lending.due_bill_no
+-- limit 10
+;
+
+
+
+invalidate metadata ods_new_s.repay_detail;
+invalidate metadata ods_new_s.repay_detail_bak_20201015;
+
+select count(1) as cnt from ods_new_s.repay_detail
+union all
+select count(1) as cnt from ods_new_s.repay_detail_bak_20201015
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule partition(is_settled = 'no',product_id)
+select `(is_settled)?+.+` from ods_new_s${db_suffix}.repay_schedule_bak_20201014
+;
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule partition(is_settled = 'no',product_id)
+select `(is_settled)?+.+` from ods_new_s${db_suffix}.repay_schedule_bak_20201014
+;
+
+
+
+DROP TABLE IF EXISTS ods_new_s${db_suffix}.repay_schedule_bak_20201015;
+
+
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule RENAME TO ods_new_s${db_suffix}.repay_schedule_bak_20201020;
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule_rerun RENAME TO ods_new_s${db_suffix}.repay_schedule;
+
+
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule RENAME TO ods_new_s${db_suffix}.repay_schedule_rerun;
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule_bak_20201020 RENAME TO ods_new_s${db_suffix}.repay_schedule;
+
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule partition(is_settled = 'no',product_id)
+select `(cust_id|user_hash_no|out_side_schedule_no|is_settled)?+.+`
+from ods_new_s${db_suffix}.repay_schedule_bak_20201015
+;
+
+
+
+ALTER TABLE ods_new_s${db_suffix}.repay_schedule_rerun RENAME TO ods_new_s${db_suffix}.repay_schedule;
+
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule partition(is_settled = 'no',product_id)
+select `(is_settled)?+.+` from ods_new_s${db_suffix}.repay_schedule_bak_20201014 where is_settled = 'no' and product_id in ('001601','001602','001603','001702','DIDI201908161538','pl00282');
+
+
+insert overwrite table ods_new_s${db_suffix}.repay_schedule partition(is_settled,product_id)
+select * from ods_new_s${db_suffix}.repay_schedule_tmp;
+
+
+
+select * from ods_new_s${db_suffix}.repay_schedule_bak_20201014 where is_settled = 'no' and product_id = '__HIVE_DEFAULT_PARTITION__' limit 10;
+
+
+set var:db_suffix=;
+
+set var:db_suffix=_cps;
+
+
+invalidate metadata ods_new_s${var:db_suffix}.repay_schedule;
+invalidate metadata ods_new_s${var:db_suffix}.repay_schedule_bak_20201015;
+
+-- select * from (
+select
+-- product_id,
+count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.repay_schedule
+-- group by product_id
+union all
+select
+-- product_id,
+count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.repay_schedule_bak_20201015
+-- group by product_id
+-- ) as tmp
+-- order by product_id
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ALTER TABLE ods_new_s${db_suffix}.order_info RENAME TO ods_new_s${db_suffix}.order_info_bak_20201015;
+
+
+
+insert overwrite table ods_new_s${db_suffix}.order_info partition(biz_date,product_id)
+select `(cust_id|user_hash_no)?+.+`
+from ods_new_s${db_suffix}.order_info_bak_20201015
+;
+
+
+
+
+
+
+set var:db_suffix=;
+
+set var:db_suffix=_cps;
+
+
+invalidate metadata ods_new_s${var:db_suffix}.order_info;
+invalidate metadata ods_new_s${var:db_suffix}.order_info_bak_20201015;
+
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.order_info
+union all
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.order_info_bak_20201015
+;
+
+
+
+
+
+
+
+
+
+
+ALTER TABLE dm_eagle${db_suffix}.eagle_repay_schedule RENAME TO dm_eagle${db_suffix}.eagle_repay_schedule_bak_20201015;
+
+
+
+insert overwrite table dm_eagle${db_suffix}.eagle_repay_schedule partition(biz_date,product_id)
+select `(cust_id|user_hash_no|schedule_id|out_side_schedule_no)?+.+`
+from dm_eagle${db_suffix}.eagle_repay_schedule_bak_20201015
+;
+
+
+
+
+
+
+set var:db_suffix=;
+
+set var:db_suffix=_cps;
+
+
+invalidate metadata dm_eagle${var:db_suffix}.eagle_repay_schedule;
+invalidate metadata dm_eagle${var:db_suffix}.eagle_repay_schedule_bak_20201015;
+
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from dm_eagle${var:db_suffix}.eagle_repay_schedule
+union all
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from dm_eagle${var:db_suffix}.eagle_repay_schedule_bak_20201015
+;
+
+
+
+
+
+
+ALTER TABLE dm_eagle${db_suffix}.eagle_order_info RENAME TO dm_eagle${db_suffix}.eagle_order_info_bak_20201015;
+
+
+
+insert overwrite table dm_eagle${db_suffix}.eagle_order_info partition(biz_date,product_id)
+select `(cust_id|user_hash_no)?+.+`
+from dm_eagle${db_suffix}.eagle_order_info_bak_20201015
+;
+
+
+
+
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+invalidate metadata dm_eagle${var:db_suffix}.eagle_order_info;
+invalidate metadata dm_eagle${var:db_suffix}.eagle_order_info_bak_20201015;
+
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from dm_eagle${var:db_suffix}.eagle_order_info
+union all
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from dm_eagle${var:db_suffix}.eagle_order_info_bak_20201015
+;
+
+
+
+
+
+
+
+ALTER TABLE ods_new_s${db_suffix}.loan_lending RENAME TO ods_new_s${db_suffix}.loan_lending_bak_20201018;
+
+insert overwrite table ods_new_s${db_suffix}.loan_lending partition(biz_date,product_id)
+select `(cust_id|user_hash_no|credit_coef)?+.+`
+from ods_new_s${db_suffix}.loan_lending_bak_20201018
+;
+
+
+
+
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+invalidate metadata ods_new_s${var:db_suffix}.loan_lending;
+invalidate metadata ods_new_s${var:db_suffix}.loan_lending_bak_20201018;
+
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.loan_lending
+union all
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.loan_lending_bak_20201018
+;
+
+
+
+
+
+
+
+
+ALTER TABLE ods_new_s${db_suffix}.loan_info RENAME TO ods_new_s${db_suffix}.loan_info_bak_20201020;
+ALTER TABLE ods_new_s${db_suffix}.loan_info_rerun RENAME TO ods_new_s${db_suffix}.loan_info;
+
+insert overwrite table ods_new_s${db_suffix}.loan_info partition(is_settled = 'no',product_id)
+select `(is_settled)?+.+` from ods_new_s${db_suffix}.loan_info_bak_20201020 where product_id not in (${product_id});
+
+
+
+ALTER TABLE ods_new_s${db_suffix}.loan_info RENAME TO ods_new_s${db_suffix}.loan_info_bak_20201015;
+
+
+
+insert overwrite table ods_new_s${db_suffix}.loan_info_tmp partition(is_settled = 'no',product_id)
+select
+  a.due_bill_no,
+  a.apply_no,
+  a.loan_active_date,
+  b.loan_init_principal,
+  a.loan_init_term,
+  a.loan_term,
+  a.should_repay_date,
+  a.loan_term_repaid,
+  a.loan_term_remain,
+  a.loan_init_interest,
+  a.loan_init_term_fee,
+  a.loan_init_svc_fee,
+  a.loan_status,
+  a.loan_status_cn,
+  a.loan_out_reason,
+  a.paid_out_type,
+  a.paid_out_type_cn,
+  a.paid_out_date,
+  a.terminal_date,
+  a.paid_amount,
+  a.paid_principal,
+  a.paid_interest,
+  a.paid_penalty,
+  a.paid_svc_fee,
+  a.paid_term_fee,
+  a.paid_mult,
+  a.remain_amount,
+  a.remain_principal,
+  a.remain_interest,
+  a.remain_svc_fee,
+  a.remain_term_fee,
+  a.overdue_principal,
+  a.overdue_interest,
+  a.overdue_svc_fee,
+  a.overdue_term_fee,
+  a.overdue_penalty,
+  a.overdue_mult_amt,
+  a.overdue_date_first,
+  a.overdue_date_start,
+  a.overdue_days,
+  a.overdue_date,
+  a.dpd_begin_date,
+  a.dpd_days,
+  a.dpd_days_count,
+  a.dpd_days_max,
+  a.collect_out_date,
+  a.overdue_term,
+  a.overdue_terms_count,
+  a.overdue_terms_max,
+  a.overdue_principal_accumulate,
+  a.overdue_principal_max,
+  a.s_d_date,
+  a.e_d_date,
+  a.effective_time,
+  a.expire_time,
+  a.product_id
+from ods_new_s${db_suffix}.loan_info_bak_20201015 as a
+left join ods_new_s${db_suffix}.loan_lending as b
+on a.due_bill_no = b.due_bill_no
+;
+
+
+insert overwrite table ods_new_s${db_suffix}.loan_info partition(is_settled = 'no',product_id)
+select `(is_settled)?+.+`
+from ods_new_s${db_suffix}.loan_info_tmp
+;
+
+
+
+
+set hivevar:db_suffix=;
+
+set hivevar:db_suffix=_cps;
+
+
+invalidate metadata ods_new_s${var:db_suffix}.loan_info;
+invalidate metadata ods_new_s${var:db_suffix}.loan_info_bak_20201015;
+
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.loan_info
+union all
+select count(distinct due_bill_no) as due_bill_no,count(1) as cnt from ods_new_s${var:db_suffix}.loan_info_bak_20201015
+;
+
+
+
 /**
  * 对比ecif_id
  */
@@ -10629,11 +11259,11 @@ select
   product_code
 from ods.ecas_loan_asset
 where 1 > 0
-  and d_date = '2020-10-27'
+  and d_date = '2020-11-07'
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120060602543338694112'
+  and due_bill_no = '1120092723422560990728'
 order by due_bill_no,d_date
-limit 10
+-- limit 10
 ;
 
 
@@ -10748,7 +11378,9 @@ select
   *
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120092723422560990728'
+  -- and due_bill_no = '1120092817554131582728'
+  and biz_date = '2020-11-05'
+  and product_id = '002006'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -10771,7 +11403,8 @@ from ods.ecas_repay_hst
 where 1 > 0
   -- and d_date between '2020-10-21' and '2020-10-27'
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120092723422560990728'
+  and due_bill_no = '1120092817554131582728'
+  and d_date between '2020-11-04' and '2020-11-05'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -10907,4 +11540,11 @@ order by biz_date
 
 
 
+select
+  map_from_str(aa)['k1'] as k1,
+  map_from_str(aa)['k2'] as k2
+from (
+  select '{"k1":1,"k2":"v2"}' as aa
+) as tmp
+;
 
