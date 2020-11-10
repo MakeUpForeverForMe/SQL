@@ -11219,23 +11219,64 @@ ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-11
 
 invalidate metadata ods_new_s_cps.loan_info;
 select
-  *
-  -- product_id,
-  -- due_bill_no,
-  -- loan_init_principal,
-  -- loan_init_term,
-  -- loan_term,
-  -- loan_term_repaid,
-  -- paid_principal,
-  -- remain_principal,
-  -- overdue_principal,
-  -- s_d_date,
-  -- e_d_date
+  -- *
+  product_id,
+  due_bill_no,
+  loan_active_date as active_date,
+  loan_init_principal,
+  loan_init_term,
+  loan_term,
+  loan_term_repaid,
+  paid_principal,
+  remain_principal,
+  loan_status,
+  loan_status_cn,
+  overdue_principal,
+  s_d_date,
+  e_d_date
 from ods_new_s_cps.loan_info
 where 1 > 0
-  and due_bill_no = '1120061002421078095028'
+  and due_bill_no = '1120092817564833889781'
 order by due_bill_no,s_d_date
 ;
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_active_date,
+  loan_expire_date,
+  loan_type_cn,
+  loan_init_term,
+  loan_init_principal
+from ods_new_s.loan_lending
+where 1 > 0
+  and due_bill_no = '1120092817564833889781'
+order by due_bill_no,biz_date
+;
+
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_apply_time,
+  loan_amount_apply,
+  loan_terms,
+  apply_status,
+  apply_resut_msg,
+  issue_time,
+  loan_amount_approval,
+  loan_amount,
+  ori_request,
+  ori_response
+from ods_new_s.loan_apply
+where 1 > 0
+  and due_bill_no = '1120092817564833889781'
+order by due_bill_no,to_date(loan_apply_time)
+;
+
+
 
 
 
@@ -11271,10 +11312,21 @@ order by due_bill_no,d_date
 
 invalidate metadata ods_new_s.repay_detail;
 select
-  *
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  repay_term,
+  loan_status,
+  loan_status_cn,
+  overdue_days,
+  bnp_type,
+  bnp_type_cn,
+  repay_amount,
+  biz_date,
+  product_id
 from ods_new_s.repay_detail
 where 1 > 0
-  and due_bill_no = '1120092723422560990728'
+  and due_bill_no = '1120081714554090143221'
 order by due_bill_no,biz_date,repay_term
 ;
 
@@ -11305,7 +11357,7 @@ select
 from ods_new_s.repay_schedule
 where 1 > 0
   -- and '2020-10-26' between s_d_date and date_sub(e_d_date,1)
-  and due_bill_no = '1120060602543338694112'
+  and due_bill_no = '1120092817564833889781'
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -11375,19 +11427,28 @@ select datediff('2020-10-14','2020-06-02');
 
 invalidate metadata ods_new_s.repay_detail;
 select
-  *
+  due_bill_no,
+  payment_id,
+  order_id,
+  bnp_type,
+  repay_amount,
+  batch_date,
+  repay_term,
+  to_date(txn_time) as txn_date,
+  loan_status as status,
+  biz_date
 from ods_new_s.repay_detail
 where 1 > 0
-  -- and due_bill_no = '1120092817554131582728'
-  and biz_date = '2020-11-05'
-  and product_id = '002006'
+  -- and biz_date = '2020-11-05'
+  and product_id = '001802'
+  and due_bill_no = '1120081714554090143221'
 order by due_bill_no,biz_date,repay_term
 ;
 
 
 
 
-invalidate metadata ods.ecas_repay_hst;
+invalidate metadata ods.ecas_repay_hst_asset;
 select
   due_bill_no,
   payment_id,
@@ -11399,12 +11460,12 @@ select
   txn_date,
   loan_status as status,
   d_date
-from ods.ecas_repay_hst
+from ods.ecas_repay_hst_asset
 where 1 > 0
   -- and d_date between '2020-10-21' and '2020-10-27'
+  and org = '15601'
   and d_date <= to_date(current_timestamp())
-  and due_bill_no = '1120092817554131582728'
-  and d_date between '2020-11-04' and '2020-11-05'
+  and due_bill_no = '1120081714554090143221'
 order by due_bill_no,d_date,term,bnp_type
 ;
 
@@ -11547,4 +11608,152 @@ from (
   select '{"k1":1,"k2":"v2"}' as aa
 ) as tmp
 ;
+
+
+
+
+
+
+select
+  *
+from dm_eagle.eagle_loan_info
+where 1 > 0
+  and biz_date = '2020-11-07'
+  and product_id = '001801'
+limit 10
+;
+
+
+
+
+select * from ods_new_s.loan_info where due_bill_no = '1120092723422560990728' order by s_d_date;
+
+
+
+invalidate metadata ods.ecas_loan_asset;
+select
+  -- *
+  due_bill_no,
+  active_date,
+  loan_init_term,
+  loan_init_prin,
+  repay_term,
+  remain_term,
+  loan_status,
+  paid_out_date,
+  overdue_prin,
+  overdue_date,
+  overdue_days,
+  paid_principal,
+  d_date,
+  product_code
+from ods.ecas_loan_asset
+where 1 > 0
+  -- and d_date = '2020-11-07'
+  and d_date <= to_date(current_timestamp())
+  and due_bill_no = '1120092723422560990728'
+order by due_bill_no,d_date
+-- limit 10
+;
+
+
+
+invalidate metadata ods_new_s.his_loan_info_repaired;
+invalidate metadata ods_new_s_cps.his_loan_info_repaired;
+
+select *
+from ods_new_s_cps.his_loan_info_repaired
+order by due_bill_no,s_d_date;
+
+
+invalidate metadata ods_new_s.his_repay_schedule_repaired;
+invalidate metadata ods_new_s_cps.his_repay_schedule_repaired;
+
+select * from ods_new_s.repay_schedule where due_bill_no in (
+  '1120092723422560990728',
+  '1120092723422797250119',
+  '1120092723453313022420',
+  '1120092817441559676623',
+  '1120092817551134622805',
+  '1120092817554131582728',
+  '1120092817555085746842',
+  '1120092817562733234537',
+  '1120092817563286747464',
+  '1120092817563702491901',
+  '1120092817563932312710',
+  '1120092817563997396805',
+  '1120092817564642378868',
+  '1120092817564833889781',
+  '1120092817565052008950',
+  '1120092817565093054712',
+  '1120092817565489467385',
+  '1120092817570575464515',
+  '1120092817572610804651',
+  '1120092817573131267250',
+  '1120092817573477470062',
+  '1120092817574728307409',
+  '1120092817575025263964',
+  '1120092817575423730805',
+  '1120092819541417785473',
+  '1120092820432664713870',
+  '1120092820432780412346',
+  '1120092820440659205461',
+  '1120092820441218899239',
+  '1120092820442519655259',
+  '1120092820442580845555',
+  '1120092820443853238346',
+  '1120092820450878156735',
+  '1120092820452154786683',
+  '1120092820452394322432',
+  '1120092820452408821897',
+  '1120092820454393316234',
+  '1120092820462048037296',
+  '1120092820470470051946',
+  '1120092820470590970106',
+  '1120092820470952608142',
+  '1120092820472696751346',
+  '1120092820473497111652',
+  '1120092820473532084274',
+  '1120092820475781063574',
+  '1120092820480325378082',
+  '1120092820481769497171',
+  '1120092820481811278667',
+  '1120092820482379051481',
+  '1120092820483268209799',
+  '1120092820484977763316',
+  '1120092820493008722316',
+  '1120092820500977550652',
+  '1120092820501396434210',
+  '1120092820502193562104',
+  '1120092820505140815390',
+  '1120092820510279969428',
+  '1120092820512353471406',
+  '1120092820514830603406',
+  '1120092820522455468571',
+  '1120092820523353178489',
+  '1120092820524443397603',
+  '1120092820524874871243',
+  '1120092820531957939883'
+)
+order by due_bill_no,loan_term,s_d_date;
+
+select
+  -- due_bill_no,
+  -- count(due_bill_no) as cnt
+  *
+from ods_new_s_cps.repay_schedule
+where 1 > 0
+  -- and '2020-09-28' between s_d_date and date_sub(e_d_date,1)
+  and due_bill_no = '1120092723422560990728'
+-- group by due_bill_no
+order by due_bill_no,loan_term,s_d_date
+-- order by due_bill_no
+;
+
+
+invalidate metadata ods_new_s.repay_schedule;
+invalidate metadata ods_new_s_cps.repay_schedule;
+
+
+
 
