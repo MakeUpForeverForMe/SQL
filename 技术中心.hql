@@ -11757,3 +11757,14 @@ invalidate metadata ods_new_s_cps.repay_schedule;
 
 
 
+select * from dm_eagle.eagle_repayment_record_day
+where due_bill_no = '1120110713133705734295'
+;
+
+
+
+select distinct
+  customer_type
+from stage.t_02_borrowerinfo
+;
+
