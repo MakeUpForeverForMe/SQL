@@ -11236,7 +11236,7 @@ select
   e_d_date
 from ods_new_s_cps.loan_info
 where 1 > 0
-  and due_bill_no = '1120092817564833889781'
+  and due_bill_no = '1120092817551134622805'
 order by due_bill_no,s_d_date
 ;
 
@@ -11768,3 +11768,15 @@ select distinct
 from stage.t_02_borrowerinfo
 ;
 
+
+select * from default.t_idcard_prv_city_county limit 10;
+
+
+select * from ods.ecas_order_asset where due_bill_no = '1120092817551134622805' and d_date <= to_date(current_timestamp()) order by d_date;
+
+
+
+invalidate metadata ods_new_s_cps.order_info;
+select * from ods_new_s_cps.order_info where due_bill_no = '1120092817551134622805';
+
+invalidate metadata default.idno_city_only;
