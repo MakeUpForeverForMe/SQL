@@ -673,7 +673,8 @@ dd_credit_apply as (
     get_json_object(original_msg,'$.creditInfo.endDate')              as enddate,
     get_json_object(original_msg,'$.creditInfo.lockDownEndTime')      as lockdownendtime
   from (
-    -- 必须使用 regexp_replace ，因为源数据中有 '\' 。
+    -- 必须使用 regexp_replace
+    因为源数据中有 '\' 。
     -- hive
     -- select
     --   org,deal_date,create_time,update_time,
@@ -1321,7 +1322,8 @@ select
   schedule_status,
   grace_date,
   flag,
-  -- '${VAR:deal_date}' as d_date，
+  -- '${VAR:deal_date}' as d_date
+
   'FJ' as p_type
 from (
   select
@@ -3291,9 +3293,23 @@ select
   curr_term as loan_term,                     -- '当前期数'
   repay_term as loan_term_repaid,              -- '已还期数'
   remain_term as loan_term_remain,              -- '剩余期数'
-  loan_type as loan_type,                     -- '分期类型（R：消费转分期，C：现金分期，B：账单分期，P：POS分期，M：大额分期（专项分期），MCAT：随借随还，MCEP：等额本金，MCEI：等额本息）'
-  loan_status as loan_status,                   -- '分期状态（N：正常，O：逾期，F：已还清）'
-  if(loan_settle_reason terminal_reason_cd) as paid_out_type,                 -- '结清类型（D：代偿结清，H：回购结清，T：退货（车）结清，P：提前结清，C：强制结清，F：正常到期结清）'
+  loan_type as loan_type,                     -- '分期类型（R：消费转分期
+  C：现金分期
+  B：账单分期
+  P：POS分期
+  M：大额分期（专项分期）
+  MCAT：随借随还
+  MCEP：等额本金
+  MCEI：等额本息）'
+  loan_status as loan_status,                   -- '分期状态（N：正常
+  O：逾期
+  F：已还清）'
+  if(loan_settle_reason terminal_reason_cd) as paid_out_type,                 -- '结清类型（D：代偿结清
+  H：回购结清
+  T：退货（车）结清
+  P：提前结清
+  C：强制结清
+  F：正常到期结清）'
   paid_out_date as paid_out_date,                 -- '还款日期'
   overdue_date as overdue_date,                  -- '逾期起始日期'
   overdue_days as overdue_days,                  -- '逾期天数'
@@ -8150,9 +8166,12 @@ select
   product_id
 from ods_new_s.repay_schedule
 where 1 > 0
-  -- and due_bill_no = '1120061019095085122902' -- 6期，全部结清 快照日：2020-08-10 应还日：2020-08-10
-  and due_bill_no = '1120062009364346847397' -- 2期，都逾期 快照日：2020-08-10 应还日：2020-07-05
-  -- and due_bill_no = '1120061421344483293354' -- 9期，第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
+  -- and due_bill_no = '1120061019095085122902' -- 6期
+  全部结清 快照日：2020-08-10 应还日：2020-08-10
+  and due_bill_no = '1120062009364346847397' -- 2期
+  都逾期 快照日：2020-08-10 应还日：2020-07-05
+  -- and due_bill_no = '1120061421344483293354' -- 9期
+  第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
   and s_d_date <= '2020-08-12' and '2020-08-12' < e_d_date
   and should_repay_date <= '2020-08-12'
 order by loan_term,should_repay_date
@@ -8212,9 +8231,12 @@ from ods.ecas_loan_asset
 where 1 > 0
   -- and overdue_days > 0
   and d_date != 'bak'
-  -- and due_bill_no = '1120061019095085122902' -- 6期，当期全部结清 快照日：2020-08-10 应还日：2020-08-10
-  and due_bill_no = '1120062009364346847397' -- 2期，都逾期 快照日：2020-08-10 应还日：2020-07-05
-  -- and due_bill_no = '1120061421344483293354' -- 9期，第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
+  -- and due_bill_no = '1120061019095085122902' -- 6期
+  当期全部结清 快照日：2020-08-10 应还日：2020-08-10
+  and due_bill_no = '1120062009364346847397' -- 2期
+  都逾期 快照日：2020-08-10 应还日：2020-07-05
+  -- and due_bill_no = '1120061421344483293354' -- 9期
+  第一期逾期还了。第二期逾期未还 快照日：2020-08-10 应还日：2020-08-10
 order by due_bill_no,d_date
 ;
 
@@ -9026,7 +9048,8 @@ select
   -- d_date
 from ods.ecas_repay_schedule
 where 1 > 0
-  -- and paid_out_type is null and paid_out_date is not null -- 有值，可能为当期正常结清
+  -- and paid_out_type is null and paid_out_date is not null -- 有值
+  可能为当期正常结清
   -- and schedule_status = 'N'
   -- and paid_out_type is not null and paid_out_date is null -- 为空
   -- and d_date in ('2020-07-09','2020-07-10','2020-07-11')
@@ -9516,7 +9539,8 @@ where 1 > 0
   -- and due_bill_no in ('1120060420510423065836','1120060420501103686498')
   -- and should_repay_date = '2020-06-15'
   -- and due_bill_no = '1120060420501476130479'
-  -- and due_bill_no = '1120061019450546018968' -- 文件中的数据错误，
+  -- and due_bill_no = '1120061019450546018968' -- 文件中的数据错误
+
   and due_bill_no = '1120060711272979096947'
   -- and (should_repay_date is null or should_repay_date = '1')
 order by s_d_date,due_bill_no
@@ -11214,29 +11238,54 @@ ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-10
 ALTER TABLE ods_new_s.repay_detail DROP IF EXISTS PARTITION (biz_date = '2020-11-05',product_id = '002006');
 
 
+-- invalidate metadata eagle.loan_info;
+select
+  product_id,
+  due_bill_no,
+  loan_active_date as active_date,
+  -- loan_init_principal as init_principal,
+  loan_init_term,
+  loan_term,
+  loan_term_repaid as repaid_term,
+  paid_principal,
+  remain_principal,
+  loan_status as status,
+  loan_status_cn as status_cn,
+  overdue_days,
+  overdue_principal,
+  s_d_date,
+  e_d_date
+from
+ods_new_s.loan_info
+-- eagle.loan_info
+where 1 > 0
+  and due_bill_no = '1120061813124373161007'
+order by due_bill_no,s_d_date
+;
 
 
 
-invalidate metadata ods_new_s_cps.loan_info;
+invalidate metadata ods_new_s.loan_info;
 select
   -- *
   product_id,
   due_bill_no,
   loan_active_date as active_date,
-  loan_init_principal,
+  loan_init_principal as init_principal,
   loan_init_term,
   loan_term,
-  loan_term_repaid,
+  loan_term_repaid as repaid_term,
   paid_principal,
   remain_principal,
-  loan_status,
-  loan_status_cn,
+  loan_status as status,
+  loan_status_cn as status_cn,
+  overdue_days,
   overdue_principal,
   s_d_date,
   e_d_date
-from ods_new_s_cps.loan_info
+from ods_new_s.loan_info
 where 1 > 0
-  and due_bill_no = '1120092817551134622805'
+  and due_bill_no = '1120061813124373161007'
 order by due_bill_no,s_d_date
 ;
 
@@ -11780,3 +11829,15 @@ invalidate metadata ods_new_s_cps.order_info;
 select * from ods_new_s_cps.order_info where due_bill_no = '1120092817551134622805';
 
 invalidate metadata default.idno_city_only;
+
+
+
+select distinct
+  loan_usage
+from ods_new_s.order_info
+;
+
+
+
+
+
