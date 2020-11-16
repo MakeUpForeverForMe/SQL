@@ -11839,5 +11839,19 @@ from ods_new_s.order_info
 
 
 
+select *
+from ods_new_s.cust_loan_mapping
+where 1 > 0
+  and cust_id = '_a_000bfda216c5fd825ac4323251530a38b0978b7bf82647213fb9be6ca8e09dea_d_90f14c948fb6f95dc843ec1a23613f5a494a5ca3e0e9a7e0f4a4cc7330de9897'
+;
 
+
+
+
+select *
+from ods_new_s.customer_info
+where 1 > 0
+  and product_id = 'DIDI201908161538'
+  and cust_id = '10000_a_0017581b066446983c0fc24cdec6ab11a738af8e48e1950e9dc7d7de1c0e1399_d_f96aab125b27358bc44dcb484ffcf921fec9cf0cb453dac6775e0011f4fe5dea'
+;
 

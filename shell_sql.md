@@ -1742,10 +1742,10 @@ CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'           US
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
-DESC FUNCTION EXTENDED age_idno;
+DESC FUNCTION EXTENDED is_empty;
 
 SHOW FUNCTIONS LIKE '*map*';
-DESC FUNCTION EXTENDED str_to_map;
+DESC FUNCTION EXTENDED map_keys;
 ```
 
 
