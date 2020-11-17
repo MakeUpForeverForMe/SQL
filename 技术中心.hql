@@ -11855,3 +11855,14 @@ where 1 > 0
   and cust_id = '10000_a_0017581b066446983c0fc24cdec6ab11a738af8e48e1950e9dc7d7de1c0e1399_d_f96aab125b27358bc44dcb484ffcf921fec9cf0cb453dac6775e0011f4fe5dea'
 ;
 
+
+
+
+
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+DROP FUNCTION IF EXISTS map_from_str;
+CREATE FUNCTION map_from_str AS 'com.weshare.udf.AnalysisStringToJson' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+
+reload function; -- 多个 HiveServer 之间，需要同步元数据信息
+
