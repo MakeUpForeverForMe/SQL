@@ -1313,6 +1313,12 @@ set spark.sql.autoBroadcastJoinThreshold=1073741824;                            
 set spark.locality.wait=0s;
 set hive.groupby.skewindata=true;
 
+-- 执行sql前，加上如下参数，禁用hive矢量执行：
+set hive.vectorized.execution.enabled=false;
+set hive.vectorized.execution.reduce.enabled=false;
+set hive.vectorized.execution.reduce.groupby.enabled=false;
+
+
 -- Hive 性能调优
 set hive.optimize.reducededuplication.min.reducer=4;
 set hive.optimize.reducededuplication=true;
@@ -1736,7 +1742,8 @@ CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'             
 CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'               USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'                   USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'                   USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+-- CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmptyGenericUDF'              USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
@@ -1744,7 +1751,7 @@ CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'             
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
-DESC FUNCTION EXTENDED json_map;
+DESC FUNCTION EXTENDED is_empty;
 
 SHOW FUNCTIONS LIKE '*day*';
 DESC FUNCTION EXTENDED day;

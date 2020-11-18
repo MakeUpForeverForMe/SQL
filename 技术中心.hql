@@ -11863,6 +11863,15 @@ ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
 DROP FUNCTION IF EXISTS map_from_str;
 CREATE FUNCTION map_from_str AS 'com.weshare.udf.AnalysisStringToJson' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+DROP FUNCTION IF EXISTS is_empty;
+-- CREATE FUNCTION is_empty AS 'com.weshare.udf.IsEmptyGenericUDF' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty AS 'com.weshare.udf.IsEmpty' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
+
+
+
+
+
 
