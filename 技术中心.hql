@@ -11880,7 +11880,7 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 
 select distinct keys
-from ods.t_asset_pay_flow
+from ods.t_asset_check
 lateral view explode(map_keys(map_from_str(extra_info))) key as keys
 where 1 > 0
 order by keys
@@ -11905,4 +11905,72 @@ where 1 > 0
   -- and map_from_str(extra_info)['交易时间'] is null
 -- order by extra_info
 -- limit 10
+;
+
+
+
+
+
+select
+  remain_principal,
+  loan_principal,
+  loan_principal_b
+from (
+  select
+    sum(remain_principal)    as remain_principal,
+    sum(loan_init_principal) as loan_principal
+  from ods_new_s.loan_info
+  where 1 > 0
+    -- and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+    and product_id = '001802'
+    and '2020-11-21' between s_d_date and date_sub(e_d_date,1)
+    -- and loan_active_date like '2020-10%'
+    and loan_active_date = '2020-10-01'
+    -- and ceil(overdue_days / 30) = 1
+) as loan_info
+join (
+  select
+    sum(loan_init_principal) as loan_principal_b
+  from ods_new_s.loan_lending
+  where 1 > 0
+    and product_id = '001802'
+    -- and loan_active_date like '2020-10%'
+    and loan_active_date = '2020-10-01'
+) as loan_principal
+;
+
+
+select
+  sum(loan_principal) as loan_principal
+from dw_new.dw_loan_base_stat_loan_num_day
+where 1 > 0
+  and product_id = '001802'
+  and biz_date like '2020-10%'
+;
+
+select
+  loan_terms                      as loan_terms_loan_num,
+  date_format(biz_date,'yyyy-MM') as loan_month_loan_num,
+  sum(loan_principal)             as loan_principal,
+  biz_conf.product_id_vt          as product_id_loan_num
+from dw_new.dw_loan_base_stat_loan_num_day as loan_num
+join dim_new.biz_conf
+on  loan_num.product_id = biz_conf.product_id
+and loan_num.biz_date <= '2020-11-21'
+and biz_conf.product_id_vt is not null
+group by loan_terms,date_format(biz_date,'yyyy-MM'),biz_conf.product_id_vt
+;
+
+
+
+select
+  due_bill_no,
+  count(due_bill_no) as cnt,
+  count(distinct due_bill_no) as cnt_b
+from ods_new_s.loan_lending
+where 1 > 0
+  and product_id = '001802'
+  and loan_active_date like '2020-10%'
+group by due_bill_no
+having count(due_bill_no) > 1
 ;
