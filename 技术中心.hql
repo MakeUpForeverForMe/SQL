@@ -11859,57 +11859,6 @@ where 1 > 0
 
 
 
-ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
-DROP FUNCTION IF EXISTS map_from_str;
-CREATE FUNCTION map_from_str AS 'com.weshare.udf.AnalysisStringToJson' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-
-
-ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
-DROP FUNCTION IF EXISTS is_empty;
-CREATE FUNCTION is_empty AS 'com.weshare.udf.IsEmpty' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-
-
-ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
-DROP FUNCTION IF EXISTS datefmt;
-CREATE FUNCTION datefmt AS 'com.weshare.udf.DateFormat' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-
-reload function; -- 多个 HiveServer 之间，需要同步元数据信息
-
-
-
-
-
-select distinct keys
-from ods.t_asset_check
-lateral view explode(map_keys(map_from_str(extra_info))) key as keys
-where 1 > 0
-order by keys
--- limit 10
-;
-
-
-
-select distinct
-  -- map_from_str(extra_info)['交易时间'] as extra_info
-
-  datefmt(map_from_str(extra_info)['交易时间'],'','yyyy-MM-dd') as extra_info
-  datefmt(map_from_str(extra_info)['交易时间'],'','yyyy-MM-dd') as extra_info
-
-  -- case
-  -- when is_empty(map_from_str(extra_info)['确认还款日期']) is null then null
-  -- when length(map_from_str(extra_info)['确认还款日期']) = 19 then to_date(map_from_str(extra_info)['确认还款日期'])
-  -- else datefmt(map_from_str(extra_info)['确认还款日期'],'','yyyy-MM-dd') end as business_date,
-  -- map_from_str(extra_info) as extra_info
-from ods.t_asset_pay_flow
-where 1 > 0
-  -- and map_from_str(extra_info)['交易时间'] is null
--- order by extra_info
--- limit 10
-;
-
-
-
-
 
 select
   remain_principal,
@@ -11974,3 +11923,74 @@ where 1 > 0
 group by due_bill_no
 having count(due_bill_no) > 1
 ;
+
+
+
+
+
+
+
+
+
+
+
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+DROP FUNCTION IF EXISTS map_from_str;
+CREATE FUNCTION map_from_str AS 'com.weshare.udf.AnalysisStringToJson' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+DROP FUNCTION IF EXISTS is_empty;
+CREATE FUNCTION is_empty AS 'com.weshare.udf.IsEmpty' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+
+ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+DROP FUNCTION IF EXISTS datefmt;
+CREATE FUNCTION datefmt AS 'com.weshare.udf.DateFormat' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+
+reload function; -- 多个 HiveServer 之间，需要同步元数据信息
+
+
+
+
+
+select distinct keys
+from ods.t_asset_check
+lateral view explode(map_keys(map_from_str(extra_info))) key as keys
+where 1 > 0
+order by keys
+-- limit 10
+;
+
+
+
+select distinct
+  -- map_from_str(extra_info)['交易时间'] as extra_info
+
+  datefmt(map_from_str(extra_info)['交易时间'],'','yyyy-MM-dd') as extra_info
+  datefmt(map_from_str(extra_info)['交易时间'],'','yyyy-MM-dd') as extra_info
+
+  -- case
+  -- when is_empty(map_from_str(extra_info)['确认还款日期']) is null then null
+  -- when length(map_from_str(extra_info)['确认还款日期']) = 19 then to_date(map_from_str(extra_info)['确认还款日期'])
+  -- else datefmt(map_from_str(extra_info)['确认还款日期'],'','yyyy-MM-dd') end as business_date,
+  -- map_from_str(extra_info) as extra_info
+from ods.t_asset_pay_flow
+where 1 > 0
+  -- and map_from_str(extra_info)['交易时间'] is null
+-- order by extra_info
+-- limit 10
+;
+
+
+
+select lpad(floor(rand() * (power(10,6) - 1)),6,0);
+
+select lpad(rand(),10,0);
+
+select rand() * (power(10,6) - 1);
+
+select power(10,6) - 1;
+
+
+

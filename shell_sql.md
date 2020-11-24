@@ -1753,8 +1753,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED is_empty;
 
-SHOW FUNCTIONS LIKE '*map*';
-DESC FUNCTION EXTENDED day;
+SHOW FUNCTIONS LIKE '*array*';
+DESC FUNCTION EXTENDED array;
 ```
 
 
