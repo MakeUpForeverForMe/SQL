@@ -1200,7 +1200,11 @@ select trunc('2020-12-31','MM'); -- 2020-12-01
 
 
 
-
+DROP VIEW [IF EXISTS] view_name;
+CREATE VIEW [IF NOT EXISTS] [db_name.]view_name [(column_name [COMMENT column_comment], ...) ]
+[COMMENT view_comment]
+[TBLPROPERTIES (property_name = property_value, ...)]
+AS SELECT ...;
 
 CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (Note: TEMPORARY available in Hive 0.14.0 and later)
   [(col_name data_type [column_constraint_specification] [COMMENT col_comment], ... [constraint_specification])]
@@ -1313,7 +1317,7 @@ set spark.sql.autoBroadcastJoinThreshold=1073741824;                            
 set spark.locality.wait=0s;
 set hive.groupby.skewindata=true;
 
--- 执行sql前，加上如下参数，禁用hive矢量执行：
+-- 执行sql前，加上如下参数，禁用hive矢量执行：底层计算时转换数据格式（不想要）
 set hive.vectorized.execution.enabled=false;
 set hive.vectorized.execution.reduce.enabled=false;
 set hive.vectorized.execution.reduce.groupby.enabled=false;
@@ -1753,8 +1757,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED is_empty;
 
-SHOW FUNCTIONS LIKE '*array*';
-DESC FUNCTION EXTENDED array;
+SHOW FUNCTIONS LIKE '*month*';
+DESC FUNCTION EXTENDED month;
 ```
 
 

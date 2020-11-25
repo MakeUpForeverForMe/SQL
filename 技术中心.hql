@@ -11955,7 +11955,7 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 
 select distinct keys
-from ods.t_asset_check
+from ods.t_loan_contract_info
 lateral view explode(map_keys(map_from_str(extra_info))) key as keys
 where 1 > 0
 order by keys
@@ -11991,6 +11991,31 @@ select lpad(rand(),10,0);
 select rand() * (power(10,6) - 1);
 
 select power(10,6) - 1;
+
+
+
+
+
+
+invalidate metadata ods_new_s.t_07_actualrepayinfo;
+select * from ods_new_s.t_07_actualrepayinfo
+where serial_number = '1120072321595132230692'
+;
+
+
+
+select distinct
+due_bill_no,
+interest_rate,
+penalty_rate,
+product_code
+from ods.ecas_loan_asset
+where due_bill_no = '1120062917255799954701'
+;
+
+
+
+
 
 
 
