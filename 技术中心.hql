@@ -11997,25 +11997,46 @@ select power(10,6) - 1;
 
 
 
-invalidate metadata ods_new_s.t_07_actualrepayinfo;
-select * from ods_new_s.t_07_actualrepayinfo
-where serial_number = '1120072321595132230692'
+select
+  product_id,
+  due_bill_no,
+  loan_active_date    as active_date,
+  loan_init_principal as loan_prin,
+  loan_init_term      as terms,
+  loan_term           as term,
+  loan_status         as status,
+  paid_principal      as paid_prin,
+  remain_principal    as remain_prin,
+  overdue_principal   as overdue_prin,
+  overdue_date_first  as overdue_first,
+  overdue_date_start  as overdue_start,
+  overdue_days,
+  should_repay_date   as should_date,
+  s_d_date,
+  e_d_date
+from ods_new_s.loan_info
+where due_bill_no = '1120063020271434566256'
+order by s_d_date;
+
+
+
+
+
+select
+  due_bill_no,
+  map_values.key,
+  map_values.value
+from ods_new_s.risk_control,
+     ods_new_s.risk_control.map_value as map_values
+limit 10
 ;
+
 
 
 
 select distinct
-due_bill_no,
-interest_rate,
-penalty_rate,
-product_code
-from ods.ecas_loan_asset
-where due_bill_no = '1120062917255799954701'
+  product_id,
+  paid_out_type
+from ods_new_s.loan_info
+order by product_id,paid_out_type
 ;
-
-
-
-
-
-
-
