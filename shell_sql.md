@@ -37,19 +37,20 @@
 
 ## 1.2 数据库配置
 ### 1.2.1 生产
-| 系统 |      ip     |   username  |     password     |   备注  |
-|------|-------------|-------------|------------------|---------|
-| 星连 | 10.80.16.5  | root        | Xfx2018@)!*      |         |
-| 星云 | 10.80.16.21 | root        | EXYeaGVQZpsr@CR& |         |
-| 风控 | 10.80.16.42 | root        | 8x3V1lrbkS       | 旧      |
-| 风控 | 10.80.16.65 | selectuser  | Risk_Reader001   | 新      |
-| 核心 | 10.80.16.9  | root        | !mAkJTMI%lH5ONDw | 旧      |
-| 核心 | 10.80.16.10 | root        | LZWkT2lxze6x%1V( | 新      |
-| 核心 | 10.80.16.25 | root        | LZWkT2lxze6x%1V( | 回放    |
-| 催收 | 10.80.16.87 | root        | wH7Emvsrg&V5     |         |
-| H5   | 10.80.16.73 | UeserReader | Ws2019!@         |         |
-| CM5  | 10.80.16.3  | root        | Xfx2018@)!*      |         |
-| CM6  | 10.80.16.75 | bgp_admin   | U3$AHfp*a8M&     | MariaDB |
+| 系统 |      ip     |   username   |     password     |   备注  |
+|------|-------------|--------------|------------------|---------|
+| 星连 | 10.80.16.5  | root         | Xfx2018@)!*      |         |
+| 星云 | 10.80.16.21 | root         | EXYeaGVQZpsr@CR& |         |
+| 风控 | 10.80.16.42 | root         | 8x3V1lrbkS       | 旧      |
+| 风控 | 10.80.16.65 | selectuser   | Risk_Reader001   | 新      |
+| 核心 | 10.80.16.9  | root         | !mAkJTMI%lH5ONDw | 旧      |
+| 核心 | 10.80.16.10 | root         | LZWkT2lxze6x%1V( | 新      |
+| 核心 | 10.80.16.25 | root         | LZWkT2lxze6x%1V( | 回放    |
+| 催收 | 10.80.16.87 | root         | wH7Emvsrg&V5     |         |
+| 催收 | 10.80.16.87 | risk_control | uPOp(t?XaoHq     |         |
+| H5   | 10.80.16.73 | UeserReader  | Ws2019!@         |         |
+| CM5  | 10.80.16.3  | root         | Xfx2018@)!*      |         |
+| CM6  | 10.80.16.75 | bgp_admin    | U3$AHfp*a8M&     | MariaDB |
 
 ### 1.2.2 测试
 | 系统 |      ip     |   username  |     password     |   备注  |

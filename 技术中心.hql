@@ -12040,3 +12040,52 @@ select distinct
 from ods_new_s.loan_info
 order by product_id,paid_out_type
 ;
+
+
+
+
+
+select distinct
+  product_code
+from ods.ecas_loan
+order by product_code
+;
+
+
+select distinct
+  loan_code as product_code
+from ods.ccs_loan
+order by product_code
+;
+
+
+select distinct
+  project_id
+from dm_eagle_cps.eagle_should_repay_repaid_amount_day
+;
+
+
+select distinct
+  product_id
+from dw_new_cps.dw_loan_base_stat_repay_detail_day
+where 1 > 0
+  and product_id like '002%'
+;
+
+select distinct
+  product_id
+from dw_new_cps.dw_loan_base_stat_should_repay_day
+where 1 > 0
+  and product_id like '002%'
+;
+
+
+select distinct
+  product_id
+from ods_new_s_cps.repay_detail
+where 1 > 0
+  and product_id like '002%'
+;
+
+
+
