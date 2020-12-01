@@ -12089,3 +12089,27 @@ where 1 > 0
 
 
 
+
+select distinct
+  biz_date
+from ods_new_s.loan_lending
+where 1 > 0
+  and biz_date like '2020-10%'
+  and product_id = '001802'
+order by biz_date
+;
+
+
+select distinct
+  active_date as biz_date
+from ods.ecas_loan
+where 1 > 0
+  and active_date like '2020-10%'
+  and product_code = '001802'
+  and d_date = '2020-11-29'
+order by biz_date
+;
+
+
+
+

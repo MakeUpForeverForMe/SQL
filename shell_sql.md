@@ -49,7 +49,6 @@
 | 催收 | 10.80.16.87 | root         | wH7Emvsrg&V5     |         |
 | 催收 | 10.80.16.87 | risk_control | uPOp(t?XaoHq     |         |
 | H5   | 10.80.16.73 | UeserReader  | Ws2019!@         |         |
-| CM5  | 10.80.16.3  | root         | Xfx2018@)!*      |         |
 | CM6  | 10.80.16.75 | bgp_admin    | U3$AHfp*a8M&     | MariaDB |
 
 ### 1.2.2 测试
@@ -58,12 +57,9 @@
 | 星连 | 10.83.16.10 | root        | Xfxcj2018@)!*    |         |
 | 星云 | 10.83.16.15 | root        | Ws2018!07@       |         |
 | 风控 | 10.83.16.9  | root        | Xfx2018@)!*      |         |
-| 核心 | 10.83.16.16 | root        | Zn9nvRr9gw1pugP  | 旧1     |
-| 核心 | 10.83.16.42 | root        | 7H*qb0etoNEfvAtM | 旧2     |
 | 催收 | 10.83.16.23 | root        | Ws2018!07@       | 旧      |
 | 核心 | 10.83.16.43 | root        | zU!ykpx3EG)$$1e6 | 新$$    |
 | H5   | 10.83.16.33 | UeserReader | Ws2019!@         |         |
-| CM5  | 10.83.96.10 | root        | !W$WdwY7U%pe)YkQ |         |
 | CM6  | 10.83.16.32 | bgp_admin   | 3Mt%JjE#WJIt     | MariaDB |
 
 ### 1.2.3 UAT
@@ -1714,21 +1710,21 @@ TBLPROPERTIES (
 
 
 
-### 4.2.2 Hive SQL 语句
+### 4.2.2 Hive SQL 函数
 ```sql
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-ADD JAR hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar;
-ADD JAR hdfs://node233:8020/user/hive/auxlib/hive-jdbc-handler-1.2.1.jar;
-ADD JAR hdfs://node233:8020/user/hive/auxlib/mysql-connector-java.jar;
-ADD JAR hdfs://node233:8020/user/hive/auxlib/hive-jdbc.jar;
+ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+ADD JAR hdfs:///user/hive/auxlib/hive-jdbc-handler-1.2.1.jar;
+ADD JAR hdfs:///user/hive/auxlib/mysql-connector-java.jar;
+ADD JAR hdfs:///user/hive/auxlib/hive-jdbc.jar;
 
 DROP FUNCTION IF EXISTS encrypt_aes;
 DROP FUNCTION IF EXISTS decrypt_aes;
 DROP FUNCTION IF EXISTS json_array_to_array;
 DROP FUNCTION IF EXISTS map_from_str;
-DROP FUNCTION IF EXISTS json_map;
+-- DROP FUNCTION IF EXISTS json_map;
 DROP FUNCTION IF EXISTS datefmt;
 DROP FUNCTION IF EXISTS age_birth;
 DROP FUNCTION IF EXISTS age_idno;
@@ -1738,28 +1734,28 @@ DROP FUNCTION IF EXISTS sha256;
 DROP FUNCTION IF EXISTS date_max;
 DROP FUNCTION IF EXISTS date_min;
 
-CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'              USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION map_from_str        AS 'com.weshare.udf.AnalysisStringToJson'           USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION json_map            AS 'com.weshare.udf.AnalysisStringToJsonGenericUDF' USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'               USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'                   USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'                   USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
--- CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmptyGenericUDF'              USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR 'hdfs://node233:8020/user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'              USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION map_from_str        AS 'com.weshare.udf.AnalysisStringToJson'           USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+-- CREATE FUNCTION json_map            AS 'com.weshare.udf.AnalysisStringToJsonGenericUDF' USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'               USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'                   USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'                   USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+-- CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmptyGenericUDF'              USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
 
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
-DESC FUNCTION EXTENDED is_empty;
+DESC FUNCTION EXTENDED sha256;
 
 SHOW FUNCTIONS LIKE '*month*';
-DESC FUNCTION EXTENDED month;
+DESC FUNCTION EXTENDED nvl;
 ```
 
 
