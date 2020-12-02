@@ -2,37 +2,31 @@
 # 1、公司级信息
 ## 1.1 服务器
 ### 1.1.1 生产
-|      系统     |  服务 |                    ip或网址                    |  用户 |     密码     |    备注   |
-|---------------|-------|------------------------------------------------|-------|--------------|-----------|
-| linux         | ftp   | 10.90.0.5                                      |       |              | FTP       |
-| node47        | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82 | 大数据 新 |
-| node148       | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82 | 大数据 新 |
-| node172       | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82 | 大数据 新 |
-| bsprd-hadoop1 | linux | 10.80.0.20                                     | root  | Xfx2018@)!*  | 大数据 旧 |
-| bsprd-hadoop2 | linux | 10.80.0.23                                     | root  | Xfx2018@)!*  | 大数据 旧 |
-| bsprd-hadoop3 | linux | 10.80.0.29                                     | root  | Xfx2018@)!*  | 大数据 旧 |
-| cm6           | web   | http://10.80.1.47:7180/cmf/home                | admin | admin        |           |
-| cm5           | web   | http://10.80.0.20:7180/cmf/home                | admin | admin        |           |
-| hue6          | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |           |
-| hue5          | web   | http://10.80.0.20:8889/hue/editor/?type=impala | admin | admin        |           |
-| streamsets    | web   | http://10.80.1.172:18630/                      | admin | admin        |           |
+|    系统    |  服务 |                    ip或网址                    |  用户 |     密码     | 备注 |
+|------------|-------|------------------------------------------------|-------|--------------|------|
+| linux      | ftp   | 10.90.0.5                                      |       |              | FTP  |
+| node47     | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82 |      |
+| node148    | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82 |      |
+| node172    | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82 |      |
+| node128    | linux | 10.80.1.128                                    | root  | CQBP53G(Lv82 |      |
+| node20     | linux | 10.80.0.20                                     | root  | CQBP53G(Lv82 |      |
+| node23     | linux | 10.80.0.23                                     | root  | CQBP53G(Lv82 |      |
+| node29     | linux | 10.80.0.29                                     | root  | CQBP53G(Lv82 |      |
+| node233    | linux | 10.80.0.233                                    | root  | CQBP53G(Lv82 |      |
+| cm6        | web   | http://10.80.1.47:7180/cmf/home                | admin | admin        |      |
+| hue6       | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |      |
 
 ### 1.1.2 测试
-|     系统    |  作用 |                    ip或网址                     |  用户  |       密码       |    备注   |
-|-------------|-------|-------------------------------------------------|--------|------------------|-----------|
-| linux       | ftp   | 10.83.0.32                                      | it-dev | 058417gv         |           |
-| node47      | linux | 10.83.0.47                                      | root   | (Ob!)Y#G3Anf     | 大数据 新 |
-| node123     | linux | 10.83.0.123                                     | root   | (Ob!)Y#G3Anf     | 大数据 新 |
-| node129     | linux | 10.83.0.129                                     | root   | (Ob!)Y#G3Anf     | 大数据 新 |
-| bssit-cdh-1 | linux | 10.83.80.5                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
-| bssit-cdh-2 | linux | 10.83.80.7                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
-| bssit-cdh-3 | linux | 10.83.80.14                                     | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
-| bssit-cdh-4 | linux | 10.83.80.2                                      | root   | !W$WdwY7U%pe)YkQ | 大数据 旧 |
-| cm6         | web   | http://10.83.0.47:7180/cmf/home                 | admin  | admin            |           |
-| cm5         | web   | http://10.83.80.5:7180/cmf/home                 | admin  | admin            |           |
-| hue6        | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin  | admin            |           |
-| hue5        | web   | http://10.83.80.5:8889/hue/editor/?type=impala  | admin  | admin            |           |
-| streamsets  | web   | http://10.83.0.129:18630                        | admin  | admin            |           |
+|   系统  |  作用 |                    ip或网址                     |  用户  |     密码     | 备注 |
+|---------|-------|-------------------------------------------------|--------|--------------|------|
+| linux   | ftp   | 10.83.0.32                                      | it-dev | 058417gv     | FTP  |
+| node5   | linux | 10.83.80.5                                      | root   | (Ob!)Y#G3Anf |      |
+| node7   | linux | 10.83.80.7                                      | root   | (Ob!)Y#G3Anf |      |
+| node47  | linux | 10.83.0.47                                      | root   | (Ob!)Y#G3Anf |      |
+| node123 | linux | 10.83.0.123                                     | root   | (Ob!)Y#G3Anf |      |
+| node129 | linux | 10.83.0.129                                     | root   | (Ob!)Y#G3Anf |      |
+| cm6     | web   | http://10.83.0.47:7180/cmf/home                 | admin  | admin        |      |
+| hue6    | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin  | admin        |      |
 
 
 ## 1.2 数据库配置
