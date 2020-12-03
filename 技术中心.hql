@@ -12082,9 +12082,9 @@ where 1 > 0
 
 select distinct
   product_id
-from ods_new_s_cps.repay_detail
+from ods_new_s.loan_info
 where 1 > 0
-  and product_id like '002%'
+  and product_id like '0018%'
 ;
 
 
@@ -12114,4 +12114,8 @@ order by biz_date
 
 
 
+ALTER TABLE ods_new_s.repay_schedule ADD IF NOT EXISTS PARTITION (is_settled='no',product_id='001801');
+ALTER TABLE ods_new_s.repay_schedule ADD IF NOT EXISTS PARTITION (is_settled='no',product_id='001802');
 
+
+invalidate metadata ods.ecas_repayment;

@@ -65,10 +65,12 @@
 
 
 ## 1.4 公司邮箱
-| 环境 |          邮箱IP         | 端口 |                  账户                  |       密码       |
-|------|-------------------------|------|----------------------------------------|------------------|
-| 生产 | https://10.80.0.133/owa |   25 | apb-report@service.weshareholdings.com | &kQ4TOWerGlfpUm7 |
-| 测试 | https://10.83.0.44/owa  |   25 | apb-report@weshareholdings.com.cn      | Ws2018!08@       |
+| 部门 | 环境 |          邮箱IP         | 端口 |                     账户                     |       密码       | 备注 |
+|------|------|-------------------------|------|----------------------------------------------|------------------|------|
+| 星源 | 生产 | https://10.80.0.133/owa |   25 | apb-report@service.weshareholdings.com       | &kQ4TOWerGlfpUm7 |      |
+| 星源 | 测试 | https://10.83.0.44/owa  |   25 | apb-report@weshareholdings.com.cn            | Ws2018!08@       |      |
+| 中台 | 生产 | https://10.80.0.133/owa |   25 | DataCenter-Alert@services.weshreholdings.com | 0Ph1pss@@nWkc!(7 |      |
+| 中台 | 测试 | https://10.83.0.44/owa  |   25 | DataCenter-Alert-sit@weshreholdings.com.cn   | Ws2018!07@       |      |
 
 
 
