@@ -17,16 +17,16 @@
 | hue6       | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |      |
 
 ### 1.1.2 测试
-|   系统  |  作用 |                    ip或网址                     |  用户  |     密码     | 备注 |
-|---------|-------|-------------------------------------------------|--------|--------------|------|
-| linux   | ftp   | 10.83.0.32                                      | it-dev | 058417gv     | FTP  |
-| node5   | linux | 10.83.80.5                                      | root   | (Ob!)Y#G3Anf |      |
-| node7   | linux | 10.83.80.7                                      | root   | (Ob!)Y#G3Anf |      |
-| node47  | linux | 10.83.0.47                                      | root   | (Ob!)Y#G3Anf |      |
-| node123 | linux | 10.83.0.123                                     | root   | (Ob!)Y#G3Anf |      |
-| node129 | linux | 10.83.0.129                                     | root   | (Ob!)Y#G3Anf |      |
-| cm6     | web   | http://10.83.0.47:7180/cmf/home                 | admin  | admin        |      |
-| hue6    | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin  | admin        |      |
+|   系统  |  作用 |                    ip或网址                     |  用户  |       密码       | 备注 |
+|---------|-------|-------------------------------------------------|--------|------------------|------|
+| linux   | ftp   | 10.83.0.32                                      | it-dev | 058417gv         | FTP  |
+| node5   | linux | 10.83.80.5                                      | root   | !W$WdwY7U%pe)YkQ |      |
+| node7   | linux | 10.83.80.7                                      | root   | !W$WdwY7U%pe)YkQ |      |
+| node47  | linux | 10.83.0.47                                      | root   | (Ob!)Y#G3Anf     |      |
+| node123 | linux | 10.83.0.123                                     | root   | (Ob!)Y#G3Anf     |      |
+| node129 | linux | 10.83.0.129                                     | root   | (Ob!)Y#G3Anf     |      |
+| cm6     | web   | http://10.83.0.47:7180/cmf/home                 | admin  | admin            |      |
+| hue6    | web   | http://10.83.0.123:8889/hue/editor/?type=impala | admin  | admin            |      |
 
 
 ## 1.2 数据库配置
@@ -1124,6 +1124,8 @@ ALTER TABLE test REPLACE COLUMNS (id int COMMENT 'id', name string COMMENT '名�
 ALTER TABLE test ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='29');
 -- 删除分区
 ALTER TABLE test DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
+-- 修复分区
+MSCK REPAIR TABLE table_name;
 
 
 -- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C

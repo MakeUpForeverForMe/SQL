@@ -12015,7 +12015,7 @@ select
   s_d_date,
   e_d_date
 from ods_new_s.loan_info
-where due_bill_no = '1120063020271434566256'
+where due_bill_no = '1120061019450546018968'
 order by s_d_date;
 
 
@@ -12119,3 +12119,20 @@ ALTER TABLE ods_new_s.repay_schedule ADD IF NOT EXISTS PARTITION (is_settled='no
 
 
 invalidate metadata ods.ecas_repayment;
+
+
+
+
+
+select
+  *
+from ods_new_s.repay_detail
+where 1 > 0
+  and due_bill_no = '1120061019450546018968'
+;
+
+
+
+
+
+
