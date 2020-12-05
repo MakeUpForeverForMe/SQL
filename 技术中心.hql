@@ -12122,8 +12122,6 @@ invalidate metadata ods.ecas_repayment;
 
 
 
-
-
 select
   *
 from ods_new_s.repay_detail

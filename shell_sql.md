@@ -1346,6 +1346,7 @@ set hive.optimize.ppd=true;
 
 
 
+set spark.dynamicAllocation.enabled=true;                                          -- 设置 启用 Executor 动态分配
 set hive.execution.engine=mr;                                                      -- 设置 Hive 执行引擎为 MapReduce
 set hive.execution.engine=spark;                                                   -- 设置 Hive 执行引擎为 Spark
 set mapreduce.job.queuename=root.default;                                          -- 设置 MapReduce 的 Yarn 对列
@@ -1802,7 +1803,7 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | 操作名称 |                    快捷键                     |                                              代码                                             |                                             结果                                            |
 |----------|-----------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | 插入图片 | Shift + Win + K                               | `<img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:10%;"/>` | <img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:20%;"/> |
-| 超链接   | Ctrl + Alt + V                                | `[百度](http://www.baidu.com)`                                                                | [百度](https://img-blog.csdnimg.cn/20200617115400965.jpg)                                   |
+| 超链接   | Ctrl + Alt + V                                | `[百度](http://www.baidu.com)`                                                                | [百度](http://www.baidu.com)                                                                |
 | 引用     | Ctrl + Alt + R 点击快捷键后，直接输入文字即可 | `[引用][引用]  [引用]:http://www.baidu.com`                                                   | [引用][引用]  [引用]:http://www.baidu.com                                                   |
 | 插入注释 | Alt + Shift + 6                               | `注释引用[^1]  [^1]: http://www.baidu.com`                                                    | 注释引用[^1]  [^1]: http://www.baidu.com                                                    |
 | 加粗文本 |                                               | `**加粗文本** __加粗文本__`                                                                   | **加粗文本** __加粗文本__                                                                   |
@@ -1918,4 +1919,4 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
 | update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
 | word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                           |
-| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                                                                |                           |
+| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）          
