@@ -12132,4 +12132,7 @@ where 1 > 0
 
 
 
-hd
+
+
+with base as (
+  select '1000000219' as due_b
