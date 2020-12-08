@@ -12135,4 +12135,105 @@ where 1 > 0
 
 
 with base as (
-  select '1000000219' as due_b
+  select '1000000219' as due_bill_no,1 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+  select '1000000219' as due_bill_no,3 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+  select '1000000219' as due_bill_no,4 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+  select '1000000219' as due_bill_no,5 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+  select '1000000219' as due_bill_no,6 as loan_term,'2020-01-01' as effective_date,'2020-01-01' as biz_date union all
+
+  select '1000000219' as due_bill_no,1 as loan_term,'2020-01-01' as effective_date,'2020-01-10' as biz_date union all
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-01-01' as effective_date,'2020-01-10' as biz_date union all
+  select '1000000219' as due_bill_no,3 as loan_term,'2020-01-01' as effective_date,'2020-01-20' as biz_date union all
+  select '1000000219' as due_bill_no,4 as loan_term,'2020-01-01' as effective_date,'2020-01-20' as biz_date union all
+  select '1000000219' as due_bill_no,5 as loan_term,'2020-01-01' as effective_date,'2020-01-30' as biz_date union all
+  select '1000000219' as due_bill_no,6 as loan_term,'2020-01-01' as effective_date,'2020-01-30' as biz_date union all
+
+  select '1000000219' as due_bill_no,1 as loan_term,'2020-02-01' as effective_date,'2020-02-01' as biz_date union all
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-02-01' as effective_date,'2020-02-01' as biz_date union all
+  select '1000000219' as due_bill_no,3 as loan_term,'2020-02-01' as effective_date,'2020-02-01' as biz_date union all
+  select '1000000219' as due_bill_no,4 as loan_term,'2020-02-01' as effective_date,'2020-02-01' as biz_date union all
+
+  select '1000000219' as due_bill_no,1 as loan_term,'2020-02-01' as effective_date,'2020-02-10' as biz_date union all
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-02-01' as effective_date,'2020-02-10' as biz_date union all
+  select '1000000219' as due_bill_no,3 as loan_term,'2020-02-01' as effective_date,'2020-02-10' as biz_date union all
+  select '1000000219' as due_bill_no,4 as loan_term,'2020-02-01' as effective_date,'2020-02-10' as biz_date union all
+
+  select '1000000219' as due_bill_no,1 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
+  select '1000000219' as due_bill_no,3 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
+  select '1000000219' as due_bill_no,4 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
+  select '1000000219' as due_bill_no,5 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
+  select '1000000219' as due_bill_no,6 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date
+)
+select
+  t2.due_bill_no,
+  t2.loan_term,
+  t2.effective_date,
+  t1.s_d_date,
+  t1.e_d_date
+from (
+  select
+    due_bill_no,
+    biz_date as s_d_date,
+    nvl(lead(biz_date) over(partition by due_bill_no order by biz_date),'3000-12-31') as e_d_date
+  from (select distinct due_bill_no,biz_date from base) as tmp
+) as t1
+join base as t2
+on  t1.due_bill_no    = t2.due_bill_no
+and t1.s_d_date       = t2.biz_date
+-- and t1.effective_date = t2.effective_date
+order by due_bill_no,loan_term,s_d_date,effective_date
+;
+
+
+
+
+select * from ods_new_s.loan_info where due_bill_no = '1120081714554090143221';
+select * from ods_new_s.repay_schedule where due_bill_no = '1120081714554090143221' order by loan_term,s_d_date;
+select * from dm_eagle.eagle_loan_info where due_bill_no = '1120081714554090143221' order by biz_date;
+
+
+
+invalidate metadata dm_eagle.assets_distribution;
+
+select * from dm_eagle.assets_distribution limit 1;
+
+MSCK REPAIR TABLE dm_eagle.assets_distribution;
+
+
+
+select
+  *
+from stage.t_05_repaymentplan_history
+where 1 > 0
+  and effective_date = '2014-06-10'
+order by serial_number,should_repay_date
+;
+
+set hive.root.logger=info,console;
+
+
+set log4j.rootCategory=info,console;
+
+
+
+
+
+select distinct
+  project_id             as product_id,
+  serial_number          as due_bill_no,
+  period                 as loan_term,
+  should_repay_date      as should_repay_date,
+  should_repay_principal as should_repay_principal,
+  should_repay_interest  as should_repay_interest,
+  should_repay_cost      as should_repay_term_fee,
+  effective_date         as effective_date,
+  nvl(lead(effective_date) over(partition by serial_number,period order by effective_date),'3000-12-31') as expire_date
+from stage.t_05_repaymentplan_history
+where 1 > 0
+  and serial_number = '1000000219'
+order by period,effective_date,expire_date
+;
+
+
