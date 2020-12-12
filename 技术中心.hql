@@ -12199,8 +12199,6 @@ invalidate metadata dm_eagle.assets_distribution;
 
 select * from dm_eagle.assets_distribution limit 1;
 
-MSCK REPAIR TABLE dm_eagle.assets_distribution;
-
 
 
 select
@@ -12235,5 +12233,49 @@ where 1 > 0
   and serial_number = '1000000219'
 order by period,effective_date,expire_date
 ;
+
+
+
+
+
+
+select
+  serial_number,
+  count(serial_number) as num
+from (
+  select distinct
+    serial_number,
+    cnt
+  from (
+    select
+      serial_number,
+      period,
+      count(1) as cnt
+    from stage.t_05_repaymentplan_history
+    where 1 > 0
+      and serial_number = '0b2f8bdb506f46239bea470ce94f78f9'
+    group by serial_number,period
+  ) as tmp
+) as tt
+group by serial_number
+having count(serial_number) > 1
+order by serial_number
+limit 10
+;
+
+
+
+
+
+select
+  *
+from stage.t_05_repaymentplan_history
+where 1 > 0
+  and serial_number = '0b2f8bdb506f46239bea470ce94f78f9'
+;
+
+
+invalidate metadata dim_new.biz_conf;
+
 
 

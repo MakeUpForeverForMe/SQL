@@ -1324,6 +1324,9 @@ constraint_specification:
     [, CONSTRAINT constraint_name CHECK [check_expression] ENABLE|DISABLE NOVALIDATE RELY/NORELY ]
 
 
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]
+
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)] [INPUTFORMAT 'inputformat' SERDE 'serde'] (3.0 or later)
 
 
 
@@ -1848,12 +1851,11 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | 引用     | Ctrl + Alt + R 点击快捷键后，直接输入文字即可 | `[引用][引用]  [引用]:http://www.baidu.com`                                                   | [引用][引用]  [引用]:http://www.baidu.com                                                   |
 | 插入注释 | Alt + Shift + 6                               | `注释引用[^1]  [^1]: http://www.baidu.com`                                                    | 注释引用[^1]  [^1]: http://www.baidu.com                                                    |
 | 加粗文本 |                                               | `**加粗文本** __加粗文本__`                                                                   | **加粗文本** __加粗文本__                                                                   |
-| 标记文本 |                                               | `==标记文本==`                                                                                | ==标记文本==                                                                                |
+| 标记文本 |                                               | `标记文本`                                                                                    | `标记文本`                                                                                  |
 | 删除文本 |                                               | `~~删除文本~~`                                                                                | ~~删除文本~~                                                                                |
 | 引用文本 |                                               | `> 引用文本`                                                                                  | > 引用文本                                                                                  |
 | 下标     |                                               | `H<sub>2</sub>O is是液体。`                                                                   | H<sub>2</sub>O is是液体。                                                                   |
 | 幂运算   |                                               | `2<sup>10</sup> 运算结果是 1024`                                                              | 2<sup>10</sup> 运算结果是 1024                                                              |
-
 
 
 # 6、Sublime 操作
