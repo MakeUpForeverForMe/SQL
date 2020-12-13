@@ -12160,11 +12160,7 @@ with base as (
   select '1000000219' as due_bill_no,4 as loan_term,'2020-02-01' as effective_date,'2020-02-10' as biz_date union all
 
   select '1000000219' as due_bill_no,1 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
-  select '1000000219' as due_bill_no,2 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
-  select '1000000219' as due_bill_no,3 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
-  select '1000000219' as due_bill_no,4 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
-  select '1000000219' as due_bill_no,5 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date union all
-  select '1000000219' as due_bill_no,6 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date
+  select '1000000219' as due_bill_no,2 as loan_term,'2020-03-01' as effective_date,'2020-03-01' as biz_date
 )
 select
   t2.due_bill_no,
@@ -12175,13 +12171,18 @@ select
 from (
   select
     due_bill_no,
+    loan_term,
     biz_date as s_d_date,
-    nvl(lead(biz_date) over(partition by due_bill_no order by biz_date),'3000-12-31') as e_d_date
-  from (select distinct due_bill_no,biz_date from base) as tmp
+    nvl(lead(biz_date) over(partition by due_bill_no,loan_term order by biz_date),'3000-12-31') as e_d_date
+  from (
+    select distinct due_bill_no,biz_date,loan_term
+    from base
+  ) as tmp
 ) as t1
 join base as t2
 on  t1.due_bill_no    = t2.due_bill_no
 and t1.s_d_date       = t2.biz_date
+and t1.loan_term      = t2.loan_term
 -- and t1.effective_date = t2.effective_date
 order by due_bill_no,loan_term,s_d_date,effective_date
 ;
@@ -12268,14 +12269,26 @@ limit 10
 
 
 select
-  *
+  serial_number,
+  period,
+  should_repay_date,
+  should_repay_principal,
+  should_repay_interest,
+  should_repay_cost,
+  effective_date,
+  nvl(lead(effective_date) over(partition by serial_number,period order by effective_date),'3000-12-31') as e_d_date
 from stage.t_05_repaymentplan_history
 where 1 > 0
-  and serial_number = '0b2f8bdb506f46239bea470ce94f78f9'
+  -- and serial_number = '0b2f8bdb506f46239bea470ce94f78f9'
+  and serial_number = '1000000219'
+order by period,effective_date
 ;
 
 
-invalidate metadata dim_new.biz_conf;
 
 
 
+
+
+
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
