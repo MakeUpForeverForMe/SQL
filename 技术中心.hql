@@ -12022,116 +12022,6 @@ order by s_d_date;
 
 
 
-select
-  due_bill_no,
-  map_values.key,
-  map_values.value
-from ods_new_s.risk_control,
-     ods_new_s.risk_control.map_value as map_values
-limit 10
-;
-
-
-
-
-select distinct
-  product_id,
-  paid_out_type
-from ods_new_s.loan_info
-order by product_id,paid_out_type
-;
-
-
-
-
-
-select distinct
-  product_code
-from ods.ecas_loan
-order by product_code
-;
-
-
-select distinct
-  loan_code as product_code
-from ods.ccs_loan
-order by product_code
-;
-
-
-select distinct
-  project_id
-from dm_eagle_cps.eagle_should_repay_repaid_amount_day
-;
-
-
-select distinct
-  product_id
-from dw_new_cps.dw_loan_base_stat_repay_detail_day
-where 1 > 0
-  and product_id like '002%'
-;
-
-select distinct
-  product_id
-from dw_new_cps.dw_loan_base_stat_should_repay_day
-where 1 > 0
-  and product_id like '002%'
-;
-
-
-select distinct
-  product_id
-from ods_new_s.loan_info
-where 1 > 0
-  and product_id like '0018%'
-;
-
-
-
-
-select distinct
-  biz_date
-from ods_new_s.loan_lending
-where 1 > 0
-  and biz_date like '2020-10%'
-  and product_id = '001802'
-order by biz_date
-;
-
-
-select distinct
-  active_date as biz_date
-from ods.ecas_loan
-where 1 > 0
-  and active_date like '2020-10%'
-  and product_code = '001802'
-  and d_date = '2020-11-29'
-order by biz_date
-;
-
-
-
-
-
-ALTER TABLE ods_new_s.repay_schedule ADD IF NOT EXISTS PARTITION (is_settled='no',product_id='001801');
-ALTER TABLE ods_new_s.repay_schedule ADD IF NOT EXISTS PARTITION (is_settled='no',product_id='001802');
-
-
-invalidate metadata ods.ecas_repayment;
-
-
-
-select
-  *
-from ods_new_s.repay_detail
-where 1 > 0
-  and due_bill_no = '1120061019450546018968'
-;
-
-
-
-
 
 
 with base as (
@@ -12287,8 +12177,97 @@ order by period,effective_date
 
 
 
+insert overwrite table dim_new.project_due_bill_no partition(project_id)
+select distinct
+  a.asset_id,
+  a.project_id
+from ods.t_loan_contract_info as a
+join ods.t_principal_borrower_info as b
+on a.asset_id = b.asset_id
+join ods_new_s.loan_info_cloud as c
+on a.asset_id = c.due_bill_no
+join ods_new_s.repay_schedule_inter as d
+on a.asset_id = d.due_bill_no
+;
+
+
+
+select distinct
+  map_from_str(extra_info)['项目编号'] as project_id,
+  map_from_str(extra_info)['资产类型'] as asset_type
+from ods.t_loan_contract_info
+;
 
 
 
 
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 
+
+invalidate metadata dim_new.project_due_bill_no;
+invalidate metadata ods_new_s.loan_info_cloud;
+invalidate metadata ods_new_s.cust_loan_mapping;
+invalidate metadata ods_new_s.customer_info_cloud;
+invalidate metadata ods_new_s.guaranty_info;
+invalidate metadata ods_new_s.loan_lending_cloud;
+invalidate metadata ods_new_s.repay_detail_cloud;
+invalidate metadata ods_new_s.order_info_cloud;
+invalidate metadata ods_new_s.repay_schedule_inter;
+
+invalidate metadata ods_new_s.repay_schedule_abs;
+invalidate metadata ods_new_s.t_05_repaymentplan;
+
+select * from ods_new_s.t_05_repaymentplan limit 10;
+
+
+
+
+
+
+select distinct
+  a.due_bill_no
+from dim_new.project_due_bill_no as a
+join ods_new_s.loan_info_cloud as b
+on a.due_bill_no = b.due_bill_no
+join ods_new_s.repay_schedule_inter
+on a.due_bill_no = b.due_bill_no
+;
+
+
+select *
+from ods_new_s.loan_lending_cloud
+where 1 > 0
+  and due_bill_no = '20200907155400411'
+  -- and e_d_date = '3000-12-31'
+;
+
+
+select *
+from ods_new_s.repay_schedule_inter
+where due_bill_no = '20200907155400411'
+;
+
+
+
+select *
+from ods_new_s.repay_schedule_abs
+where due_bill_no = '20200907155400411'
+;
+
+
+select *
+from ods_new_s.t_05_repaymentplan
+where 1 > 0
+  and serial_number = '20200907155400411'
+  -- and e_d_date = '3000-12-31'
+;
+
+
+
+ALTER TABLE ods_new_s.repay_schedule_inter DROP IF EXISTS PARTITION (biz_date = '2020-12-09',product_id = '001601');
+ALTER TABLE ods_new_s.repay_schedule_inter DROP IF EXISTS PARTITION (biz_date = '2020-12-10',product_id = '001601');
+
+
+ALTER TABLE ods_new_s.loan_lending_cloud DROP IF EXISTS PARTITION (product_id = '001601');
+
+
+select * from ods_new_s.t_10_basic_asset where serial_number = '20200907155400411';
+select * from ods_new_s.loan_info_cloud where due_bill_no = '20200907155400411';
