@@ -12202,18 +12202,6 @@ from ods.t_loan_contract_info
 
 
 
-invalidate metadata dim_new.project_due_bill_no;
-invalidate metadata ods_new_s.loan_info_cloud;
-invalidate metadata ods_new_s.cust_loan_mapping;
-invalidate metadata ods_new_s.customer_info_cloud;
-invalidate metadata ods_new_s.guaranty_info;
-invalidate metadata ods_new_s.loan_lending_cloud;
-invalidate metadata ods_new_s.repay_detail_cloud;
-invalidate metadata ods_new_s.order_info_cloud;
-invalidate metadata ods_new_s.repay_schedule_inter;
-
-invalidate metadata ods_new_s.repay_schedule_abs;
-invalidate metadata ods_new_s.t_05_repaymentplan;
 
 select * from ods_new_s.t_05_repaymentplan limit 10;
 
@@ -12271,3 +12259,19 @@ ALTER TABLE ods_new_s.loan_lending_cloud DROP IF EXISTS PARTITION (product_id = 
 
 select * from ods_new_s.t_10_basic_asset where serial_number = '20200907155400411';
 select * from ods_new_s.loan_info_cloud where due_bill_no = '20200907155400411';
+
+
+
+
+
+select * from ods_new_s.repay_schedule_abs
+where due_bill_no = '1000000219'
+order by loan_term,s_d_date;
+
+
+
+select * from ods_new_s.t_10_basic_asset
+where serial_number = '20200907155400411'
+;
+
+
