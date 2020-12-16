@@ -12275,3 +12275,9 @@ where serial_number = '20200907155400411'
 ;
 
 
+
+select * from ods_new_s.t_07_actualrepayinfo
+where serial_number = '20200907155400411'
+;
+
+
