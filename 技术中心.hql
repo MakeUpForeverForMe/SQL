@@ -12281,3 +12281,19 @@ where serial_number = '20200907155400411'
 ;
 
 
+select distinct product_id from ods_new_s.loan_lending order by product_id;
+
+desc ods.ccs_loan;
+
+select distinct
+  loan_code
+from ods.ccs_loan
+where 1 > 0
+  -- and d_date = '2020-12-14'
+-- order by loan_code
+limit 10
+;
+
+
+select distinct product_code from ods.ecas_loan where d_date = '2020-12-14' order by product_code;
+
