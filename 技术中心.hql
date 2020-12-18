@@ -12297,3 +12297,35 @@ limit 10
 
 select distinct product_code from ods.ecas_loan where d_date = '2020-12-14' order by product_code;
 
+select count(1) from ods_new_s.repay_schedule_inter;
+
+
+
+select
+  count(1) as cnt
+from (select project_id,bag_date,bag_id from dim_new.bag_info where 1 > 0) as bag_info
+join (select due_bill_no,bag_id from dim_new.bag_due_bill_no where 1 > 0) as bag_due
+on bag_info.bag_id = bag_due.bag_id
+join (
+  select
+    due_bill_no,
+    should_repay_date,
+    s_d_date,
+    e_d_date,
+    project_id
+  from ods_new_s.repay_schedule_abs
+) as repay_schedule
+on  repay_schedule.project_id  = bag_info.project_id
+and repay_schedule.due_bill_no = bag_due.due_bill_no
+where 1 > 0
+  and bag_info.bag_date between s_d_date and date_sub(e_d_date,1)
+  and bag_info.bag_date <= should_repay_date
+;
+
+
+
+
+select distinct
+  is_empty(map_from_str(extra_info)['交易类型'],trade_type) as txn_type
+from ods.t_asset_pay_flow
+;
