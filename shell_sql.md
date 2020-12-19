@@ -1827,8 +1827,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED sha256;
 
-SHOW FUNCTIONS LIKE '*month*';
-DESC FUNCTION EXTENDED split;
+SHOW FUNCTIONS LIKE '*null*';
+DESC FUNCTION EXTENDED isnull;
 ```
 
 
@@ -1850,7 +1850,7 @@ refresh dwb.dwb_credit_apply;
 refresh [table] [partition [partition]];
 
 -- impala 函数操作
-show functions in _impala_builtins like '*split*';
+show functions in _impala_builtins like '*null*';
 
 create function encrypt_aes(string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Encrypt';
 create function encrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';

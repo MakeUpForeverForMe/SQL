@@ -12329,3 +12329,27 @@ select distinct
   is_empty(map_from_str(extra_info)['交易类型'],trade_type) as txn_type
 from ods.t_asset_pay_flow
 ;
+
+
+
+
+select * from dm_eagle.abs_asset_information_cash_flow_bag_snapshot limit 10 ;
+
+
+select *
+from ods_new_s.repay_schedule
+where due_bill_no = '1120060818025006295519'
+;
+
+mysql -h'10.80.16.21' -uroot -p'EXYeaGVQZpsr@CR&' -D'abs-core'
+
+
+
+select distinct
+  -- is_empty(map_from_str(extra_info)['还款方式'],repay_type) as loan_type
+  repayment_type
+from
+-- ods.t_loan_contract_info
+stage.t_01_loancontractinfo
+;
+
