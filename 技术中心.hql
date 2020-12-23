@@ -12353,3 +12353,68 @@ from
 stage.t_01_loancontractinfo
 ;
 
+
+
+invalidate metadata dim_new.biz_conf;
+
+insert into table dim_new.biz_conf(
+  abs_project_id,product_id
+) values
+('PL202012210038','PL202012210038')
+;
+
+
+select * from dim_new.biz_conf;
+
+
+select * from ods_new_s.t_10_basic_asset
+limit 10;
+
+
+
+select * from ods_new_s.cust_loan_mapping where 1 > 0 and due_bill_no = '11111122222201';
+
+select * from ods.t_principal_borrower_info where 1 > 0 and asset_id = '11111122222201';
+
+select * from ods.t_loan_contract_info where 1 > 0 and asset_id = '11111122222201';
+
+
+select * from ods_new_s.loan_lending where due_bill_no = '1000000122';
+
+
+
+
+select
+  max(if(risk_map_value.key = 'status',cast(risk_map_value.value as int),1))          as status,
+  max(if(risk_map_value.key = 'wind_control_status',risk_map_value.value,null))       as wind_control_status,
+  max(if(risk_map_value.key = 'wind_control_status_pool',risk_map_value.value,null))  as wind_control_status_pool,
+  max(if(risk_map_value.key = 'cheat_level',cast(risk_map_value.value as int),-9999)) as cheat_level,
+  max(if(risk_map_value.key = 'score_range',cast(risk_map_value.value as int),-9999)) as score_range,
+  max(if(risk_map_value.key = 'score_level',cast(risk_map_value.value as int),-9999)) as score_level,
+  due_bill_no
+from
+  ods_new_s.risk_control,
+  ods_new_s.risk_control.map_value as risk_map_value
+where 1 > 0
+  -- and biz_date = ''    -- 业务日期，可不用
+  -- and product_id = ''  -- 项目编号
+  -- and risk_control_type = ''  -- 风控数据类型（1：授信，2：用信，3：星云）
+  and source_table = 't_asset_wind_control_history' -- 必有。只用 t_asset_wind_control_history，t_wind_control_resp_log 没有用
+  -- and due_bill_no = 'DD00023036202008211230009927c8'
+group by due_bill_no
+-- order by due_bill_no
+limit 10
+;
+
+
+
+
+
+
+select * from ods_new_s.repay_schedule_inter
+where 1 > 0
+  -- and project_id = ''
+  and due_bill_no = 'test1122222201'
+;
+
+
