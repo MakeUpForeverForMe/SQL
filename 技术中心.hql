@@ -12325,10 +12325,6 @@ where 1 > 0
 
 
 
-select distinct
-  is_empty(map_from_str(extra_info)['交易类型'],trade_type) as txn_type
-from ods.t_asset_pay_flow
-;
 
 
 
@@ -12418,3 +12414,10 @@ where 1 > 0
 ;
 
 
+select * from ods_new_s.loan_info where due_bill_no = '1120060818025006295519' order by s_d_date;
+
+
+select * from
+-- dm_eagle.eagle_should_repay_repaid_amount_day
+dm_eagle_cps.eagle_should_repay_repaid_amount_day
+where 
