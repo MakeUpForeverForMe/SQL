@@ -12420,4 +12420,90 @@ select * from ods_new_s.loan_info where due_bill_no = '1120060818025006295519' o
 select * from
 -- dm_eagle.eagle_should_repay_repaid_amount_day
 dm_eagle_cps.eagle_should_repay_repaid_amount_day
-where 
+where biz_date = '2020-12-22';
+
+
+select
+  sum(repaid_amount) as repaid_amount,
+  project_id
+from
+dm_eagle.eagle_should_repay_repaid_amount_day
+-- dm_eagle_cps.eagle_should_repay_repaid_amount_day
+where 1 > 0
+  -- and biz_date = '2020-12-22'
+group by project_id
+;
+
+
+
+select
+  sum(remain_principal) as remain_principal,
+  product_id
+from dw_new.dw_loan_base_stat_overdue_num_day
+where 1 > 0
+  and biz_date = '2020-12-22'
+  and product_id in ('001801','001802','001803','001804','001901','001902','001903','001904','001905','001906','001907','002001','002002','002003','002004','002005','002006','002007')
+  and overdue_days > 90
+group by product_id
+order by product_id
+;
+
+
+
+select
+  *
+from ods_new_s.customer_info_abs
+where 1 > 0
+  and due_bill_no = '006df96df576426a9e09ed9283211115'
+;
+
+
+
+select
+  is_empty(map_from_str(extra_info)['项目编号'],project_id)                                                          as project_id,
+  is_empty(map_from_str(extra_info)['借据号'],asset_id)                                                              as due_bill_no,
+  is_empty(map_from_str(extra_info)['证件类型'])                                                                     as certificate_type,
+  is_empty(map_from_str(extra_info)['身份证号'],document_num)                                                        as document_num,
+  is_empty(map_from_str(extra_info)['客户姓名'],customer_name)                                                       as borrower_name,
+  is_empty(map_from_str(extra_info)['手机号'],phone_num)                                                             as phone_num,
+  is_empty(map_from_str(extra_info)['性别'],sex)                                                                     as sex,
+  is_empty(map_from_str(extra_info)['年龄'],age)                                                                     as age,
+  is_empty(map_from_str(extra_info)['婚姻状况'],marital_status)                                                      as marital_status,
+  is_empty(map_from_str(extra_info)['学历'],degree)                                                                  as education_level,
+  is_empty(
+    map_from_str(extra_info)['客户户籍地址'],
+    is_empty(
+      concat_ws('',
+        is_empty(map_from_str(extra_info)['客户居住所在省']),
+        is_empty(map_from_str(extra_info)['客户居住所在市']),
+        is_empty(map_from_str(extra_info)['客户居住地址'])
+      ),
+      concat_ws('',
+        is_empty(province),
+        is_empty(city),
+        is_empty(address)
+      )
+    )
+  )                                                                                                                  as house_address,
+  is_empty(map_from_str(extra_info)['客户通讯地址'],
+    concat_ws('',
+      province,city,address
+    )
+  )                                                                                                                  as mailing_address,
+  is_empty(map_from_str(extra_info)['客户户籍所在省'],is_empty(map_from_str(extra_info)['客户居住所在省'],province)) as house_province,
+  is_empty(map_from_str(extra_info)['客户户籍所在市'],is_empty(map_from_str(extra_info)['客户居住所在市'],city))     as house_city,
+  is_empty(map_from_str(extra_info)['借款人行业'])                                                                   as borrower_industry,
+  is_empty(map_from_str(extra_info)['工作年限'])                                                                     as work_years,
+  is_empty(map_from_str(extra_info)['年收入(元)'],annual_income)                                                     as annual_income,
+  is_empty(map_from_str(extra_info)['客户类型'])                                                                     as customer_type,
+  is_empty(map_from_str(extra_info)['内部信用等级'])                                                                 as cust_rating
+from ods.t_principal_borrower_info
+where 1 > 0
+  and is_empty(map_from_str(extra_info)['借据号'],asset_id) = '006df96df576426a9e09ed9283211115'
+;
+
+
+
+
+
+
