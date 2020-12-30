@@ -1259,6 +1259,14 @@ SHOW FULL COLUMNS FROM tbl_name;
 --   union: UNIONTYPE<data_type, data_type, ...> (Note: Only available starting with Hive 0.7.0.)
 
 
+CREATE TABLE IF NOT EXISTS `dim_new.biz_conf`(
+  `product_name_en_vt`            string         COMMENT '产品名称（英文、虚拟）'
+) COMMENT '业务配置表'
+ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+-- field.delim是表的两个列字段之间的文件中的字段分隔符.
+-- 其中serialization.format是文件序列化时表中两个列字段之间的文件中的字段分隔符.
+WITH SERDEPROPERTIES ('field.delim' = '\t','serialization.format' = '\t','serialization.null.format' = '')
+STORED AS TEXTFILE;
 
 DROP VIEW [IF EXISTS] view_name;
 CREATE VIEW [IF NOT EXISTS] [db_name.]view_name [(column_name [COMMENT column_comment], ...) ]
