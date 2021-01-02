@@ -12450,60 +12450,165 @@ order by product_id
 
 
 
+
+select * from dm_eagle.abs_asset_information_project where project_id = 'CL202012250044';
+select * from dim_new.project_info where project_id = 'CL202012250044';
+
+select * from ods_new_s.guaranty_info_abs where project_id = 'CL202012250044';
+select * from ods.t_guaranty_info where project_id = 'CL202012250044';
+
+
+
+select * from ods_new_s.customer_info_abs where due_bill_no = 'test1122222212';
+
+
+
+
+invalidate metadata ods_new_s.loan_apply;
+
+-- 2020-06 25311831.2200
+-- 2020-07 177368285.6800
+-- 2020-08 116424580.2500
+-- 2020-09 73821270.0500
+-- 2020-10 89611537.8200
+-- 2020-11 101969300.2000
+-- 2020-12 115892913.6200
 select
-  *
-from ods_new_s.customer_info_abs
+  sum(loan_amount_approval) as loan_amount_approval,
+  sum(loan_amount)          as loan_amount,
+  datefmt(to_date(issue_time),'yyyy-MM-dd','yyyy-MM') as issue_date,
+  product_id
+from ods_new_s.loan_apply
 where 1 > 0
-  and due_bill_no = '006df96df576426a9e09ed9283211115'
+  and product_id in ('001801')
+  and apply_status in (1,4)
+group by datefmt(to_date(issue_time),'yyyy-MM-dd','yyyy-MM'),product_id
+order by issue_date,product_id
+-- limit 20
+;
+
+
+-- 2020-06 25311831.2200
+-- 2020-07 177368285.6800
+-- 2020-08 116424580.2500
+-- 2020-09 73821270.0500
+-- 2020-10 89611537.8200
+-- 2020-11 101969300.2000
+-- 2020-12 115892913.6200
+select
+  issue_date                as issue_date,
+  product_id                as product_id,
+  sum(loan_amount_approval) as loan_approval_amount
+from (
+  select
+    user_hash_no,
+    datefmt(to_date(issue_time),'yyyy-MM-dd','yyyy-MM') as issue_date,
+    due_bill_no,
+    loan_terms,
+    nvl(loan_amount_approval,0) as loan_amount_approval,
+    product_id
+  from ods_new_s.loan_apply
+  where 1 > 0
+    and product_id in ('001801')
+    and apply_status in (1,4)
+) as tmp
+group by product_id,issue_date
+order by issue_date,product_id
 ;
 
 
 
+-- 2020-06 25311831.2200
+-- 2020-07 177365024.0000
+-- 2020-08 116425391.2400
+-- 2020-09 73821270.0500
+-- 2020-10 89615037.2900
+-- 2020-11 101969300.2000
+-- 2020-12 115892913.6200
 select
-  is_empty(map_from_str(extra_info)['项目编号'],project_id)                                                          as project_id,
-  is_empty(map_from_str(extra_info)['借据号'],asset_id)                                                              as due_bill_no,
-  is_empty(map_from_str(extra_info)['证件类型'])                                                                     as certificate_type,
-  is_empty(map_from_str(extra_info)['身份证号'],document_num)                                                        as document_num,
-  is_empty(map_from_str(extra_info)['客户姓名'],customer_name)                                                       as borrower_name,
-  is_empty(map_from_str(extra_info)['手机号'],phone_num)                                                             as phone_num,
-  is_empty(map_from_str(extra_info)['性别'],sex)                                                                     as sex,
-  is_empty(map_from_str(extra_info)['年龄'],age)                                                                     as age,
-  is_empty(map_from_str(extra_info)['婚姻状况'],marital_status)                                                      as marital_status,
-  is_empty(map_from_str(extra_info)['学历'],degree)                                                                  as education_level,
-  is_empty(
-    map_from_str(extra_info)['客户户籍地址'],
-    is_empty(
-      concat_ws('',
-        is_empty(map_from_str(extra_info)['客户居住所在省']),
-        is_empty(map_from_str(extra_info)['客户居住所在市']),
-        is_empty(map_from_str(extra_info)['客户居住地址'])
-      ),
-      concat_ws('',
-        is_empty(province),
-        is_empty(city),
-        is_empty(address)
-      )
-    )
-  )                                                                                                                  as house_address,
-  is_empty(map_from_str(extra_info)['客户通讯地址'],
-    concat_ws('',
-      province,city,address
-    )
-  )                                                                                                                  as mailing_address,
-  is_empty(map_from_str(extra_info)['客户户籍所在省'],is_empty(map_from_str(extra_info)['客户居住所在省'],province)) as house_province,
-  is_empty(map_from_str(extra_info)['客户户籍所在市'],is_empty(map_from_str(extra_info)['客户居住所在市'],city))     as house_city,
-  is_empty(map_from_str(extra_info)['借款人行业'])                                                                   as borrower_industry,
-  is_empty(map_from_str(extra_info)['工作年限'])                                                                     as work_years,
-  is_empty(map_from_str(extra_info)['年收入(元)'],annual_income)                                                     as annual_income,
-  is_empty(map_from_str(extra_info)['客户类型'])                                                                     as customer_type,
-  is_empty(map_from_str(extra_info)['内部信用等级'])                                                                 as cust_rating
-from ods.t_principal_borrower_info
+  sum(loan_approval_amount) as loan_approval_amount,
+  datefmt(biz_date,'yyyy-MM-dd','yyyy-MM') as issue_date,
+  product_id
+from dw_new.dw_loan_approval_stat_day
 where 1 > 0
-  and is_empty(map_from_str(extra_info)['借据号'],asset_id) = '006df96df576426a9e09ed9283211115'
+  and product_id in ('001801')
+group by datefmt(biz_date,'yyyy-MM-dd','yyyy-MM'),product_id
+order by issue_date,product_id
+-- limit 20
 ;
 
 
 
+-- 25311831.2200
+select
+  sum(loan_approval_amount) as loan_approval_amount,
+  datefmt(biz_date,'yyyy-MM-dd','yyyy-MM') as issue_date,
+  product_id
+from dm_eagle.eagle_credit_loan_approval_amount_sum_day
+where 1 > 0
+  and product_id in ('vt_001801')
+group by datefmt(biz_date,'yyyy-MM-dd','yyyy-MM'),product_id
+order by issue_date,product_id
+limit 20;
+
+
+
+
+select distinct repay_type
+from ods.t_repayment_info;
+
+
+select * from ods_new_s.loan_info_abs where due_bill_no = 'test1122222212' order by due_bill_no,loan_term,s_d_date;
+
+select * from ods_new_s.t_10_basic_asset where serial_number = 'test1122222212';
+
+select * from ods_new_s.loan_apply where due_bill_no = '1120122911323631751854';
+
+
+
+
+
+
+select *
+from ods_new_s.loan_info
+where 1 > 0
+  and '2020-08-31' between s_d_date and date_sub(e_d_date,1)
+  and product_id = '001801'
+  and loan_active_date like '2020-08%'
+  and loan_init_term = 12
+  -- and overdue_days > 0
+order by due_bill_no,s_d_date
+limit 10
+;
+
+
+select *
+from dm_eagle.eagle_credit_loan_approval_amount_sum_day
+where 1 > 0
+  and product_id = 'vt_001801'
+  and biz_date = '2020-12-23'
+;
+
+
+
+
+
+
+
+-- abs分布表（项目——所有包）
+-- drop table if exists `dm_eagle.abs_asset_distribution_day`;
+create table if not exists `dm_eagle.abs_asset_distribution_day`(
+  `is_allbag`                     string         COMMENT '是否是所有包(y: 是 , n : 否)'
+  `asset_tab_name`                string         COMMENT'分布标签名称'
+  `asset_name`                    string         COMMENT'分布项名称'
+  `remain_principal`              decimal(20,5)  COMMENT '本金余额',
+  `remain_principal_ratio`        decimal(25,10) COMMENT'本金余额占比（分布项本金余额/本金余额）'
+  `loan_num`                      decimal(15,0)  COMMENT'借据笔数'
+  `loan_numratio`                 decimal(25,10) COMMENT'借据笔数占比（分布项借据笔数/借据笔数）'
+  `remain_principal_loan_num_avg` decimal(20,5)  COMMENT'平均每笔余额（本金余额/借据笔数）'
+) COMMENT 'abs分布表（项目——所有包）'
+PARTITIONED BY (`biz_date` string COMMENT '观察日期',`project_id` string COMMENT '项目编号')
+STORED AS PARQUET;
 
 
 
