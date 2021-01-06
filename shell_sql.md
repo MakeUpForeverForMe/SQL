@@ -279,7 +279,7 @@ shift 5 左移5个参数
 grep -wq file_name # 完全匹配字符所在行并不输出任何信息，只输出匹配结果
 ```
 
-### 2.1.8 Shell 中 tr 的用法（translating）
+### 2.1.8 Shell 中 tr 的用法（translating）（匹配替换）
 ```shell
 # 匹配替换
 echo tableName | tr '[A-Z]' '[a-z]' # 将小写变为大写 TABLENAME
@@ -1162,6 +1162,10 @@ ALTER TABLE test ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='
 ALTER TABLE test DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
 -- 修复分区
 MSCK REPAIR TABLE table_name;
+-- 加载数据
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]
+-- 加载数据 4.0 开始
+LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)] [INPUTFORMAT 'inputformat' SERDE 'serde'] (3.0 or later)
 
 
 -- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
@@ -1867,9 +1871,18 @@ create function decrypt_aes(string) returns string location '/opt/cloudera/hive/
 create function decrypt_aes(string, string) returns string location '/opt/cloudera/hive/auxlib/HiveUDF-1.0-shaded.jar' symbol='com.weshare.udf.Aes_Decrypt';
 ```
 
+# 5、 HDFS 操作
+```shell
+# HDFS 设置副本数 -w 等待重设副本数完成，-R 递归作用
+hdfs dfs -setrep -w -R 5 /starsource_backup/data.tar
+# 上传文件设置副本数
+hadoop dfs -D dfs.replication=1 -put 123.lzo /temp/123.lzo
+# 查看 Replicated Blocks 信息（副本数信息）
+hdfs fsck /starsource_backup/data.tar
+```
 
 
-# 4、Excel 操作
+# 6、Excel 操作
 ```vbnet
 # excel的十字光标
 Private Sub Workbook_SheetSelectionChange(ByVal Sh As Object, ByVal Target As Range)
@@ -1881,7 +1894,7 @@ End Sub
 Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 ```
 
-# 5、Markdown 操作
+# 7、Markdown 操作
 | 操作名称 |                    快捷键                     |                                              代码                                             |                                             结果                                            |
 |----------|-----------------------------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | 插入图片 | Shift + Win + K                               | `<img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:10%;"/>` | <img src="https://img-blog.csdnimg.cn/20200617115400965.jpg" alt="图片" style="zoom:20%;"/> |
@@ -1896,8 +1909,8 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | 幂运算   |                                               | `2<sup>10</sup> 运算结果是 1024`                                                              | 2<sup>10</sup> 运算结果是 1024                                                              |
 
 
-# 6、Sublime 操作
-## 6.1 Sublime 远程同步文件操作到 Linux
+# 8、Sublime 操作
+## 8.1 Sublime 远程同步文件操作到 Linux
 在想要添加同步的文件中右键点击“SFTP/FTP”，选择 Map to Remote 进行编辑
 
 <img src="https://img-blog.csdnimg.cn/20200526103111136.png" alt="图片" style="zoom:70%;"/>
@@ -1949,7 +1962,7 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 }
 ```
 
-## 6.2 Sublime 使用 OmniMarkupPreviewer 时的问题
+## 8.2 Sublime 使用 OmniMarkupPreviewer 时的问题
 ```javascript
 // 安装 OmniMarkupPreviewer 后，浏览器打开报 404，修改配置文件
 "renderer_options-MarkdownRenderer": {
@@ -1970,7 +1983,7 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
   ]
 }
 ```
-## 6.3 Sublime 配置
+## 8.3 Sublime 配置
 |                名称               |                             配置                             |                      解释                      |                                       示例                                      |            备注           |
 |-----------------------------------|--------------------------------------------------------------|------------------------------------------------|---------------------------------------------------------------------------------|---------------------------|
 | auto_find_in_selection            | true                                                         | 开启选中范围内搜索                             | "auto_find_in_selection": true,                                                 |                           |
@@ -1999,5 +2012,4 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                           |
 | trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
 | update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
-| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                           |
-| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                                                                |                           |
+| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,        
