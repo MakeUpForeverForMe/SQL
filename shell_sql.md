@@ -1145,7 +1145,7 @@ CREATE TEMPORARY TABLE IF NOT EXISTS test(
 ;
 
 -- 表重命名
-ALTER TABLE test RENAME TO tet; ALTER TABLE tet RENAME TO test;
+ALTER TABLE test RENAME TO tet;
 -- 修改表注释
 ALTER TABLE test SET TBLPROPERTIES('comment' = '这是表注释');
 -- 添加字段
@@ -1199,6 +1199,7 @@ select
 -- 月初或年初日期  两个参数：第一个参数是 date 类型：yyyy-MM-dd HH:mm:ss 或 yyyy-MM-dd；第二个参数是字符串类型：MONTH MON MM 或 YEAR YYYY YY
 select trunc('2020-12-31','MM'); -- 2020-12-01
 ```
+
 ### 4.1.2 MySQL 函数及通用语句
 ```sql
 -- 修改数据库字符集：
@@ -1218,6 +1219,31 @@ ALTER TABLE logtest DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 ALTER TABLE tbl_name CHANGE c_name c_name CHARACTER SET character_name [COLLATE ...];
 -- 如：
 ALTER TABLE logtest CHANGE title title VARCHAR(100) CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+-- 加索引
+alter table 表名 add index 索引名 (字段名1[，字段名2 …]);
+alter table employee add index emp_name (name);
+
+-- 加主关键字的索引
+alter table 表名 add primary key (字段名);
+alter table employee add primary key(id);
+
+-- 加唯一限制条件的索引
+alter table 表名 add unique 索引名 (字段名);
+alter table employee add unique emp_name2(cardnumber);
+
+-- 删除某个索引
+alter table 表名 drop index 索引名;
+alter table employee drop index emp_name;
+
+-- 增加字段
+ALTER TABLE table_name ADD field_name field_type;
+
+-- 修改原字段名称及类型
+ALTER TABLE table_name CHANGE old_field_name new_field_name field_type;
+
+-- 删除字段
+ALTER TABLE table_name DROP field_name;
 
 -- 查看数据库编码：
 SHOW CREATE DATABASE db_name;
@@ -2011,5 +2037,4 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | theme                             | Default.sublime-theme                                        | 主题设置                                       | "theme": "Default.sublime-theme",                                               |                           |
 | translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                           |
 | trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
-| update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
-| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,        
+| update_check                      | false                                                        | 关�
