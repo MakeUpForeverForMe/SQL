@@ -1162,6 +1162,8 @@ ALTER TABLE test ADD IF NOT EXISTS PARTITION (year_month='201911',day_of_month='
 ALTER TABLE test DROP IF EXISTS PARTITION (year_month = '201911',day_of_month = 8);
 -- 修复分区
 MSCK REPAIR TABLE table_name;
+-- 赋权
+grant select on eagle.loan_info to role riskctrl with grant option;
 -- 加载数据
 LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]
 -- 加载数据 4.0 开始
@@ -2037,4 +2039,6 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | theme                             | Default.sublime-theme                                        | 主题设置                                       | "theme": "Default.sublime-theme",                                               |                           |
 | translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                           |
 | trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
-| update_check                      | false                                                        | 关�
+| update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
+| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                           |
+| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                
