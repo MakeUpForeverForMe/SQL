@@ -12595,20 +12595,397 @@ where 1 > 0
 
 
 
--- abs分布表（项目——所有包）
--- drop table if exists `dm_eagle.abs_asset_distribution_day`;
-create table if not exists `dm_eagle.abs_asset_distribution_day`(
-  `is_allbag`                     string         COMMENT '是否是所有包(y: 是 , n : 否)'
-  `asset_tab_name`                string         COMMENT'分布标签名称'
-  `asset_name`                    string         COMMENT'分布项名称'
-  `remain_principal`              decimal(20,5)  COMMENT '本金余额',
-  `remain_principal_ratio`        decimal(25,10) COMMENT'本金余额占比（分布项本金余额/本金余额）'
-  `loan_num`                      decimal(15,0)  COMMENT'借据笔数'
-  `loan_numratio`                 decimal(25,10) COMMENT'借据笔数占比（分布项借据笔数/借据笔数）'
-  `remain_principal_loan_num_avg` decimal(20,5)  COMMENT'平均每笔余额（本金余额/借据笔数）'
-) COMMENT 'abs分布表（项目——所有包）'
-PARTITIONED BY (`biz_date` string COMMENT '观察日期',`project_id` string COMMENT '项目编号')
-STORED AS PARQUET;
+select * from ods_new_s.loan_lending_abs where due_bill_no = '732325';
+
+
+
+select * from dm_eagle.eagle_credit_loan_approval_amount_sum_day where biz_date = '2021-01-03' and product_id = 'vt_001801';
+
+
+
+
+
+select distinct due_bill_no,project_id from ods_new_s.repay_schedule_abs where 1 > 0 and due_bill_no = '825613'
+-- order by loan_term,s_d_date
+;
+
+
+select * from ods_new_s.t_05_repaymentplan where 1 > 0 and serial_number = '746283' order by period,s_d_date;
+
+
+select * from ods_new_s.risk_control where 1 > 0 and source_table = 't_asset_wind_control_history' limit 100;
+
+
+
+select due_bill_no,register_date from ods_new_s.guaranty_info where 1 > 0 and due_bill_no = '746283';
+
+
+
+select
+  actual_repay_time               as txn_date,
+  sum(ifnull(actual_repay_principal,0) + ifnull(actual_repay_interest,0) + ifnull(actual_repay_fee,0) + ifnull(penalbond,0) +
+    ifnull(penalty_interest,0) + ifnull(compensation,0) + ifnull(advanced_commission_charge,0) + ifnull(other_fee,0)
+  )                               as repaid_amount,
+  sum(ifnull(actual_repay_principal,0))     as repaid_principal, -- 实还本金（元）
+  sum(ifnull(actual_repay_interest,0))      as repaid_interest, -- 实还利息（元）
+  sum(ifnull(actual_repay_fee,0))           as repaid_fee, -- 实还费用（元）
+  sum(ifnull(penalbond,0))                  as penalbond, -- 违约金
+  sum(ifnull(penalty_interest,0))           as penalty_interest, -- 罚息
+  sum(ifnull(compensation,0))               as compensation, -- 赔偿金（提前还款/逾期所产生的赔偿金）
+  sum(ifnull(advanced_commission_charge,0)) as advanced_commission_charge, -- 提前还款手续费
+  sum(ifnull(other_fee,0))                  as other_fee -- 其他相关费用
+from
+-- t_actualrepayinfo
+stage.t_07_actualrepayinfo
+where 1 > 0 and project_id = 'CL202011090089' and (actual_repay_time between '2020-10-17' and '2020-12-31')
+group by actual_repay_time
+order by txn_date
+;
+
+
+  88666.71   差了的实还金额数据
+
+32592282.76  业务看到的实还数据
+
+32680949.47  星云计算的实还数据
+
+32741467.01  运营报表的实还数据
+
+-- 4374
+select
+  *
+  -- count(distinct due_bill_no) as cnt,
+  -- biz_date,
+  -- product_id
+from ods_new_s.repay_detail
+where 1 > 0
+  -- and biz_date between '2020-10-17' and '2020-12-31'
+  -- and product_id = '001603'
+  and due_bill_no = '1000002010'
+-- group by product_id,biz_date
+;
+
+
+select
+  *
+from stage.t_07_actualrepayinfo
+where 1 > 0
+  and serial_number = '1000002010'
+;
+
+
+
+
++---------------+------+-----------+
+| repaid_amount | cnt  | cnt_count |
++---------------+------+-----------+
+| 32680949.4700 | 3969 | 10794     |9975
++---------------+------+-----------+
+select
+  -- actual_repay_time as txn_date,
+  term as term,
+  cast(sum(ifnull(actual_repay_principal,0) + ifnull(actual_repay_interest,0) + ifnull(actual_repay_fee,0) + ifnull(penalbond,0) +
+    ifnull(penalty_interest,0) + ifnull(compensation,0) + ifnull(advanced_commission_charge,0) + ifnull(other_fee,0)
+  ) as decimal(20,4))           as abs_amount,
+  count(distinct serial_number) as abs_cnt,
+  count(serial_number)          as abs_count
+from stage.t_07_actualrepayinfo
+where 1 > 0
+  and (actual_repay_time between '2020-10-17' and '2020-12-31')
+  -- and actual_repay_time = '2020-10-20'
+  and project_id = 'CL202011090089'
+-- group by actual_repay_time,term
+-- group by actual_repay_time
+group by term
+-- order by txn_date,term
+-- order by txn_date
+order by term
+-- limit 1
+;
+
+
+
+
+
+
+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 32741467.0100  | 3969     | 10866      |
++----------------+----------+------------+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 32741467.0100  | 3969     | 10866      |
++----------------+----------+------------+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 32680949.4700  | 3969     | 10794      |
++----------------+----------+------------+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 32680949.4700  | 3969     | 10794      |
++----------------+----------+------------+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 32741467.0100  | 3969     | 10866      |
++----------------+----------+------------+
+
++--------------+----------+------------+--------------+----------+------------+
+|  abs_amount  | abs_cnt  | abs_count  |  abn_amount  | abn_cnt  | abn_count  |
++--------------+----------+------------+--------------+----------+------------+
+| 561407.5900  | 159      | 194        | 561407.5900  | 159      | 194        |
++--------------+----------+------------+--------------+----------+------------+
++-----------------+-------------+----------------+----------+------------+
+|   project_id    | product_id  |   abn_amount   | abn_cnt  | abn_count  |
++-----------------+-------------+----------------+----------+------------+
+| CL202011090089  | 001601      | 2111126.5100   | 296      | 726        |
+| CL202011090089  | 001602      | 4324333.3500   | 421      | 1453       |
+| CL202011090089  | 001603      | 26245489.6100  | 3252     | 8615       |
++-----------------+-------------+----------------+----------+------------+
+
++----------------+----------+------------+---------------+----------+------------+
+|   abs_amount   | abs_cnt  | abs_count  |  abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+---------------+----------+------------+
+| 14914398.7100  | 3969     | 4828       | 1200529.5200  | 66       | 66         |
++----------------+----------+------------+---------------+----------+------------+
++-------------+----------+------------+
+| abn_amount  | abn_cnt  | abn_count  |
++-------------+----------+------------+
+| 42394.6500  | 66       | 66         |
++-------------+----------+------------+
++-------------+----------+------------+
+| abn_amount  | abn_cnt  | abn_count  |
++-------------+----------+------------+
+| 44282.5000  | 87       | 87         |
++-------------+----------+------------+
++----------------+----------+------------+
+|   abn_amount   | abn_cnt  | abn_count  |
++----------------+----------+------------+
+| 44969363.3100  | 3969     | 15375      |
++----------------+----------+------------+
+
+
+select
+  -- project_id                             as project_id,
+  -- product_id                             as product_id,
+  -- actual_repay_time                      as biz_date,
+  -- term,
+  -- biz_date,
+  repay_term,
+
+  -- sum(repaid_amount_abs)          as abs_amount,
+  -- count(distinct serial_number) as abs_cnt,
+  -- count(serial_number)          as abs_count,
+  sum(paid_amount)                      as abn_amount,
+
+  -- sum(repaid_amount_abs) - sum(paid_amount) as amount,
+
+  count(distinct due_bill_no)            as abn_cnt,
+  count(distinct due_bill_no,repay_term) as abn_count
+from (
+  select
+    -- *,
+    distinct serial_number
+    -- ,cast(nvl(actual_repay_principal,0) + nvl(actual_repay_interest,0) + nvl(actual_repay_fee,0) + nvl(penalbond,0) +
+    --   nvl(penalty_interest,0) + nvl(compensation,0) + nvl(advanced_commission_charge,0) + nvl(other_fee,0) as decimal(20,4)) as repaid_amount_abs
+    -- ,term
+    -- ,actual_repay_time
+  from stage.t_07_actualrepayinfo
+  where 1 > 0
+    and (actual_repay_time between '2020-10-17' and '2020-12-31')
+    -- and actual_repay_time = '2020-10-27'
+    and project_id = 'CL202011090089'
+    -- and term in (2,3)
+  -- select distinct due_bill_no as serial_number from dim_new.dim_ht_bag_asset
+) as t_07_actualrepayinfo
+left
+-- full
+join (
+  select
+    product_id,
+    due_bill_no,
+    repay_term,
+    to_date(txn_time) as txn_date,
+    biz_date,
+    sum(repay_amount)                                      as paid_amount,
+    sum(if(bnp_type = 'Pricinpal',        repay_amount,0)) as paid_principal,
+    sum(if(bnp_type = 'Interest',         repay_amount,0)) as paid_interest,
+    sum(if(bnp_type = 'TERMFee',          repay_amount,0)) as paid_term_fee,
+    sum(if(bnp_type = 'SVCFee',           repay_amount,0)) as paid_svc_fee,
+    sum(if(bnp_type = 'Penalty',          repay_amount,0)) as paid_penalty,
+    sum(if(bnp_type = 'LatePaymentCharge',repay_amount,0)) as paid_mult
+  from ods_new_s.repay_detail
+  where 1 > 0
+    and biz_date between '2020-10-17' and '2020-12-31'
+    -- and biz_date = '2020-10-20'
+    and product_id in ('001601','001603','001602')
+    -- and repay_term in (2,3)
+    -- and repay_term = 0
+    -- and due_bill_no = '1000005314'
+  group by product_id,due_bill_no,repay_term,to_date(txn_time),biz_date
+) as repay_detail
+-- on  serial_number = due_bill_no
+on  split(serial_number,'_')[1] = due_bill_no
+-- and term = repay_term
+where 1 > 0
+  -- and due_bill_no is null
+  -- and
+-- group by project_id,product_id,biz_date
+-- group by actual_repay_time,term
+-- group by actual_repay_time
+-- group by term
+-- group by biz_date
+group by repay_term
+-- order by biz_date
+-- order by term
+order by repay_term
+-- limit 10
+;
+
+
+
+
+
+
+select
+  product_id,
+  serial_number,
+  term,
+  due_bill_no,
+  repay_term,
+  repaid_amount_abs,
+  abn_amount,
+  abn_cnt,
+  abn_count
+from (
+  select
+    split(serial_number,'_')[1] as serial_number,
+    term,
+    cast(nvl(actual_repay_principal,0) + nvl(actual_repay_interest,0) + nvl(actual_repay_fee,0) + nvl(penalbond,0) +
+      nvl(penalty_interest,0) + nvl(compensation,0) + nvl(advanced_commission_charge,0) + nvl(other_fee,0) as decimal(20,4)
+    ) as repaid_amount_abs
+  from stage.t_07_actualrepayinfo
+  where 1 > 0
+    and (actual_repay_time between '2020-10-17' and '2020-12-31')
+    and project_id = 'CL202011090089'
+    and term in (2,3)
+    -- and serial_number in (
+    --   'CL202011090089_1000001452',
+    --   'CL202011090089_1000001474',
+    --   'CL202011090089_1000002943',
+    --   'CL202011090089_1000004547',
+    --   'CL202011090089_1000004580',
+    --   'CL202011090089_1000004605'
+    -- )
+    order by term,serial_number
+) as t_07_actualrepayinfo
+right join (
+  select
+    product_id,
+    due_bill_no,
+    repay_term,
+
+    sum(paid_amount)                       as abn_amount,
+    count(distinct due_bill_no)            as abn_cnt,
+    count(distinct due_bill_no,repay_term) as abn_count
+  from (
+    select distinct serial_number
+    from stage.t_07_actualrepayinfo
+    where 1 > 0
+      and (actual_repay_time between '2020-10-17' and '2020-12-31')
+      and project_id = 'CL202011090089'
+  ) as t_07_actualrepayinfo
+  join (
+    select
+      product_id,
+      due_bill_no,
+      repay_term,
+      sum(repay_amount) as paid_amount
+    from ods_new_s.repay_detail
+    where 1 > 0
+      and biz_date between '2020-10-17' and '2020-12-31'
+      and product_id in ('001601','001603','001602')
+      and repay_term in (2,3)
+      and due_bill_no in (
+        '1000001452',
+        '1000001474',
+        '1000002943',
+        '1000004547',
+        '1000004580',
+        '1000004605'
+      )
+    group by product_id,due_bill_no,repay_term
+    order by repay_term,due_bill_no
+  ) as repay_detail
+  on  split(serial_number,'_')[1] = due_bill_no
+  group by product_id,due_bill_no,repay_term
+  order by repay_term,due_bill_no
+) as repay_detail
+on  serial_number = due_bill_no
+and term = repay_term
+where 1 > 0
+  and serial_number is null
+order by repay_term,due_bill_no
+limit 10
+;
+
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_active_date,
+  loan_init_term,
+  loan_init_principal,
+  loan_term,
+  paid_principal,
+  remain_principal,
+  overdue_date_start,
+  overdue_days,
+  overdue_principal,
+  s_d_date,
+  e_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  and '2020-06-03' between s_d_date and date_sub(e_d_date,1)
+  and product_id like '00180%'
+order by loan_init_term,due_bill_no
+;
+
+
+select
+  sum(remain_principal)                   as remain_principal_current,
+  loan_terms                              as loan_terms_remain,
+  date_format(loan_active_date,'yyyy-MM') as loan_month_remain,
+  biz_conf.product_id_vt                as product_id_remain
+from dw_new.dw_loan_base_stat_overdue_num_day as overdue_num
+join dim_new.biz_conf
+on  overdue_num.product_id = biz_conf.product_id
+and overdue_num.biz_date = '2020-06-03'
+and biz_conf.product_id_vt is not null
+and product_id_vt like 'vt_00180%'
+group by biz_conf.product_id_vt,loan_terms,date_format(loan_active_date,'yyyy-MM')
+order by loan_terms
+;
+
+
+
+
+
+
+
+select
+  *
+from ods_new_s.loan_info_abs
+where 1 > 0
+  and '2020-01-01' between s_d_date and date_sub(e_d_date,1)
+limit 10
+;
 
 
 
