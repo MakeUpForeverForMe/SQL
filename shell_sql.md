@@ -1828,7 +1828,9 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
-ADD JAR hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+set hivevar:hdfs_path=hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+ADD JAR ${hdfs_path};
+
 ADD JAR hdfs:///user/hive/auxlib/hive-jdbc-handler-1.2.1.jar;
 ADD JAR hdfs:///user/hive/auxlib/mysql-connector-java.jar;
 ADD JAR hdfs:///user/hive/auxlib/hive-jdbc.jar;
@@ -1847,20 +1849,20 @@ DROP FUNCTION IF EXISTS sha256;
 DROP FUNCTION IF EXISTS date_max;
 DROP FUNCTION IF EXISTS date_min;
 
-CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'              USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION map_from_str        AS 'com.weshare.udf.AnalysisStringToJson'           USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
--- CREATE FUNCTION json_map            AS 'com.weshare.udf.AnalysisStringToJsonGenericUDF' USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'               USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'                   USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'                   USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
--- CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmptyGenericUDF'              USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
-CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR 'hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar';
+CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION json_array_to_array AS 'com.weshare.udf.AnalysisJsonArray'              USING JAR '${hdfs_path}';
+CREATE FUNCTION map_from_str        AS 'com.weshare.udf.AnalysisStringToJson'           USING JAR '${hdfs_path}';
+-- CREATE FUNCTION json_map            AS 'com.weshare.udf.AnalysisStringToJsonGenericUDF' USING JAR '${hdfs_path}';
+CREATE FUNCTION datefmt             AS 'com.weshare.udf.DateFormat'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION age_birth           AS 'com.weshare.udf.GetAgeOnBirthday'               USING JAR '${hdfs_path}';
+CREATE FUNCTION age_idno            AS 'com.weshare.udf.GetAgeOnIdNo'                   USING JAR '${hdfs_path}';
+CREATE FUNCTION sex_idno            AS 'com.weshare.udf.GetSexOnIdNo'                   USING JAR '${hdfs_path}';
+CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                        USING JAR '${hdfs_path}';
+-- CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmptyGenericUDF'              USING JAR '${hdfs_path}';
+CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR '${hdfs_path}';
 
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
