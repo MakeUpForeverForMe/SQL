@@ -12966,4 +12966,58 @@ order by biz_date
 
 
 
-sele
+select distinct project_id
+from dm_eagle.abs_overdue_rate_day
+-- where project_id is null
+order by project_id
+;
+
+
+select distinct biz_date,project_id,is_allbag from  dm_eagle.abs_overdue_rate_day where project_id is null;
+
+alter table dm_eagle.abs_overdue_rate_day drop partition (project_id = '__HIVE_DEFAULT_PARTITION__');
+
+
+
+
+
+
+
+
+
+
+select
+  product_id as prd,
+  due_bill_no,
+  loan_active_date as active_date,
+  loan_init_term as terms,
+  loan_init_principal as loan_prin,
+  loan_term as term,
+  loan_status as status,
+  paid_out_date as out_date,
+  paid_out_type as out_type,
+  paid_principal as p_prin,
+  remain_principal as r_prin,
+  overdue_date_start as overdue_start,
+  overdue_days as o_days,
+  overdue_principal as o_prin,
+  s_d_date,
+  e_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  and due_bill_no = '1120092814474954123907'
+  -- and due_bill_no in (
+  --   'DD00023036202005311459004bfd39',
+  --   'DD00023036202003101122005acdc2'
+  -- )
+  -- and '2021-01-13' between s_d_date and date_sub(e_d_date,1)
+order by s_d_date
+;
+
+
+
+select
+  product_id as prd,
+  due_bill_no,
+  loan_init_term as terms,
+  loan_term as t
