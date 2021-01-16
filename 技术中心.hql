@@ -13020,4 +13020,22 @@ select
   product_id as prd,
   due_bill_no,
   loan_init_term as terms,
-  loan_term as t
+  loan_term as term,
+  schedule_status,
+  should_repay_date as should_date,
+  should_repay_principal as should_principal,
+  paid_principal,
+  paid_out_date,
+  paid_out_type_cn,
+  s_d_date,
+  e_d_date
+from ods_new_s.repay_schedule
+where 1 > 0
+  and due_bill_no = 'DD00023036202005311459004bfd39'
+order by loan_term,s_d_date
+;
+
+
+
+
+
