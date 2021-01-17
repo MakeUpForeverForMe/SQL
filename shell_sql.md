@@ -333,18 +333,18 @@ git push [-u origin master]
 # case 第一种实现方式
 # :b:d:i:s:f: 其中开头的冒号是在有选项，但是没有参数时防止报错;参数后的冒号代表这个选项必须有参数
 # 索引 $OPTIND
+OPTIND=1
 while getopts :b:d:i:s:f: opt; do
   # getopts 在第二次调用时不匹配选项，其他参数也出错。因为OPTIND初始化时为1，改变后不会自动重新赋值
-  OPTIND=1
   case $opt in
-    b) base_time="$OPTARG" ;;
-    d) date_format="$OPTARG" ;;
-    i) date_diff="$OPTARG" ;;
-    s) secon_arg="$OPTARG" ;;
-    f) format="$OPTARG" ;;
-    :) echo "请添加参数: -$OPTARG" ;;
-    ?) echo "选项未设置: -$OPTARG" ;;
-    *) echo "未知情况" ;;
+    (b) base_time="$OPTARG" ;;
+    (d) date_format="$OPTARG" ;;
+    (i) date_diff="$OPTARG" ;;
+    (s) secon_arg="$OPTARG" ;;
+    (f) format="$OPTARG" ;;
+    (:) echo "请添加参数: -$OPTARG" ;;
+    (?) echo "选项未设置: -$OPTARG" ;;
+    (*) echo "未知情况" ;;
   esac
 done
 
@@ -358,12 +358,12 @@ while true; do
     # $OPTIND    特殊变量，option index，会逐个递增, 初始值为1 配合getopts使用
     # $OPTARG    特殊变量，option argument，不同情况下有不同的值 配合getopts使用
     case $1 in
-      '-aa' ) echo '参数是：'$2; echo '这是第 1 个匹配项'; shift 2;;
-      '-ba' ) echo '参数是：'$2; echo '这是第 2 个匹配项'; shift 2;;
-      '-ca' ) echo '参数是：'$2; echo '这是第 3 个匹配项'; shift 2;;
-      '-da' ) echo '参数是：'$2; echo '这是第 4 个匹配项'; shift 2;;
-      ? ) echo '参数是：'$2; echo '匹配项为 ? ： ? ‘问号’的作用是匹配一个字符'; shift 2;;
-      * ) echo '参数是：'$2; echo '匹配项为 * ： * ‘星号’的作用是匹配0个或多个字符'; exit
+      ( '-aa' ) echo '参数是：'$2; echo '这是第 1 个匹配项'; shift 2;;
+      ( '-ba' ) echo '参数是：'$2; echo '这是第 2 个匹配项'; shift 2;;
+      ( '-ca' ) echo '参数是：'$2; echo '这是第 3 个匹配项'; shift 2;;
+      ( '-da' ) echo '参数是：'$2; echo '这是第 4 个匹配项'; shift 2;;
+      ( ? ) echo '参数是：'$2; echo '匹配项为 ? ： ? ‘问号’的作用是匹配一个字符'; shift 2;;
+      ( * ) echo '参数是：'$2; echo '匹配项为 * ： * ‘星号’的作用是匹配0个或多个字符'; exit
     esac
   else
     echo "输入有误"
@@ -606,7 +606,6 @@ kafka-console-producer --broker-list bssit-cdh-1:9092,bssit-cdh-2:9092,bssit-cdh
 
 # 消费者
 kafka-console-consumer --bootstrap-server bssit-cdh-1:9092,bssit-cdh-2:9092,bssit-cdh-3:9092 --topic test
-
 ```
 
 
