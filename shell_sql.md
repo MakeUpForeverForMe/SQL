@@ -1418,6 +1418,9 @@ set spark.app.name=my_job_name;                                                 
 set spark.sql.autoBroadcastJoinThreshold=1073741824;                               -- 设置广播变量的大小（b）（默认10M）设置1G
 set spark.locality.wait=0s;
 set hive.groupby.skewindata=true;
+set parquet.memory.min.chunk.size=32768;             -- 设置为32K
+
+
 
 -- 执行sql前，加上如下参数，禁用hive矢量执行：底层计算时转换数据格式（不想要）
 set hive.vectorized.execution.enabled=false;
@@ -1866,10 +1869,10 @@ CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'             
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
-DESC FUNCTION EXTENDED sha256;
+DESC FUNCTION EXTENDED is_empty;
 
-SHOW FUNCTIONS LIKE '*null*';
-DESC FUNCTION EXTENDED isnull;
+SHOW FUNCTIONS LIKE '*struct*';
+DESC FUNCTION EXTENDED named_struct;
 ```
 
 
@@ -1903,11 +1906,11 @@ create function decrypt_aes(string, string) returns string location '/opt/cloude
 # 5、 HDFS 操作
 ```shell
 # HDFS 设置副本数 -w 等待重设副本数完成，-R 递归作用
-hdfs dfs -setrep -w -R 5 /starsource_backup/data.tar
-# 上传文件设置副本数
+hdfs dfs -setrep -w -R 1 /starsource_backup
+# 上传文件时设置副本数
 hadoop dfs -D dfs.replication=1 -put 123.lzo /temp/123.lzo
 # 查看 Replicated Blocks 信息（副本数信息）
-hdfs fsck /starsource_backup/data.tar
+hdfs fsck /starsource_backup
 ```
 
 

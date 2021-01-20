@@ -13038,4 +13038,56 @@ order by loan_term,s_d_date
 
 
 
+order_info   biz_date=2020-12-07/product_id=__HIVE_DEFAULT_PARTITION__
+
+
+
+
+
+show partitions ods_new_s.order_info partition(product_id = '__HIVE_DEFAULT_PARTITION__');
+
+
+
+select * from ods_new_s.order_info
+where 1 > 0
+  -- and product_id = '__HIVE_DEFAULT_PARTITION__'
+  -- and product_id is null
+  and due_bill_no = '1120060510293924885549'
+limit 1
+;
+
+
+
+
+
+select * from ods.ecas_order_asset
+where 1 > 0
+  -- and product_id = '__HIVE_DEFAULT_PARTITION__'
+  and product_code is null
+  -- and due_bill_no = '1120060510293924885549'
+limit 1
+;
+
+
+
+select
+  count(distinct due_bill_no) as due_bill_no,
+  count(due_bill_no) as cnt
+from ods_new_s.loan_info;
+
+
+
+
+select distinct
+  col1_name,
+  col1_val,
+  if(col2_name = 'project_id',col2_val,null) as col2_val,
+  if(col1_name = 'project_id',null,col2_name) as col2_name,
+  if(col1_name = 'project_id',null,col2_val) as col2_val
+from dim_new.sit_biz_conf
+where 1 > 0
+  and (col2_name = 'project_id' or col1_name = 'project_id')
+order by col1_name,col2_name
+;
+
 
