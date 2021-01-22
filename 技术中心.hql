@@ -13091,3 +13091,18 @@ order by col1_name,col2_name
 ;
 
 
+
+
+select
+  sum(repay_amount) as repay_amount
+from ods_new_s.repay_detail
+where 1 > 0
+  and biz_date between '2020-12-01' and '2020-12-31'
+  and product_id in ('001801','001802')
+  and bnp_type = 'Interest'
+;
+
+
+
+
+
