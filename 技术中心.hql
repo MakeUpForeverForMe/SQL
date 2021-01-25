@@ -13105,7 +13105,7 @@ where 1 > 0
 
 
 
-
+select null = null ;
 
 
 
