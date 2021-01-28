@@ -1850,6 +1850,8 @@ DROP FUNCTION IF EXISTS is_empty;
 DROP FUNCTION IF EXISTS sha256;
 DROP FUNCTION IF EXISTS date_max;
 DROP FUNCTION IF EXISTS date_min;
+DROP FUNCTION IF EXISTS ptrim;
+DROP FUNCTION IF EXISTS random;
 
 CREATE FUNCTION encrypt_aes         AS 'com.weshare.udf.AesEncrypt'                     USING JAR '${hdfs_path}';
 CREATE FUNCTION decrypt_aes         AS 'com.weshare.udf.AesDecrypt'                     USING JAR '${hdfs_path}';
@@ -1865,13 +1867,15 @@ CREATE FUNCTION is_empty            AS 'com.weshare.udf.IsEmpty'                
 CREATE FUNCTION sha256              AS 'com.weshare.udf.Sha256Salt'                     USING JAR '${hdfs_path}';
 CREATE FUNCTION date_max            AS 'com.weshare.udf.GetDateMax'                     USING JAR '${hdfs_path}';
 CREATE FUNCTION date_min            AS 'com.weshare.udf.GetDateMin'                     USING JAR '${hdfs_path}';
+CREATE FUNCTION ptrim               AS 'com.weshare.udf.TrimPlus'                       USING JAR '${hdfs_path}';
+CREATE FUNCTION random              AS 'com.weshare.udf.RandomPlus'                     USING JAR '${hdfs_path}';
 
 reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 
 SHOW FUNCTIONS LIKE 'default*';
-DESC FUNCTION EXTENDED is_empty;
+DESC FUNCTION EXTENDED random;
 
-SHOW FUNCTIONS LIKE '*struct*';
+SHOW FUNCTIONS LIKE '*ran*';
 DESC FUNCTION EXTENDED named_struct;
 ```
 

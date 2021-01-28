@@ -13109,6 +13109,30 @@ select null = null ;
 
 
 
+select distinct nvl(car_brand_cn,aa.car_brand) as car_brand,project_id from stage.t_04_guarantycarinfo as aa
+left join dim_new.dim_car_brand
+on aa.car_brand = dim_car_brand.car_brand;
 
 
 
+select distinct nvl(car_brand_cn,is_empty(map_from_str(extra_info)['车辆品牌'])) as car_brand,project_id from ods.t_guaranty_info
+left join dim_new.dim_car_brand
+on is_empty(map_from_str(extra_info)['车辆品牌']) = car_brand;
+
+
+
+
+select distinct
+  concat(product_id,'~~~',random(1,20)) as product_id_rand
+from ods_new_s.loan_info;
+
+
+select count(1) as cnt from ods_new_s.loan_info where product_id = '001801';
+
+
+select
+  due_bill_no,
+  concat_ws('~~~',product_id,cast(cast(rand() * 10 + 1 as int) as string)) as product_id,
+  -- concat_ws('~~~',product_id,cast(cast(rand() * 10 + 1 as int) as string),due_bill_no) as product_code,
+  'aa' as aa
+from ods_ne
