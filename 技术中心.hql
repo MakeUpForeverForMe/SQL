@@ -13135,4 +13135,79 @@ select
   concat_ws('~~~',product_id,cast(cast(rand() * 10 + 1 as int) as string)) as product_id,
   -- concat_ws('~~~',product_id,cast(cast(rand() * 10 + 1 as int) as string),due_bill_no) as product_code,
   'aa' as aa
-from ods_ne
+from ods_new_s.loan_info
+where is_settled = 'no' and s_d_date < '2021-01-25' and product_id = '001901'
+limit 20;
+
+
+select distinct
+  project_full_name,
+  project_name,
+  project_id,
+  project_begin_date,
+  project_end_date
+from t_project;
+
+
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_active_date as active_date,
+  loan_init_principal as init_principal,
+  loan_init_term as init_term,
+  loan_term as term,
+  should_repay_date as should_date,
+  loan_status_cn as status,
+  paid_out_type_cn as type,
+  overdue_date_start as overdue_date,
+  overdue_days as days,
+  overdue_principal,
+  remain_principal,
+  paid_principal,
+  s_d_date,
+  e_d_date
+from ods_new_s.loan_info
+where 1 > 0
+  -- and product_id = '001802'
+  and product_id in (
+    '001801','001802','001803','001804',
+    '001901','001902','001903','001904','001905','001906','001907',
+    '002001','002002','002003','002004','002005','002006','002007',
+    '002401','002402'
+  )
+  -- and paid_out_type_cn = '资产回购'
+  -- and loan_status_cn = '逾期'
+  -- and due_bill_no in (
+  --   '1120061910384241252747',
+  --   '1120123112250874213037',
+  --   '1120081714554090143221',
+  --   '1120092814474954123907',
+  --   '1120101507502092992722'
+  -- )
+  and due_bill_no = '1120070123371362708251'
+  -- and overdue_days > 180
+order by product_id,due_bill_no,s_d_date
+;
+
+
+select
+  product_id,
+  due_bill_no,
+  loan_active_date as active_date,
+  loan_init_principal as init_principal,
+  loan_init_term as init_term,
+  loan_term as term,
+  should_repay_date as should_date,
+  should_repay_principal as should_principal,
+  schedule_status_cn as status,
+  paid_out_type_cn as type,
+  paid_principal,
+  s_d_date,
+  e_d_date
+from ods_new_s.repay_schedule
+where 1 > 0
+  and product_id = '001801'
+  and due_bill_no in (
+    '1120070121564132860905',
