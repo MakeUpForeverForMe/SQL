@@ -1203,6 +1203,40 @@ select trunc('2020-12-31','MM'); -- 2020-12-01
 
 ### 4.1.2 MySQL 函数及通用语句
 ```sql
+-- 加载数据
+LOAD DATA
+  [LOW_PRIORITY /* 延迟执行，直到没有其他客户端正在读取表格 */| CONCURRENT /* 并发插入CONCURRENT的MyISAM表 */] [LOCAL /* 客户端本地文件 */]
+  INFILE 'file_name'                                              /* 要插入的文件目录 */
+  [REPLACE /* 替换唯一键对应的行 */| IGNORE /* 忽略唯一键对应的行 */]
+  INTO TABLE tbl_name                                             /* 要插入的表 */
+  [PARTITION (partition_name [, partition_name] ...)]             /* 指定要插入的分区 */
+  [CHARACTER SET charset_name]                                    /* 指定文件编码格式 */
+  /* 如果两者都被指定，则 {FIELDS | COLUMNS} 必须先行 LINES */
+  [{FIELDS | COLUMNS}
+    [TERMINATED BY 'string'                                       /* 默认 '\t' 指定列分隔符 */]
+    [[OPTIONALLY] ENCLOSED BY 'char'                              /* 默认 ''   【只从字符串类型】字段以某个特定字符串包围读取字段 */]
+    [ESCAPED BY 'char'                                            /* 默认 '\\' 空值转义字符*/]
+  ]
+  [LINES
+    [STARTING BY 'string'                                         /* 默认 ''   要忽略的公共前缀，如果一行不包含前缀，则整行将被跳过 */]
+    [TERMINATED BY 'string'                                       /* 默认 '\n' 指定行分隔符 */]
+  ]
+  [IGNORE number {LINES | ROWS}                                   /* 忽略文件开始处的行数 */]
+  [(col_name_or_user_var [, col_name_or_user_var] ...)]           /* 插入表中的字段名 */
+  [SET col_name={expr | DEFAULT}[, col_name={expr | DEFAULT}] ... /* 设置列名中的变量值 */]
+
+load data local infile 'C:\\Users\\XXX\\Documents\\data\\test.csv' -- 加载文件
+into table test                                                    -- 到 test 表中
+fields terminated by ','                                           -- 列分隔符为“,”
+OPTIONALLY ENCLOSED BY '"'                                         -- 字段以“"”包围
+lines terminated by '\r\n'                                         -- 行分隔符为“\r\n”
+ignore 1 lines                                                     -- 忽略第一行
+(a, @b, @c)                                                        -- 字段有（a、b、c），b、c设置为变量
+set                                                                -- 设置变量
+b = NULLif(@b,''),                                                 -- b设置 如果为“”就改成null
+c = str_to_date(@c,'%d%b%Y')                                       -- c设置 将字符串转为日期格式
+;
+
 -- 修改数据库字符集：
 ALTER DATABASE db_name DEFAULT CHARACTER SET character_name [COLLATE ...];
 
