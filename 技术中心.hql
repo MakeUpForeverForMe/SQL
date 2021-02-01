@@ -13146,7 +13146,10 @@ select distinct
   project_id,
   project_begin_date,
   project_end_date
-from t_project;
+from t_project
+where 1 > 0
+  and project_id not in ('PL202102010096')
+;
 
 
 
