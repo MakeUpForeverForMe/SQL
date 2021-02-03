@@ -13141,15 +13141,30 @@ limit 20;
 
 
 select distinct
-  project_full_name,
+  project_full_name as full_name,
   project_name,
-  project_id,
-  project_begin_date,
-  project_end_date
+  t_project.project_id,
+  case project_type
+  when '1' then '存量'
+  when '2' then '增量'
+  else project_type end as type,
+  t_related_assets.project_id,
+  case data_source
+  when '1' then '接口导入'
+  when '2' then 'Excel导入'
+  else data_source end as data_source,
+  case
+  when t_related_assets.project_id is not null then '核心'
+  when t_project.project_id in ('001601','WS0005200001','DIDI201908161538','PL201907050063') then '核心'
+  else '校验平台' end as project_from,
+  project_begin_date as begin_date,
+  project_end_date   as end_date
 from t_project
-where 1 > 0
-  and project_id not in ('PL202102010096')
-;
+left join t_related_assets
+on t_project.project_id = t_related_assets.related_project_id
+where t_project.project_id not in ('PL202102010096')
+order by project_full_name;
+
 
 
 
@@ -13189,7 +13204,7 @@ where 1 > 0
   --   '1120092814474954123907',
   --   '1120101507502092992722'
   -- )
-  and due_bill_no = '1120070123371362708251'
+  and due_bill_no = '1120070118015633387894'
   -- and overdue_days > 180
 order by product_id,due_bill_no,s_d_date
 ;
@@ -13211,20 +13226,27 @@ select
   e_d_date
 from ods_new_s.repay_schedule
 where 1 > 0
-  and product_id = '001801'
-  and due_bill_no in (
-    '1120070121564132860905',
-    '1120070204043283820905',
-    '1120070206224598730905',
-    '1120070208233220520905',
-    '1120070221541500180905',
-    '1120070306182174590905',
-    '1120070403432791900905',
-    '1120070403512365270905',
-    '1120070403515340230905',
-    '1120070405572651280905'
+  -- and product_id = '001802'
+  and product_id in (
+    '001801','001802','001803','001804',
+    '001901','001902','001903','001904','001905','001906','001907',
+    '002001','002002','002003','002004','002005','002006','002007',
+    '002401','002402'
   )
-  and '2021-01-13' between s_d_date and date_sub(e_d_date,1)
+  -- and due_bill_no in (
+  --   '1120070121564132860905',
+  --   '1120070204043283820905',
+  --   '1120070206224598730905',
+  --   '1120070208233220520905',
+  --   '1120070221541500180905',
+  --   '1120070306182174590905',
+  --   '1120070403432791900905',
+  --   '1120070403512365270905',
+  --   '1120070403515340230905',
+  --   '1120070405572651280905'
+  -- )
+  and due_bill_no = '1120070118015633387894'
+  -- and '2021-01-13' between s_d_date and date_sub(e_d_date,1)
 order by due_bill_no,loan_term,s_d_date
 ;
 
@@ -13236,3 +13258,113 @@ order by due_bill_no,loan_term,s_d_date
 select project_id,product_id,product_id_vt from dim_new.biz_conf;
 
 
+
+select * from dim_new.project_info;
+
+
+select distinct
+  a.project_id,
+  '123' as aa
+from ods.t_loan_contract_info      as a
+join ods.t_principal_borrower_info as b
+on  a.project_id = b.project_id
+and a.asset_id   = b.asset_id
+;
+
+
+
+alter database hivemetastore character set utf8 collate utf8_general_ci;
+
+
+
+
+
+select count(distinct due_bill_no) from ods_new_s.loan_info where  overdue_days = 200 and product_id in (
+  '001801','001802','001803','001804',
+  '001901','001902','001903','001904','001905','001906','001907',
+  '002001','002002','002003','002004','002005','002006','002007',
+  '002401','002402'
+);
+
+
+
+select
+  due_bill_no,
+  overdue_days,
+  loan_status,
+  loan_status_cn,
+  paid_out_type,
+  paid_out_type_cn,
+  loan_init_principal,
+  remain_principal,
+  overdue_principal,
+  paid_principal,
+  s_d_date,
+  e_d_date,
+  product_id
+from ods_new_s.loan_info
+where 1 > 0
+  and product_id in (
+    '001801','001802','001803','001804',
+    '001901','001902','001903','001904','001905','001906','001907',
+    '002001','002002','002003','002004','002005','002006','002007',
+    '002401','002402'
+  )
+  and ('2021-02-01' between s_d_date and date_sub(e_d_date,1))
+  and overdue_days > 180
+  -- and overdue_days = 200
+  -- and due_bill_no = '1120070219303529307894'
+order by loan_status,overdue_days
+;
+
+
+select
+  due_bill_no,
+  -- loan_apply.cust_id,
+  name,
+  sex,
+  idcard_area,
+  idcard_province,
+  idcard_city,
+  resident_province,
+  loan_apply.product_id
+from (
+  select
+    due_bill_no,
+    cust_id,
+    product_id
+  from ods_new_s.loan_apply
+  where due_bill_no in (
+    '1120070219303529307894',
+    '1120070118015633387894',
+    '1120070118194841187894',
+    '1120070215315955687894',
+    '1120070211062361387894',
+    '1120070211230095677894',
+    '1120070208301729677894',
+    '1120070206160656377894',
+    '1120070205031339347894',
+    '1120070118562999107894',
+    '1120070118050762177894'
+  )
+) as loan_apply
+join (
+  select
+    cust_id,
+    name,
+    sex,
+    idcard_area,
+    idcard_province,
+    idcard_city,
+    resident_province,
+    product_id
+  from ods_new_s.customer_info
+) as customer
+on  loan_apply.product_id = customer.product_id
+and loan_apply.cust_id    = customer.cust_id
+;
+
+
+
+
+show partitions s

@@ -2,19 +2,30 @@
 # 1、公司级信息
 ## 1.1 服务器
 ### 1.1.1 生产
-|    系统    |  服务 |                    ip或网址                    |  用户 |     密码     | 备注 |
-|------------|-------|------------------------------------------------|-------|--------------|------|
-| linux      | ftp   | 10.90.0.5                                      |       |              | FTP  |
-| node47     | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82 |      |
-| node148    | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82 |      |
-| node172    | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82 |      |
-| node128    | linux | 10.80.1.128                                    | root  | CQBP53G(Lv82 |      |
-| node20     | linux | 10.80.0.20                                     | root  | CQBP53G(Lv82 |      |
-| node23     | linux | 10.80.0.23                                     | root  | CQBP53G(Lv82 |      |
-| node29     | linux | 10.80.0.29                                     | root  | CQBP53G(Lv82 |      |
-| node233    | linux | 10.80.0.233                                    | root  | CQBP53G(Lv82 |      |
-| cm6        | web   | http://10.80.1.47:7180/cmf/home                | admin | admin        |      |
-| hue6       | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv   |      |
+|                                                                                                                                          HiveServer2URL                                                                                                                                         |
+|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| beeline -n hadoop -u "jdbc:hive2://10.80.0.46:2181,10.80.0.255:2181,10.80.1.113:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2" --color=true --hiveconf hive.resultset.use.unique.column.names=false --hiveconf spark.app.name=HiveSpark --hiveconf mapred.job.name=HiveMR |
+
+
+|   系统  |  服务 |                    ip或网址                    |  用户 |      密码      | 备注 |
+|---------|-------|------------------------------------------------|-------|----------------|------|
+| linux   | ftp   | 10.90.0.5                                      |       |                | FTP  |
+| node47  | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82   |      |
+| node148 | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82   |      |
+| node172 | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82   |      |
+| node128 | linux | 10.80.1.128                                    | root  | CQBP53G(Lv82   |      |
+| node20  | linux | 10.80.0.20                                     | root  | CQBP53G(Lv82   |      |
+| node23  | linux | 10.80.0.23                                     | root  | CQBP53G(Lv82   |      |
+| node29  | linux | 10.80.0.29                                     | root  | CQBP53G(Lv82   |      |
+| node233 | linux | 10.80.0.233                                    | root  | CQBP53G(Lv82   |      |
+| cm6     | web   | http://10.80.1.47:7180/cmf/home                | admin | admin          |      |
+| hue6    | web   | http://10.80.1.47:8889/hue/editor/?type=impala | admin | dFGYXpxifv     |      |
+| emr     | cos桶 | bigdata-center-prod-1253824322                 |       |                |      |
+| emr     | emr   | emr-b3log3ww                                   |       |                |      |
+| router  | linux | 10.80.1.94                                     | root  | Ws@ProEmr1QSC@ |      |
+| master  | linux | 10.80.1.155                                    | root  | Ws@ProEmr1QSC@ |      |
+| master  | linux | 10.80.0.195                                    | root  | Ws@ProEmr1QSC@ |      |
+
 
 ### 1.1.2 测试
 |   系统  |  作用 |                    ip或网址                     |  用户  |       密码       | 备注 |
@@ -44,6 +55,8 @@
 | 催收 | 10.80.16.87 | risk_control | uPOp(t?XaoHq     |         |
 | H5   | 10.80.16.73 | UeserReader  | Ws2019!@         |         |
 | CM6  | 10.80.16.75 | bgp_admin    | U3$AHfp*a8M&     | MariaDB |
+| emr  | 10.80.1.104 | root         | Ws@ProEmr1QSC@   | Hive    |
+
 
 ### 1.2.2 测试
 | 系统 |      ip     |   username  |     password     |   备注  |
@@ -1167,6 +1180,15 @@ grant select on eagle.loan_info to role riskctrl with grant option;
 LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)]
 -- 加载数据 4.0 开始
 LOAD DATA [LOCAL] INPATH 'filepath' [OVERWRITE] INTO TABLE tablename [PARTITION (partcol1=val1, partcol2=val2 ...)] [INPUTFORMAT 'inputformat' SERDE 'serde'] (3.0 or later)
+
+-- Hive 元数据库修改，中文乱码
+alter table `COLUMNS_V2`       modify column `COMMENT`      varchar(256)  character set utf8;
+alter table `DBS`              modify column `DESC`         varchar(4000) character set utf8;
+alter table `INDEX_PARAMS`     modify column `PARAM_VALUE`  varchar(4000) character set utf8;
+alter table `PARTITION_KEYS`   modify column `PKEY_COMMENT` varchar(4000) character set utf8;
+alter table `PARTITION_PARAMS` modify column `PARAM_VALUE`  varchar(4000) character set utf8;
+alter table `PARTITIONS`       modify column `PART_NAME`    varchar(250)  character set utf8;
+alter table `TABLE_PARAMS`     modify column `PARAM_VALUE`  varchar(4000) character set utf8;
 
 
 -- regexp_replace(String A,String B,String C) 替换函数：将字符串 A 中的符合 Java 正则表达式 B 的部分替换为 C
