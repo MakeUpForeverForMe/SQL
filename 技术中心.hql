@@ -13360,4 +13360,84 @@ select
   idcard_province,
   idcard_city,
   resident_province,
-  loan_apply.produc
+  loan_apply.product_id
+from (
+  select
+    due_bill_no,
+    cust_id,
+    product_id
+  from ods_new_s.loan_apply
+  where due_bill_no in (
+    '1120070219303529307894',
+    '1120070118015633387894',
+    '1120070118194841187894',
+    '1120070215315955687894',
+    '1120070211062361387894',
+    '1120070211230095677894',
+    '1120070208301729677894',
+    '1120070206160656377894',
+    '1120070205031339347894',
+    '1120070118562999107894',
+    '1120070118050762177894'
+  )
+) as loan_apply
+join (
+  select
+    cust_id,
+    name,
+    sex,
+    idcard_area,
+    idcard_province,
+    idcard_city,
+    resident_province,
+    product_id
+  from ods_new_s.customer_info
+) as customer
+on  loan_apply.product_id = customer.product_id
+and loan_apply.cust_id    = customer.cust_id
+;
+
+
+
+
+
+
+
+
+
+select * from ods.abs_01_t_loancontractinfo        limit 1;
+select * from ods.abs_02_t_borrowerinfo            limit 1;
+select * from ods.abs_03_t_associatesinfo          limit 1;
+select * from ods.abs_04_t_guarantycarinfo         limit 1;
+select * from ods.abs_05_t_repaymentplan           limit 1;
+select * from ods.abs_05_t_repaymentplan_history   limit 1;
+select * from ods.abs_06_t_assettradeflow          limit 1;
+select * from ods.abs_07_t_actualrepayinfo         limit 1;
+select * from ods.abs_08_t_assetdealprocessinfo    limit 1;
+select * from ods.abs_09_t_assetaddtradeinfo       limit 1;
+select * from ods.abs_10_t_assetaccountcheck       limit 1;
+select * from ods.abs_11_t_projectaccountcheck     limit 1;
+select * from ods.abs_12_t_enterpriseinfo          limit 1;
+select * from ods.abs_13_t_guarantyhouseinfo       limit 1;
+
+select * from ods.asset_t_asset_wind_control_history limit 1;
+select * from ods.asset_t_wind_control_resp_log      limit 1;
+
+
+
+
+insert overwrite table `stg.asset_01_t_loan_contract_info`                   select * from `ods.asset_01_t_loan_contract_info`;
+insert overwrite table `stg.asset_02_t_principal_borrower_info`              select * from `ods.asset_02_t_principal_borrower_info`;
+insert overwrite table `stg.asset_03_t_contact_person_info`                  select * from `ods.asset_03_t_contact_person_info`;
+insert overwrite table `stg.asset_04_t_guaranty_info`                        select * from `ods.asset_04_t_guaranty_info`;
+insert overwrite table `stg.asset_05_t_repayment_schedule` partition(d_date) select * from `ods.asset_05_t_repayment_schedule`;      --
+insert overwrite table `stg.asset_06_t_asset_pay_flow`                       select * from `ods.asset_06_t_asset_pay_flow`;
+insert overwrite table `stg.asset_07_t_repayment_info`                       select * from `ods.asset_07_t_repayment_info`;          --
+insert overwrite table `stg.asset_08_t_asset_disposal`                       select * from `ods.asset_08_t_asset_disposal`;
+insert overwrite table `stg.asset_09_t_asset_supplement`                     select * from `ods.asset_09_t_asset_supplement`;
+insert overwrite table `stg.asset_10_t_asset_check`                          select * from `ods.asset_10_t_asset_check`;
+insert overwrite table `stg.asset_12_t_enterprise_info`                      select * from `ods.asset_12_t_enterprise_info`;
+insert overwrite table `stg.asset_t_asset_wind_control_history`              select * from `ods.asset_t_asset_wind_control_history`; --
+insert overwrite table `stg.asset_t_wind_control_resp_log`                   select * from `ods.asset_t_wind_control_resp_log`;
+
+
