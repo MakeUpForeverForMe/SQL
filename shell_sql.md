@@ -2,9 +2,10 @@
 # 1、公司级信息
 ## 1.1 服务器
 ### 1.1.1 生产
-|                                                                                                                                          HiveServer2URL                                                                                                                                         |
+|                                                                                                                                         Hive 交互式命令                                                                                                                                         |
 |-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | beeline -n hadoop -u "jdbc:hive2://10.80.0.46:2181,10.80.0.255:2181,10.80.1.113:2181/;serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=hiveserver2" --color=true --hiveconf hive.resultset.use.unique.column.names=false --hiveconf spark.app.name=HiveSpark --hiveconf mapred.job.name=HiveMR |
+| hive --hiveconf hive.cli.print.current.db=true --hiveconf hive.cli.print.header=true --hiveconf hive.resultset.use.unique.column.names=false                                                                                                                                                    |
 
 
 |   系统  |  服务 |                    ip或网址                    |  用户 |      密码      | 备注 |
@@ -12,8 +13,8 @@
 | linux   | ftp   | 10.90.0.5                                      |       |                | FTP  |
 | node47  | linux | 10.80.1.47                                     | root  | CQBP53G(Lv82   |      |
 | node148 | linux | 10.80.1.148                                    | root  | CQBP53G(Lv82   |      |
+| node168 | linux | 10.80.1.168                                    | root  | CQBP53G(Lv82   |      |
 | node172 | linux | 10.80.1.172                                    | root  | CQBP53G(Lv82   |      |
-| node128 | linux | 10.80.1.128                                    | root  | CQBP53G(Lv82   |      |
 | node20  | linux | 10.80.0.20                                     | root  | CQBP53G(Lv82   |      |
 | node23  | linux | 10.80.0.23                                     | root  | CQBP53G(Lv82   |      |
 | node29  | linux | 10.80.0.29                                     | root  | CQBP53G(Lv82   |      |
@@ -693,12 +694,12 @@ mongoimport --csv -d "baiduled" -c "dataCollection" -o aaa.csv
 ## 2.8 Sqoop 操作
 ```shell
 # 执行SQL语句
+# 获取数据库名
 sqoop eval \
 --connect jdbc:mysql://10.80.16.7:3306/starsource \
 --username BDUser_R --password xy@Eh93AmnCkMbiU \
 -e 'select * from ORG_INFO'
 
-# 获取数据库名
 sqoop list-databases \
 --connect jdbc:mysql://10.83.16.32:3306 \
 --username bgp_admin --password 3Mt%JjE#WJIt
@@ -711,23 +712,42 @@ sqoop create-hive-table \
 --hive-database ods_source_old \
 --hive-table ORG_INFO
 
-# 向 Hive 中导数据    -m 指定 maptask 任务数
-sqoop import \
--m 1 \
---connect jdbc:mysql://10.80.16.7:3306/starsource \
---table ORG_INFO \
---username BDUser_R --password xy@Eh93AmnCkMbiU \
---hive-import \
---hive-database ods_source_old \
---hive-table ORG_INFO \
---hive-partition-key \
---hive-partition-value \
---hive-overwrite \
+# 向 Hive 中导数据
+ST9='2021-02-01'
+
+mysql_hostname='10.83.16.15'
+mysql_username='root'
+mysql_password='Ws2018!07@'
+mysql_database='abs-core'
+mysql_tablname='t_project'
+hive_database='default'
+hive_tablname='abs_t_project'
+
+# --split-by id   当id为字符串时需要使用 -D org.apache.sqoop.splitter.allow_text_splitter=true
+# -D mapred.job.name=jobname  指定 Sqoop 的任务名
+# -m,--num-mappers <n> 并行处理的 MapTask 数量（建议小于等于集群数量）
+# --create-hive-table  自动创建表
+# --hive-table tblname 导入到 Hive 的表名
+# -z,--compress --compression-codec org.apache.hadoop.io.compress.SnappyCodec 两个参数控制压缩
+# --hive-partition-key --hive-partition-value <partition-value> 两个参数同时使用，设置导入 Hive 时的分区字段（不能与 --as-parquetfile 同时使用）
+# --null-string '\\N' 要为字符串列的空值写入的字符串
+# --null-non-string '\\N' 非字符串列将为空值写入的字符串
+
+sql="select *,biz_date from ${mysql_tablname} where 1 > 0 and \${CONDITIONS}"
+
+sudo -u hive sqoop import "-D org.apache.sqoop.splitter.allow_text_splitter=true" \
+"-D mapred.job.name='${hive_database}.${hive_tablname} <—— ${mysql_database}.${mysql_tablname} : ${ST9}'" \
+--connect "jdbc:mysql://${mysql_hostname}:3306/${mysql_database}?useUnicode=true&characterEncoding=utf8" \
+--username "${mysql_username}" --password "${mysql_password}" \
+--query "${sql}" \
+--split-by 'id' \
+--null-string '\\N' --null-non-string '\\N' \
 --as-parquetfile \
---compression-codec org.apache.hadoop.io.compress.SnappyCodec \
--z \
---direct \
---fields-terminated-by '\t'
+--hive-import \
+--hive-overwrite \
+--hive-database "${hive_database}" \
+--hive-table "${hive_tablname}" \
+--num-mappers 1
 ```
 
 
@@ -1302,14 +1322,24 @@ ALTER TABLE table_name CHANGE old_field_name new_field_name field_type;
 -- 删除字段
 ALTER TABLE table_name DROP field_name;
 
--- 查看数据库编码：
+-- 查看数据库建立语句：
 SHOW CREATE DATABASE db_name;
 
--- 查看表编码：
+-- 查看建表语句：
 SHOW CREATE TABLE tbl_name;
 
--- 查看字段编码：
+-- 查看表的字段所有信息
 SHOW FULL COLUMNS FROM tbl_name;
+
+-- 查看表的字段个别信息
+select
+  COLUMN_NAME,
+  COLUMN_TYPE,
+  COLUMN_COMMENT
+from information_schema.columns
+where TABLE_SCHEMA = 'abs-core' and TABLE_NAME='t_project'
+order by ORDINAL_POSITION;
+
 ```
 
 ## 4.2 Hive
@@ -1354,6 +1384,28 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
 -- 其中serialization.format是文件序列化时表中两个列字段之间的文件中的字段分隔符.
 WITH SERDEPROPERTIES ('field.delim' = '\t','serialization.format' = '\t','serialization.null.format' = '')
 STORED AS TEXTFILE;
+
+
+
+CREATE [TEMPORARY] [EXTERNAL] TABLE [IF NOT EXISTS] [db_name.]table_name    -- (Note: TEMPORARY available in Hive 0.14.0 and later)
+  [(col_name data_type [column_constraint_specification] [COMMENT col_comment], ... [constraint_specification])]
+  [COMMENT table_comment]
+  [PARTITIONED BY (col_name data_type [COMMENT col_comment], ...)]
+  [CLUSTERED BY (col_name, col_name, ...) [SORTED BY (col_name [ASC|DESC], ...)] INTO num_buckets BUCKETS]
+  [SKEWED BY (col_name, col_name, ...)                  -- (Note: Available in Hive 0.10.0 and later)]
+     ON ((col_value, col_value, ...), (col_value, col_value, ...), ...)
+     [STORED AS DIRECTORIES]
+  [
+   [ROW FORMAT row_format]
+   [STORED AS file_format]
+     | STORED BY 'storage.handler.class.name' [WITH SERDEPROPERTIES (...)]  -- (Note: Available in Hive 0.6.0 and later)
+  ]
+  [LOCATION hdfs_path]
+  [TBLPROPERTIES (property_name=property_value, ...)]   -- (Note: Available in Hive 0.6.0 and later)
+  [AS select_statement];   -- (Note: Available in Hive 0.5.0 and later; not supported for external tables)
+
+
+
 
 DROP VIEW [IF EXISTS] view_name;
 CREATE VIEW [IF NOT EXISTS] [db_name.]view_name [(column_name [COMMENT column_comment], ...) ]
@@ -2099,10 +2151,4 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | show_encoding                     | true                                                         | 显示文件编码格式                               | "show_encoding": true,                                                          |                           |
 | show_full_path                    | true                                                         | 显示全路径                                     | "show_full_path": true,                                                         |                           |
 | show_line_endings                 | true                                                         | 显示换行符格式                                 | "show_line_endings": true,                                                      |                           |
-| tab_size                          | 2                                                            | tab的长度                                      | "tab_size": 2,                                                                  |                           |
-| theme                             | Default.sublime-theme                                        | 主题设置                                       | "theme": "Default.sublime-theme",                                               |                           |
-| translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                           |
-| trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
-| update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
-| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                           |
-| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                                                                |                           |
+| tab_size                          | 2                                                            | tab的长度                                      | "tab_size
