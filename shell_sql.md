@@ -745,8 +745,7 @@ sudo -u hive sqoop import "-D org.apache.sqoop.splitter.allow_text_splitter=true
 --as-parquetfile \
 --hive-import \
 --hive-overwrite \
---hive-database "${hive_database}" \
---hive-table "${hive_tablname}" \
+--hive-database "${hive_database}" --hive-table "${hive_tablname}" \
 --num-mappers 1
 ```
 
@@ -2151,4 +2150,11 @@ Driver={MySQL ODBC 8.0 Unicode Driver};server:10.10.18.48;database=dm_cf;
 | show_encoding                     | true                                                         | 显示文件编码格式                               | "show_encoding": true,                                                          |                           |
 | show_full_path                    | true                                                         | 显示全路径                                     | "show_full_path": true,                                                         |                           |
 | show_line_endings                 | true                                                         | 显示换行符格式                                 | "show_line_endings": true,                                                      |                           |
-| tab_size                          | 2                                                            | tab的长度                                      | "tab_size
+| tab_size                          | 2                                                            | tab的长度                                      | "tab_size": 2,                                                                  |                           |
+| theme                             | Default.sublime-theme                                        | 主题设置                                       | "theme": "Default.sublime-theme",                                               |                           |
+| translate_tabs_to_spaces          | true                                                         | true为空格替换TAB键，false则是TAB键            | "translate_tabs_to_spaces": true,                                               |                           |
+| trim_trailing_white_space_on_save | true                                                         | 自动移除行尾多余空格                           | "trim_trailing_white_space_on_save": true,                                      |                           |
+| update_check                      | false                                                        | 关闭自动检测升级                               | "update_check": false,                                                          |                           |
+| word_wrap                         | true                                                         | 设置自动换行                                   | "word_wrap": true,                                                              |                           |
+| wrap_width                        | 0                                                            | 设置单行的宽度（0为不设置）                    | "wrap_width": 0,                                                                |                           |
+  
