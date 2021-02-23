@@ -13159,13 +13159,15 @@ select distinct
   else '校验平台' end as project_from,
   project_begin_date as begin_date,
   project_end_date   as end_date
-from t_project
-left join t_related_assets
+from stage.t_project
+left join (select distinct project_id,related_project_id from stage.t_related_assets) as t_related_assets
 on t_project.project_id = t_related_assets.related_project_id
 where t_project.project_id not in ('PL202102010096')
 order by project_full_name;
 
 
+select encrypt_aes('aa') as encrypt_aes;
+select decrypt_aes('aa') as decrypt_aes;
 
 
 
@@ -13346,7 +13348,7 @@ where 1 > 0
   -- and overdue_days > 180
   -- and overdue_days = 200
   -- and s_d_date > '2021-01-25'
-  and due_bill_no = '1120070518023064645651'
+  and due_bill_no = '1120070618213240623972'
 order by s_d_date,loan_status,overdue_days
 ;
 
@@ -13401,13 +13403,5 @@ and loan_apply.cust_id    = customer.cust_id
 
 
 
-
-
-
-
-
-
-
-
-
-
+select
+  product

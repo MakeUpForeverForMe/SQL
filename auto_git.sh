@@ -6,12 +6,22 @@ succ_erro(){ aa=$? && ( [[ $aa == 0 ]] && prt '成功' || prt '错误' ) &>> $lo
 
 get_file(){
   files=${1}
+  copy_dir=${2}
+  [[ $files =~ src$ ]] && {
+    file_pom=$files/../pom.xml
+    copy_pom=${copy_dir}/../pom.xml
+    printf '%-135s\t%-120s\n' ${file_pom} ${copy_pom}
+    rm ${copy_pom}
+    link ${file_pom} ${copy_pom}
+  }
   for file in $files/*; do
-    [[ -d $file ]] && get_file $file || {
+    [[ -d $file ]] && get_file ${file} ${copy_dir} || {
       [[ -f $file ]] && {
-        echo /d/Users/ximing.wei/Desktop/code/HiveUDF/src/${file:45} $file &>> $log
-        rm /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src/${file:45}
-        link /d/Users/ximing.wei/Desktop/code/HiveUDF/src/${file:45} $file
+        file_file=$file
+        copy_file=${copy_dir}/$(echo ${file/\/src\// } | awk '{print $2}')
+        printf '%-135s\t%-120s\n' ${file_file} ${copy_file} &>> $log
+        rm ${copy_file}
+        link ${file_file} ${copy_file}
       }
     }
   done
@@ -24,7 +34,8 @@ dir1=/d/Users/ximing.wei/Desktop/code
 dir2=/d/Users/ximing.wei/Desktop/技术中心
 
 
-dirs=$dir1,$dir1/Project,$dir1/python,$dir1/starsource,$dir2/数仓表结构
+dirs=$dir1,$dir1/HiveUDF,$dir1/Project,$dir1/python,$dir1/starsource,$dir2/数仓表结构
+# dirs=$dir1/HiveUDF
 log=$dir1/auto_git.log
 
 prt '-' '50' &>> $log
@@ -32,10 +43,10 @@ prt '-' '50' &>> $log
 for dir in ${dirs//,/ }; do
   cd $dir
   pwd &>> $log
-  [[ $dir =~ /d/Users/ximing.wei/Desktop/技术中心/数仓表结构 ]] && get_file /d/Users/ximing.wei/Desktop/技术中心/数仓表结构/HiveUDF/src &>> $log
-
   git pull &>> $log
+  succ_erro && [[ $aa != 0 ]] && continue
 
+  [[ $dir =~ $dir1/HiveUDF ]] && get_file $dir2/数仓表结构/HiveUDF/src $dir1/HiveUDF/src &>> $log
   echo -e '\n' &>> $log
 
   echo "git add -u $dir" &>> $log
