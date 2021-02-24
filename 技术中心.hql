@@ -13404,4 +13404,82 @@ and loan_apply.cust_id    = customer.cust_id
 
 
 select
-  product
+  product_id,
+  due_bill_no,
+  repay_term,
+  to_date(txn_time) as txn_date,
+  biz_date,
+  sum(repay_amount)                                      as paid_amount,
+  sum(if(bnp_type = 'Pricinpal',        repay_amount,0)) as paid_principal,
+  sum(if(bnp_type = 'Interest',         repay_amount,0)) as paid_interest,
+  sum(if(bnp_type = 'TERMFee',          repay_amount,0)) as paid_term_fee,
+  sum(if(bnp_type = 'SVCFee',           repay_amount,0)) as paid_svc_fee,
+  sum(if(bnp_type = 'Penalty',          repay_amount,0)) as paid_penalty,
+  sum(if(bnp_type = 'LatePaymentCharge',repay_amount,0)) as paid_mult
+from ods_new_s.repay_detail
+where 1 > 0
+  and biz_date between '2020-10-17' and '2020-12-31'
+  -- and biz_date = '2020-10-20'
+  and product_id in ('001601','001603','001602')
+  -- and repay_term in (2,3)
+  -- and repay_term = 0
+  -- and due_bill_no = '1000005314'
+group by product_id,due_bill_no,repay_term,to_date(txn_time),biz_date
+
+
+
+select
+  -- product_id,
+  due_bill_no,
+  term as
+  repay_term,
+  -- to_date(txn_time) as
+  txn_date,
+  -- biz_date,
+  sum(repay_amt)                                      as paid_amount,
+  sum(if(bnp_type = 'Pricinpal',        repay_amt,0)) as paid_principal,
+  sum(if(bnp_type = 'Interest',         repay_amt,0)) as paid_interest,
+  sum(if(bnp_type = 'TERMFee',          repay_amt,0)) as paid_term_fee,
+  sum(if(bnp_type = 'SVCFee',           repay_amt,0)) as paid_svc_fee,
+  sum(if(bnp_type = 'Penalty',          repay_amt,0)) as paid_penalty,
+  sum(if(bnp_type = 'LatePaymentCharge',repay_amt,0)) as paid_mult,
+  create_time                                         as create_time,
+  lst_upd_time                                        as update_time,
+  d_date
+from ods.ecas_repay_hst
+where 1 > 0
+  and term = 1
+  and due_bill_no = '5100833703'
+group by
+-- product_id
+due_bill_no
+,term
+-- ,to_date(txn_time)
+,txn_date
+-- ,biz_date
+,create_time
+,lst_upd_time
+,d_date
+order by d_date
+;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
