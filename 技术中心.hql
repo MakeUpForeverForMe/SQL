@@ -13468,18 +13468,43 @@ order by d_date
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+insert overwrite table dim.data_conf
+select
+  uuid                   as col_id,
+  split(map_key,'~~')[0] as col_name,
+  map_val                as col_val,
+  split(map_key,'~~')[1] as col_comment,
+  'ximing.wei'           as create_user,
+  current_timestamp()    as create_time,
+  'ximing.wei'           as update_user,
+  current_timestamp()    as update_time
+from (
+  select uuid() as uuid,* from dim.biz_conf
+) as biz_conf
+lateral view explode(map(
+  concat_ws('~~','biz_name',          '业务名称（中文）'),      biz_name,
+  concat_ws('~~','biz_name_en',       '业务名称（英文）'),      biz_name_en,
+  concat_ws('~~','capital_id',        '资金方编号'),            capital_id,
+  concat_ws('~~','capital_name',      '资金方名称（中文）'),    capital_name,
+  concat_ws('~~','capital_name_en',   '资金方名称（英文）'),    capital_name_en,
+  concat_ws('~~','channel_id',        '渠道方编号'),            channel_id,
+  concat_ws('~~','channel_name',      '渠道方名称（中文）'),    channel_name,
+  concat_ws('~~','channel_name_en',   '渠道方名称（英文）'),    channel_name_en,
+  concat_ws('~~','trust_id',          '信托计划编号'),          trust_id,
+  concat_ws('~~','trust_name',        '信托计划名称（中文）'),  trust_name,
+  concat_ws('~~','trust_name_en',     '信托计划名称（英文）'),  trust_name_en,
+  concat_ws('~~','abs_project_id',    'ABS项目编号'),           abs_project_id,
+  concat_ws('~~','abs_project_name',  'ABS项目名称（中文）'),   abs_project_name,
+  concat_ws('~~','project_id',        '项目编号'),              project_id,
+  concat_ws('~~','project_name',      '项目名称（中文）'),      project_name,
+  concat_ws('~~','project_name_en',   '项目名称（英文）'),      project_name_en,
+  concat_ws('~~','project_amount',    '项目初始金额'),          project_amount,
+  concat_ws('~~','product_id',        '产品编号'),              product_id,
+  concat_ws('~~','product_name',      '产品名称（中文）'),      product_name,
+  concat_ws('~~','product_name_en',   '产品名称（英文）'),      product_name_en,
+  concat_ws('~~','product_id_vt',     '产品编号（虚拟）'),      product_id_vt,
+  concat_ws('~~','product_name_vt',   '产品名称（中文、虚拟）'),product_name_vt,
+  concat_ws('~~','product_name_en_vt','产品名称（英文、虚拟）'),product_name_en_vt
+)) a as map_key,map_val
+where 1 > 0
+  and is_empty(map_val) is not 

@@ -26,6 +26,8 @@
 | router  | linux | 10.80.1.94                                     | root  | Ws@ProEmr1QSC@ |      |
 | master  | linux | 10.80.1.155                                    | root  | Ws@ProEmr1QSC@ |      |
 | master  | linux | 10.80.0.195                                    | root  | Ws@ProEmr1QSC@ |      |
+| cos     | cos   | cosn://bigdata-center-prod-1253824322/         |       |                | 数仓 |
+| cos     | cos   | cosn://databack-1253824322/                    |       |                | 加密 |
 
 
 ### 1.1.2 测试
@@ -1321,6 +1323,9 @@ ALTER TABLE table_name CHANGE old_field_name new_field_name field_type;
 -- 删除字段
 ALTER TABLE table_name DROP field_name;
 
+-- 修改 location
+alter table stage.ecas_msg_log set location 'cosn://bigdata-center-prod-1253824322/user/hadoop/warehouse/stage.db/ecas_msg_log';
+
 -- 查看数据库建立语句：
 SHOW CREATE DATABASE db_name;
 
@@ -1937,7 +1942,10 @@ TBLPROPERTIES (
 -- Hive 函数操作
 hdfs dfs -put ./HiveUDF-1.0.jar /user/hive/auxlib
 
+set hivevar:hdfs_path=cosn://bigdata-center-prod-1253824322/user/auxlib/HiveUDF-1.0-shaded.jar;
+
 set hivevar:hdfs_path=hdfs:///user/hive/auxlib/HiveUDF-1.0-shaded.jar;
+
 ADD JAR ${hdfs_path};
 
 ADD JAR hdfs:///user/hive/auxlib/hive-jdbc-handler-1.2.1.jar;
@@ -1982,8 +1990,8 @@ reload function; -- 多个 HiveServer 之间，需要同步元数据信息
 SHOW FUNCTIONS LIKE 'default*';
 DESC FUNCTION EXTENDED is_empty;
 
-SHOW FUNCTIONS LIKE '*ran*';
-DESC FUNCTION EXTENDED named_struct;
+SHOW FUNCTIONS LIKE '*type*';
+DESC FUNCTION EXTENDED map;
 ```
 
 
