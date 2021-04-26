@@ -29,7 +29,7 @@ dir1=/d/Users/ximing.wei/Desktop/code
 dir2=/d/Users/ximing.wei/Desktop/技术中心
 
 
-dirs=$dir1,$dir1/Project,$dir1/starsource,$dir2/数仓表结构
+dirs=$dir1,$dir1/Project,$dir2/数仓表结构
 # dirs=$dir1/Project
 log=$dir1/auto_git.log
 
