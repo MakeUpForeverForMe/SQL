@@ -16,7 +16,10 @@ get_file(){
       get_file "$file"
     } || {
       [[ -f "$file" ]] && {
-        printf '%-145s\t%s\n' "$file" "$tag_file"
+        stat_file=$(stat -c %y "$file")
+        stat_file_tag=$(stat -c %y "$tag_file")
+        [[ $stat_file = $stat_file_tag ]] && continue
+        printf 'link %-145s\t%s\n' "$file" "$tag_file"
         rm "$tag_file"
         link "$file" "$tag_file"
       }
